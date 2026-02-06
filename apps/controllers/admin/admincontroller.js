@@ -1,33 +1,43 @@
-var express = require("express");
-var router = express.Router();
+// apps/controllers/admin/admincontroller.js
+const ProductModel = require('../../models/product');
 
-// Import Model User (Class thường, không phải Mongoose)
-// LƯU Ý: Nếu thư mục của bạn tên là "model" (không có s) thì sửa đường dẫn thành "../../model/user"
-var User = require("../../models/user");
+module.exports = {
+    index: async (req, res) => {
+        try {
+            const products = await ProductModel.getAllProducts();
+            // Render file apps/views/admin/product_list.ejs
+            res.render('admin/product_list', { products: products });
+        } catch (error) {
+            res.status(500).send("Lỗi Server");
+        }
+    },
 
-// Trang chính Admin
-router.get("/", function(req, res) {
-    res.json({ "message": "Đây là trang Admin (Chưa có DB)" });
-});
+    create: async (req, res) => {
+        try {
+            const categories = await ProductModel.getCategories();
+            // Render file apps/views/admin/product_add.ejs
+            res.render('admin/product_add', { categories: categories });
+        } catch (error) {
+            res.status(500).send("Lỗi tải form");
+        }
+    },
 
-// Trang Quản lý User (View)
-router.get("/user", function(req, res) {
-    res.render("admin/userManage");
-});
-
-// API lấy danh sách User (Dữ liệu giả)
-router.get("/getuserlist", function(req, res) {
-    var userList = [];
-    
-    // TẠO GIẢ 5 USER ĐỂ TEST
-    for (var i = 0; i < 5; i++) {
-        var u = new User();
-        u.id = (i + 1);
-        u.name = "Người dùng mẫu " + (i + 1);
-        userList.push(u);
+    store: async (req, res) => {
+        try {
+            const data = {
+                name: req.body.name,
+                price: req.body.price,
+                author: req.body.author,
+                quantity: req.body.quantity,
+                category_id: req.body.category_id,
+                description: req.body.description,
+                image_url: req.file ? req.file.filename : null
+            };
+            await ProductModel.createProduct(data);
+            res.redirect('/admin');
+        } catch (error) {
+            console.log(error);
+            res.status(500).send("Lỗi lưu dữ liệu");
+        }
     }
-    
-    res.json(userList);
-});
-
-module.exports = router;
+};

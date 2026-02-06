@@ -1,17 +1,35 @@
+// apps/controllers/index.js
 var express = require("express");
 var router = express.Router();
+var multer = require("multer");
 
-// 1. TRANG CHỦ (http://localhost:3000/)
-// Khi vào trang chủ -> Hiện giao diện home.ejs ngay
-router.get("/", function(req, res) {
-    res.render("home");
+// --- IMPORT CÁC CONTROLLER CON ---
+var homeController = require("./homecontroller");
+var adminController = require("./admin/admincontroller");
+var productController = require("./productcontroller"); // Import thêm Product nếu có
+
+// --- CẤU HÌNH UPLOAD ẢNH (MULTER) ---
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => cb(null, "public/images/"),
+    filename: (req, file, cb) => {
+        cb(null, Date.now() + "-" + file.originalname);
+    }
 });
+const upload = multer({ storage: storage });
 
-// 2. SẢN PHẨM (http://localhost:3000/product)
-router.use("/product", require(__dirname + "/productcontroller"));
+// --- ĐỊNH NGHĨA ROUTE ---
 
-// 3. ADMIN (http://localhost:3000/admin)
-// Đừng quên dòng này, nó rất quan trọng!
-router.use("/admin", require(__dirname + "/admin/admincontroller"));
+// 1. TRANG CHỦ
+router.get("/", homeController.index);
+
+// 2. KHU VỰC ADMIN
+router.get("/admin", adminController.index);
+router.get("/admin/create", adminController.create);
+router.post("/admin/store", upload.single("image"), adminController.store);
+
+// 3. KHU VỰC SẢN PHẨM (Nếu bạn phát triển thêm trang chi tiết)
+// Mọi đường dẫn bắt đầu bằng /product sẽ chạy vào productController
+// Ví dụ: /product/detail/1
+router.use("/product", productController); 
 
 module.exports = router;

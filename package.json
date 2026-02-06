@@ -16,9 +16,19 @@
   },
   "dependencies": {
     "body-parser": "^2.2.2",
-    "dotenv": "^17.2.3",
+    "config": "^4.2.0",
+    "dotenv": "^17.2.4",
     "ejs": "^4.0.1",
     "express": "^5.2.1",
-    "mongoose": "^9.1.5"
-  }
+    "multer": "^2.0.2",
+    "mysql2": "^3.16.3"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/trungtin10/WebBookStore.git"
+  },
+  "bugs": {
+    "url": "https://github.com/trungtin10/WebBookStore/issues"
+  },
+  "homepage": "https://github.com/trungtin10/WebBookStore#readme"
 }

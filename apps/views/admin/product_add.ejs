@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Thêm mới sách</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light p-5">
+    <div class="container bg-white p-4 shadow rounded" style="max-width: 800px;">
+        <h3 class="mb-4 text-primary">Thêm mới Sách</h3>
+        
+        <form action="/admin/store" method="POST" enctype="multipart/form-data">
+            <div class="row mb-3">
+                <div class="col-6">
+                    <label>Tên sách</label>
+                    <input type="text" name="name" class="form-control" required>
+                </div>
+                <div class="col-6">
+                    <label>Tác giả</label>
+                    <input type="text" name="author" class="form-control" required>
+                </div>
+            </div>
+            <div class="row mb-3">
+                <div class="col-4">
+                    <label>Giá bán</label>
+                    <input type="number" name="price" class="form-control" required>
+                </div>
+                <div class="col-4">
+                    <label>Tồn kho</label>
+                    <input type="number" name="quantity" class="form-control" value="100">
+                </div>
+                <div class="col-4">
+                    <label>Danh mục</label>
+                    <select name="category_id" class="form-select">
+                        <% categories.forEach(c => { %>
+                            <option value="<%= c.id %>"><%= c.name %></option>
+                        <% }); %>
+                    </select>
+                </div>
+            </div>
+            <div class="mb-3">
+                <label>Ảnh bìa</label>
+                <input type="file" name="image" class="form-control" required>
+            </div>
+            <div class="mb-3">
+                <label>Mô tả</label>
+                <textarea name="description" class="form-control" rows="3"></textarea>
+            </div>
+            <div class="text-end">
+                <a href="/admin" class="btn btn-secondary">Hủy</a>
+                <button type="submit" class="btn btn-success">Lưu lại</button>
+            </div>
+        </form>
+    </div>
+</body>
+</html>

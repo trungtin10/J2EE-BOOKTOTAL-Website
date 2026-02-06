@@ -7,7 +7,9 @@ router.get("/", function(req, res) {
 
 router.use("/product", require(__dirname + "/productcontroller"));
 
-// Dán dòng code bạn vừa hỏi vào đây:
-router.use("/admin", require(__dirname + "/admin/admincontroller"));
+// --- KIỂM TRA KỸ DÒNG NÀY ---
+// Dòng này giúp nối đuôi "/admin" vào trước các link trong admincontroller
+router.use("/admin", require(__dirname + "/admin/admincontroller")); 
+// -----------------------------
 
 module.exports = router;
