@@ -19,21 +19,36 @@
     <div class="container">
         <h3 class="mb-4 border-bottom pb-2">Sách Mới Phát Hành</h3>
         <div class="row row-cols-1 row-cols-md-4 g-4">
-            <% products.forEach(item => { %>
-                <div class="col">
-                    <div class="card h-100 shadow-sm">
-                        <img src="/images/<%= item.image_url %>" class="card-img-top" style="height: 250px; object-fit: cover;">
-                        <div class="card-body">
-                            <h5 class="card-title text-truncate"><%= item.name %></h5>
-                            <p class="text-muted small"><%= item.author %></p>
-                            <div class="d-flex justify-content-between align-items-center mt-3">
-                                <span class="text-danger fw-bold"><%= item.price.toLocaleString('vi-VN') %> đ</span>
-                                <button class="btn btn-primary btn-sm">Mua ngay</button>
+            <% if (locals.products) { %>
+                <% products.forEach(item => { %>
+                    <div class="col">
+                        <div class="card h-100 shadow-sm">
+                            <% 
+                                let imgSrc = item.image_url;
+                                // Nếu tên hình không bắt đầu bằng http (là hình nội bộ) thì thêm /images/
+                                if (imgSrc && !imgSrc.startsWith('http')) {
+                                    imgSrc = '/images/' + imgSrc;
+                                }
+                            %>
+                            <img src="<%= imgSrc ? imgSrc : '/images/default.jpg' %>" 
+                                 class="card-img-top" 
+                                 style="height: 250px; object-fit: cover;"
+                                 onerror="this.src='https://picsum.photos/200/300?random=<%= item.id %>'">
+                            
+                            <div class="card-body">
+                                <h5 class="card-title text-truncate"><%= item.name %></h5>
+                                <p class="text-muted small"><%= item.author %></p>
+                                <div class="d-flex justify-content-between align-items-center mt-3">
+                                    <span class="text-danger fw-bold">
+                                        <%= item.price.toLocaleString('vi-VN') %> đ
+                                    </span>
+                                    <button class="btn btn-primary btn-sm">Mua ngay</button>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-            <% }); %>
+                <% }); %>
+            <% } %>
         </div>
     </div>
 </body>

@@ -1,59 +1,36 @@
-
-// app.js
 const express = require("express");
+const path = require("path");
+const session = require("express-session"); // Cần cài đặt: npm install express-session
 const app = express();
-const port = 3000;
 
-var express = require("express");
-var session = require("express-session");
-var app = express();
-
-
-// 1. Cấu hình View Engine (EJS)
+// 1. Cấu hình View Engine
 app.set("view engine", "ejs");
-app.set("views", __dirname + "/apps/views"); // Trỏ đúng thư mục Views
+app.set("views", path.join(__dirname, "apps", "views"));
 
-// 2. Cấu hình Public (CSS, JS, Ảnh)
-app.use(express.static(__dirname + "/public"));
-
-
-// 3. Cấu hình nhận dữ liệu Form
+// 2. Middleware
+app.use(express.static(path.join(__dirname, "public")));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
-// 4. GỌI CONTROLLER CHÍNH (Router)
-// Dòng này sẽ tự động tìm file index.js trong thư mục apps/controllers
-app.use(require(__dirname + "/apps/controllers")); 
-
-// Khởi động Server
-app.listen(port, () => {
-    console.log(`Server đang chạy tại: http://localhost:${port}`);
-});
-=======
-
-app.use(express.urlencoded({ extended: true }));
-app.use(express.json());
-
+// 3. Cấu hình Session (Quan trọng để giữ trạng thái Đăng nhập)
 app.use(session({
-    secret: "mysecretkey",
+    secret: 'bookstore_secret_key',
     resave: false,
-    saveUninitialized: true
+    saveUninitialized: true,
+    cookie: { maxAge: 3600000 } // Session tồn tại 1 tiếng
 }));
 
-app.use(function(req, res, next) {
-    res.locals.session = req.session;
+// 4. Middleware truyền thông tin user ra tất cả các file EJS
+app.use((req, res, next) => {
+    res.locals.user = req.session.user || null;
     next();
 });
 
-// 3. Cấu hình Controllers (Điều hướng)
-var controller = require(__dirname + "/apps/controllers");
-app.use(controller);
+// 5. Nạp router
+const routes = require("./apps/controllers"); 
+app.use(routes);
 
-
-
-// 4. Chạy Server
-var port = 3000;
-app.listen(port, function() {
-    console.log("Server đang chạy tại: http://localhost:" + port);
+const PORT = 3000;
+app.listen(PORT, () => {
+    console.log(`Server chạy tại: http://localhost:${PORT}`);
 });
->>>>>>> 818086f3a5e7648cff072a20643f6dfa9bdd426d
