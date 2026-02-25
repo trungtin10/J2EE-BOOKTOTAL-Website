@@ -86,7 +86,8 @@ app.use((err, req, res, next) => {
     });
 });
 
-const PORT = 3001;
+// SỬA LẠI CỔNG CHẠY SERVER
+const PORT = 3002; // Đổi từ 3001 sang 3002
 
 app.listen(PORT, () => {
     console.log(`Server running at http://localhost:${PORT}`);

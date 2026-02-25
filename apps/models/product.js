@@ -40,6 +40,7 @@ module.exports = {
         return rows[0]; 
     },
 
+    // HÀM TÌM KIẾM CHUẨN
     searchProducts: async (keyword) => {
         const query = `
             SELECT
@@ -146,14 +147,12 @@ module.exports = {
         return rows;
     },
 
-    // Hàm này dùng cho BÁN HÀNG (Trừ kho, Tăng đã bán)
     updateStock: async (id, quantitySold) => {
         const query = `UPDATE products SET quantity = quantity - ?, sold_count = sold_count + ? WHERE id = ?`;
         const [result] = await db.query(query, [quantitySold, quantitySold, id]);
         return result;
     },
 
-    // Hàm MỚI dùng cho NHẬP HÀNG (Chỉ Tăng kho)
     importStock: async (id, quantityImport) => {
         const query = `UPDATE products SET quantity = quantity + ? WHERE id = ?`;
         const [result] = await db.query(query, [quantityImport, id]);
