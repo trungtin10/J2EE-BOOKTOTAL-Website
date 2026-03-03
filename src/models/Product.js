@@ -1,18 +1,48 @@
-﻿const db = require('../db');
+const db = require('../db');
 
 class Product {
-    static async getAllProducts() {
-        const query = `
+    static async getAllProducts(filters = {}) {
+        let query = `
             SELECT
                 p.*,
                 GROUP_CONCAT(DISTINCT a.name SEPARATOR ', ') as author_name
             FROM products p
             LEFT JOIN product_authors pa ON p.id = pa.product_id
             LEFT JOIN authors a ON pa.author_id = a.id
+        `;
+
+        let queryParams = [];
+        let whereClauses = [];
+
+        if (filters.keyword && filters.keyword.trim() !== '') {
+            whereClauses.push(`(p.name LIKE ? OR a.name LIKE ?)`);
+            queryParams.push(`%${filters.keyword}%`, `%${filters.keyword}%`);
+        }
+
+        if (filters.category_id && parseInt(filters.category_id) > 0) {
+            query += ` JOIN product_categories pc ON p.id = pc.product_id `;
+            whereClauses.push(`pc.category_id = ?`);
+            queryParams.push(filters.category_id);
+        }
+
+        if (filters.status && filters.status !== 'all') {
+            if (filters.status === 'visible') {
+                whereClauses.push(`p.is_hidden = 0`);
+            } else if (filters.status === 'hidden') {
+                whereClauses.push(`p.is_hidden = 1`);
+            }
+        }
+
+        if (whereClauses.length > 0) {
+            query += ` WHERE ` + whereClauses.join(' AND ');
+        }
+
+        query += `
             GROUP BY p.id
             ORDER BY p.id DESC
         `;
-        const [rows] = await db.query(query);
+
+        const [rows] = await db.query(query, queryParams);
         return rows;
     }
 
@@ -59,7 +89,7 @@ class Product {
 
     static async getCategoryName(categoryId) {
         const [rows] = await db.query('SELECT name FROM categories WHERE id = ?', [categoryId]);
-        return rows[0] ? rows[0].name : 'Danh má»¥c';
+        return rows[0] ? rows[0].name : 'Danh mục';
     }
 
     static async getBestSellers() {
@@ -156,13 +186,14 @@ class Product {
         const publisherId = await Product.getOrCreatePublisher(data.publisher_name);
         const supplierId = await Product.getOrCreateSupplier(data.supplier_name);
 
-        const { name, price, description, image_url, quantity, publication_year, pages, cover_type, category_id, language, dimensions } = data;
+        const { name, price, description, image_url, quantity, publication_year, pages, cover_type, category_id, language, dimensions, is_hidden } = data;
+        const hiddenStatus = is_hidden ? 1 : 0;
 
         const productQuery = `
-            INSERT INTO products (name, price, description, image_url, quantity, publisher_id, supplier_id, publication_year, pages, cover_type, language, dimensions)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO products (name, price, description, image_url, quantity, is_hidden, publisher_id, supplier_id, publication_year, pages, cover_type, language, dimensions)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `;
-        const [result] = await db.query(productQuery, [name, price, description, image_url, quantity, publisherId, supplierId, publication_year, pages, cover_type, language, dimensions]);
+        const [result] = await db.query(productQuery, [name, price, description, image_url, quantity, hiddenStatus, publisherId, supplierId, publication_year, pages, cover_type, language, dimensions]);
         const productId = result.insertId;
 
         if (category_id) await db.query('INSERT INTO product_categories (product_id, category_id) VALUES (?, ?)', [productId, category_id]);
@@ -176,15 +207,16 @@ class Product {
         const publisherId = await Product.getOrCreatePublisher(data.publisher_name);
         const supplierId = await Product.getOrCreateSupplier(data.supplier_name);
 
-        const { name, price, description, image_url, quantity, publication_year, pages, cover_type, category_id, language, dimensions } = data;
+        const { name, price, description, image_url, quantity, publication_year, pages, cover_type, category_id, language, dimensions, is_hidden } = data;
+        const hiddenStatus = is_hidden ? 1 : 0;
 
         const productQuery = `
             UPDATE products SET
-            name = ?, price = ?, description = ?, image_url = ?, quantity = ?, publisher_id = ?, supplier_id = ?,
+            name = ?, price = ?, description = ?, image_url = ?, quantity = ?, is_hidden = ?, publisher_id = ?, supplier_id = ?,
             publication_year = ?, pages = ?, cover_type = ?, language = ?, dimensions = ?
             WHERE id = ?
         `;
-        await db.query(productQuery, [name, price, description, image_url, quantity, publisherId, supplierId, publication_year, pages, cover_type, language, dimensions, id]);
+        await db.query(productQuery, [name, price, description, image_url, quantity, hiddenStatus, publisherId, supplierId, publication_year, pages, cover_type, language, dimensions, id]);
 
         if (category_id) {
             await db.query('DELETE FROM product_categories WHERE product_id = ?', [id]);

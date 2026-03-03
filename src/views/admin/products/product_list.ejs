@@ -26,6 +26,48 @@
     </header>
 
     <div class="container pb-5">
+        <!-- FILTER FORM -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <form action="/admin/products" method="GET" class="row g-3 align-items-end">
+                    <div class="col-md-4">
+                        <label class="form-label text-muted small mb-1 fw-bold">Tìm kiếm tên sách / tác giả</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-white"><i class="fas fa-search text-muted"></i></span>
+                            <input type="text" name="keyword" class="form-control" placeholder="Nhập từ khóa..." value="<%= locals.query ? query.keyword : '' %>">
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-3">
+                        <label class="form-label text-muted small mb-1 fw-bold">Danh mục</label>
+                        <select name="category_id" class="form-select">
+                            <option value="">-- Tất cả danh mục --</option>
+                            <% if (locals.categories) { %>
+                                <% categories.forEach(c => { %>
+                                    <option value="<%= c.id %>" <%= locals.query && query.category_id == c.id ? 'selected' : '' %>>
+                                        <%= c.name %>
+                                    </option>
+                                <% }); %>
+                            <% } %>
+                        </select>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label text-muted small mb-1 fw-bold">Trạng thái hiển thị</label>
+                        <select name="status" class="form-select">
+                            <option value="all" <%= locals.query && query.status === 'all' ? 'selected' : '' %>>Tất cả</option>
+                            <option value="visible" <%= locals.query && query.status === 'visible' ? 'selected' : '' %>>Đang hiển thị</option>
+                            <option value="hidden" <%= locals.query && query.status === 'hidden' ? 'selected' : '' %>>Đang ẩn</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-2">
+                        <button type="submit" class="btn btn-primary w-100 fw-bold"><i class="fas fa-filter me-1"></i> LỌC</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
         <div class="card">
             <div class="card-body">
                 <table class="table table-hover align-middle">
@@ -38,6 +80,7 @@
                             <th>Giá bán</th>
                             <th>Tồn kho</th>
                             <th>Đã bán</th>
+                            <th>Trạng thái</th>
                             <th>Hành động</th>
                         </tr>
                     </thead>
@@ -64,6 +107,13 @@
                                         <% } %>
                                     </td>
                                     <td><%= p.sold_count %></td>
+                                    <td>
+                                        <% if (p.is_hidden) { %>
+                                            <span class="badge bg-secondary">Đang ẩn</span>
+                                        <% } else { %>
+                                            <span class="badge bg-success">Hiển thị</span>
+                                        <% } %>
+                                    </td>
                                     <td>
                                         <a href="/admin/products/detail/<%= p.id %>" class="btn btn-sm btn-info text-white me-1" title="Xem chi tiết"><i class="fas fa-eye"></i></a>
                                         <a href="/admin/products/edit/<%= p.id %>" class="btn btn-sm btn-primary me-1" title="Sửa"><i class="fas fa-edit"></i></a>
