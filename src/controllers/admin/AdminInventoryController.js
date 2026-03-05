@@ -51,6 +51,17 @@ class AdminInventoryController {
         }
     }
 
+    static async processExport(req, res) {
+        try {
+            const { product_id, quantity, note } = req.body;
+            await Product.exportStock(product_id, parseInt(quantity), note);
+            res.redirect('/admin/inventory');
+        } catch (err) {
+            console.error(err);
+            res.send(`<script>alert("${err.message || 'Lỗi xuất kho'}"); window.history.back();</script>`);
+        }
+    }
+
     static async getLogs(req, res) {
         try {
             const logs = await Product.getInventoryLogs(req.params.id);

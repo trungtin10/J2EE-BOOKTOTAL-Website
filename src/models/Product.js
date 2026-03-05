@@ -329,6 +329,16 @@ class Product {
         await db.query(logQuery, [id, quantityImport, note]);
     }
 
+    static async exportStock(id, quantityExport, note) {
+        const updateQuery = `UPDATE products SET quantity = quantity - ? WHERE id = ? AND quantity >= ?`;
+        const [result] = await db.query(updateQuery, [quantityExport, id, quantityExport]);
+        if (result.affectedRows === 0) {
+            throw new Error('Số lượng tồn kho không đủ để xuất');
+        }
+        const logQuery = `INSERT INTO inventory_logs (product_id, quantity, note) VALUES (?, ?, ?)`;
+        await db.query(logQuery, [id, -quantityExport, note]);
+    }
+
     static async getInventoryLogs(productId) {
         const query = `SELECT * FROM inventory_logs WHERE product_id = ? ORDER BY created_at DESC`;
         const [rows] = await db.query(query, [productId]);

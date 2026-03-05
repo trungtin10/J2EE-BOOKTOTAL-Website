@@ -41,19 +41,47 @@
             overflow: hidden;
             text-overflow: ellipsis;
         }
+
         .status-badge::after {
             float: right;
             margin-left: 5px;
             margin-top: 5px;
         }
 
-        .status-PENDING { background-color: #fff3cd; color: #664d03; }
-        .status-CONFIRMED { background-color: #cfe2ff; color: #084298; }
-        .status-PROCESSING { background-color: #e2e3e5; color: #41464b; }
-        .status-SHIPPED { background-color: #d1e7dd; color: #0f5132; }
-        .status-DELIVERING { background-color: #cff4fc; color: #055160; }
-        .status-COMPLETED { background-color: #d1e7dd; color: #0f5132; }
-        .status-CANCELLED { background-color: #f8d7da; color: #842029; }
+        .status-PENDING {
+            background-color: #fff3cd;
+            color: #664d03;
+        }
+
+        .status-CONFIRMED {
+            background-color: #cfe2ff;
+            color: #084298;
+        }
+
+        .status-PROCESSING {
+            background-color: #e2e3e5;
+            color: #41464b;
+        }
+
+        .status-SHIPPED {
+            background-color: #d1e7dd;
+            color: #0f5132;
+        }
+
+        .status-DELIVERING {
+            background-color: #cff4fc;
+            color: #055160;
+        }
+
+        .status-COMPLETED {
+            background-color: #d1e7dd;
+            color: #0f5132;
+        }
+
+        .status-CANCELLED {
+            background-color: #f8d7da;
+            color: #842029;
+        }
 
         .payment-badge {
             padding: 5px 12px;
@@ -66,15 +94,25 @@
             overflow: hidden;
             text-overflow: ellipsis;
         }
-        .payment-badge.PAID { background-color: #d1e7dd; color: #0f5132; }
-        .payment-badge.UNPAID { background-color: #f8d7da; color: #842029; }
+
+        .payment-badge.PAID {
+            background-color: #d1e7dd;
+            color: #0f5132;
+        }
+
+        .payment-badge.UNPAID {
+            background-color: #f8d7da;
+            color: #842029;
+        }
+
         .payment-badge::after {
             float: right;
             margin-left: 5px;
             margin-top: 5px;
         }
 
-        .table th, .table td {
+        .table th,
+        .table td {
             vertical-align: middle;
         }
 
@@ -97,142 +135,191 @@
             <!-- Sidebar -->
             <%- include('partials/menu') %>
 
-            <!-- Main Content -->
-            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 py-4">
-                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-                    <h1 class="h2"><i class="fas fa-shopping-cart me-2"></i> QUẢN LÝ ĐƠN HÀNG</h1>
-                    <%- include('partials/account_dropdown') %>
-                </div>
-
-                <!-- Khung Lọc -->
-                <div class="card mb-4">
-                    <div class="card-body">
-                        <form id="filterForm" action="/admin/orders" method="GET">
-                             <div class="row g-3">
-                                <div class="col-md-4">
-                                    <label class="form-label fw-bold">Từ khóa</label>
-                                    <input type="text" class="form-control" name="keyword" placeholder="Mã ĐH, Tên KH, SĐT..." value="<%= typeof query !== 'undefined' ? query.keyword : '' %>">
-                                </div>
-                                <div class="col-md-3">
-                                    <label class="form-label fw-bold">Trạng thái đơn hàng</label>
-                                    <select class="form-select" name="status">
-                                        <option value="all">Tất cả trạng thái</option>
-                                        <option value="PENDING" <%= (typeof query !== 'undefined' && query.status === 'PENDING') ? 'selected' : '' %>>Chờ xác nhận</option>
-                                        <option value="CONFIRMED" <%= (typeof query !== 'undefined' && query.status === 'CONFIRMED') ? 'selected' : '' %>>Đã xác nhận</option>
-                                        <option value="PROCESSING" <%= (typeof query !== 'undefined' && query.status === 'PROCESSING') ? 'selected' : '' %>>Đang xử lý</option>
-                                        <option value="SHIPPED" <%= (typeof query !== 'undefined' && query.status === 'SHIPPED') ? 'selected' : '' %>>Đã giao VC</option>
-                                        <option value="DELIVERING" <%= (typeof query !== 'undefined' && query.status === 'DELIVERING') ? 'selected' : '' %>>Đang giao hàng</option>
-                                        <option value="COMPLETED" <%= (typeof query !== 'undefined' && query.status === 'COMPLETED') ? 'selected' : '' %>>Đã giao</option>
-                                        <option value="CANCELLED" <%= (typeof query !== 'undefined' && query.status === 'CANCELLED') ? 'selected' : '' %>>Đã hủy / Thất bại</option>
-                                    </select>
-                                </div>
-                                <div class="col-md-3">
-                                    <label class="form-label fw-bold">Phương thức thanh toán</label>
-                                     <select class="form-select" name="payment_method">
-                                        <option value="all">Tất cả</option>
-                                        <option value="COD" <%= (typeof query !== 'undefined' && query.payment_method === 'COD') ? 'selected' : '' %>>COD</option>
-                                        <option value="VNPAY" <%= (typeof query !== 'undefined' && query.payment_method === 'VNPAY') ? 'selected' : '' %>>VNPAY</option>
-                                        <option value="MOMO" <%= (typeof query !== 'undefined' && query.payment_method === 'MOMO') ? 'selected' : '' %>>MOMO</option>
-                                    </select>
-                                </div>
-                                <div class="col-md-2 d-flex align-items-end gap-2">
-                                    <button type="submit" class="btn btn-primary w-100"><i class="fas fa-search"></i> Tìm</button>
-                                    <a href="/admin/orders" class="btn btn-outline-secondary" title="Reset"><i class="fas fa-undo"></i></a>
-                                </div>
-                            </div>
-                        </form>
+                <!-- Main Content -->
+                <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 py-4">
+                    <div
+                        class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                        <h1 class="h2"><i class="fas fa-shopping-cart me-2"></i> QUẢN LÝ ĐƠN HÀNG</h1>
+                        <%- include('partials/account_dropdown') %>
                     </div>
-                </div>
 
-                <!-- Khung Danh Sách Đơn Hàng -->
-                <div class="card card-body-full">
-                    <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
-                        <h5 class="mb-0 fw-bold">Danh sách đơn hàng</h5>
-                        <span class="badge bg-primary rounded-pill"><%= orders ? orders.length : 0 %> đơn</span>
-                    </div>
-                    <div class="card-body p-0">
-                        <div class="table-responsive">
-                            <table class="table table-hover align-middle mb-0">
-                                <thead class="table-light">
-                                    <tr>
-                                        <th class="ps-4">Mã ĐH</th>
-                                        <th>Khách hàng</th>
-                                        <th>Tổng tiền</th>
-                                        <th style="width: 160px;">Trạng thái</th>
-                                        <th style="width: 160px;">Thanh toán</th>
-                                        <th class="text-center" style="width: 80px;">Chi tiết</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <% if (orders && orders.length > 0) { %>
-                                        <%
-                                        const statusMap = {
-                                            'PENDING': 'Chờ xác nhận',
-                                            'CONFIRMED': 'Đã xác nhận',
-                                            'PROCESSING': 'Đang xử lý',
-                                            'SHIPPED': 'Đã giao VC',
-                                            'DELIVERING': 'Đang giao hàng',
-                                            'COMPLETED': 'Đã giao',
-                                            'CANCELLED': 'Đã hủy'
-                                        };
-                                        %>
-                                        <% orders.forEach(order => { %>
-                                            <% const statusText = statusMap[order.status] || order.status; %>
-                                            <tr>
-                                                <td class="ps-4 fw-bold">#<%= order.id %></td>
-                                                <td>
-                                                    <div class="fw-bold"><%= order.full_name || 'Khách vãng lai' %></div>
-                                                    <div class="small text-muted"><i class="fas fa-phone-alt me-1"></i> <%= order.phone || 'Chưa có SĐT' %></div>
-                                                </td>
-                                                <td class="fw-bold text-danger"><%= Number(order.final_total).toLocaleString('vi-VN') %> đ</td>
-                                                <td>
-                                                    <div class="dropdown">
-                                                        <button class="btn dropdown-toggle status-badge status-<%= order.status %>" type="button" data-bs-toggle="dropdown">
-                                                            <%= statusText %>
-                                                        </button>
-                                                        <ul class="dropdown-menu shadow">
-                                                            <li><a class="dropdown-item" href="/admin/orders/update/<%= order.id %>/CONFIRMED">Xác nhận</a></li>
-                                                            <li><a class="dropdown-item" href="/admin/orders/update/<%= order.id %>/PROCESSING">Đóng gói</a></li>
-                                                            <li><a class="dropdown-item" href="/admin/orders/update/<%= order.id %>/SHIPPED">Vận chuyển</a></li>
-                                                            <li><a class="dropdown-item" href="/admin/orders/update/<%= order.id %>/DELIVERING">Đang giao</a></li>
-                                                            <li><a class="dropdown-item" href="/admin/orders/update/<%= order.id %>/COMPLETED">Đã giao</a></li>
-                                                            <li><hr class="dropdown-divider"></li>
-                                                            <li><a class="dropdown-item text-danger" href="/admin/orders/update/<%= order.id %>/CANCELLED">Hủy / Thất bại</a></li>
-                                                        </ul>
-                                                    </div>
-                                                </td>
-                                                <td>
-                                                     <div class="dropdown">
-                                                        <button class="btn dropdown-toggle payment-badge <%= order.payment_status === 'PAID' ? 'PAID' : 'UNPAID' %>" type="button" data-bs-toggle="dropdown">
-                                                            <%= order.payment_status === 'PAID' ? 'Đã thanh toán' : 'Chưa thanh toán' %>
-                                                        </button>
-                                                        <ul class="dropdown-menu shadow">
-                                                            <li><a class="dropdown-item" href="/admin/orders/update-payment/<%= order.id %>/PAID">Đã thanh toán</a></li>
-                                                            <li><a class="dropdown-item" href="/admin/orders/update-payment/<%= order.id %>/UNPAID">Chưa thanh toán</a></li>
-                                                        </ul>
-                                                    </div>
-                                                </td>
-                                                <td class="text-center">
-                                                    <button class="btn btn-sm btn-outline-info rounded-circle" style="width: 32px; height: 32px;" onclick="showOrderDetail('<%= order.id %>')" title="Xem chi tiết">
-                                                        <i class="fas fa-eye"></i>
-                                                    </button>
-                                                </td>
-                                            </tr>
-                                        <% }); %>
-                                    <% } else { %>
-                                        <tr>
-                                            <td colspan="6" class="text-center py-5 text-muted">
-                                                <i class="fas fa-box-open fa-3x mb-3 text-secondary"></i><br>
-                                                Không tìm thấy đơn hàng nào phù hợp.
-                                            </td>
-                                        </tr>
-                                    <% } %>
-                                </tbody>
-                            </table>
+                    <!-- Khung Lọc -->
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <form id="filterForm" action="/admin/orders" method="GET">
+                                <div class="row g-3">
+                                    <div class="col-md-4">
+                                        <label class="form-label fw-bold">Từ khóa</label>
+                                        <input type="text" class="form-control" name="keyword"
+                                            placeholder="Mã ĐH, Tên KH, SĐT..."
+                                            value="<%= typeof query !== 'undefined' ? query.keyword : '' %>">
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label class="form-label fw-bold">Trạng thái đơn hàng</label>
+                                        <select class="form-select" name="status">
+                                            <option value="all">Tất cả trạng thái</option>
+                                            <option value="PENDING" <%=(typeof query !=='undefined' &&
+                                                query.status==='PENDING' ) ? 'selected' : '' %>>Chờ xác nhận</option>
+                                            <option value="CONFIRMED" <%=(typeof query !=='undefined' &&
+                                                query.status==='CONFIRMED' ) ? 'selected' : '' %>>Đã xác nhận</option>
+                                            <option value="PROCESSING" <%=(typeof query !=='undefined' &&
+                                                query.status==='PROCESSING' ) ? 'selected' : '' %>>Đang xử lý</option>
+                                            <option value="SHIPPED" <%=(typeof query !=='undefined' &&
+                                                query.status==='SHIPPED' ) ? 'selected' : '' %>>Đã giao VC</option>
+                                            <option value="DELIVERING" <%=(typeof query !=='undefined' &&
+                                                query.status==='DELIVERING' ) ? 'selected' : '' %>>Đang giao hàng
+                                            </option>
+                                            <option value="COMPLETED" <%=(typeof query !=='undefined' &&
+                                                query.status==='COMPLETED' ) ? 'selected' : '' %>>Đã giao</option>
+                                            <option value="CANCELLED" <%=(typeof query !=='undefined' &&
+                                                query.status==='CANCELLED' ) ? 'selected' : '' %>>Đã hủy / Thất bại
+                                            </option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label class="form-label fw-bold">Phương thức thanh toán</label>
+                                        <select class="form-select" name="payment_method">
+                                            <option value="all">Tất cả</option>
+                                            <option value="COD" <%=(typeof query !=='undefined' &&
+                                                query.payment_method==='COD' ) ? 'selected' : '' %>>COD</option>
+                                            <option value="VNPAY" <%=(typeof query !=='undefined' &&
+                                                query.payment_method==='VNPAY' ) ? 'selected' : '' %>>VNPAY</option>
+                                            <option value="MOMO" <%=(typeof query !=='undefined' &&
+                                                query.payment_method==='MOMO' ) ? 'selected' : '' %>>MOMO</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-2 d-flex align-items-end gap-2">
+                                        <button type="submit" class="btn btn-primary w-100"><i
+                                                class="fas fa-search"></i> Tìm</button>
+                                        <a href="/admin/orders" class="btn btn-outline-secondary" title="Reset"><i
+                                                class="fas fa-undo"></i></a>
+                                    </div>
+                                </div>
+                            </form>
                         </div>
                     </div>
-                </div>
-            </main>
+
+                    <!-- Khung Danh Sách Đơn Hàng -->
+                    <div class="card card-body-full">
+                        <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0 fw-bold">Danh sách đơn hàng</h5>
+                            <span class="badge bg-primary rounded-pill">
+                                <%= orders ? orders.length : 0 %> đơn
+                            </span>
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table table-hover align-middle mb-0">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th class="ps-4">Mã ĐH</th>
+                                            <th>Khách hàng</th>
+                                            <th>Tổng tiền</th>
+                                            <th style="width: 160px;">Trạng thái</th>
+                                            <th style="width: 160px;">Thanh toán</th>
+                                            <th class="text-center" style="width: 80px;">Chi tiết</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <% if (orders && orders.length> 0) { %>
+                                            <% const statusMap={ 'PENDING' : 'Chờ xác nhận' , 'CONFIRMED'
+                                                : 'Đã xác nhận' , 'PROCESSING' : 'Đang xử lý' , 'SHIPPED' : 'Đã giao VC'
+                                                , 'DELIVERING' : 'Đang giao hàng' , 'COMPLETED' : 'Đã giao'
+                                                , 'CANCELLED' : 'Đã hủy' }; %>
+                                                <% orders.forEach(order=> { %>
+                                                    <% const statusText=statusMap[order.status] || order.status; %>
+                                                        <tr>
+                                                            <td class="ps-4 fw-bold">#<%= order.id %>
+                                                            </td>
+                                                            <td>
+                                                                <div class="fw-bold">
+                                                                    <%= order.full_name || 'Khách vãng lai' %>
+                                                                </div>
+                                                                <div class="small text-muted"><i
+                                                                        class="fas fa-phone-alt me-1"></i>
+                                                                    <%= order.phone || 'Chưa có SĐT' %>
+                                                                </div>
+                                                            </td>
+                                                            <td class="fw-bold text-danger">
+                                                                <%= Number(order.final_total).toLocaleString('vi-VN') %>
+                                                                    đ
+                                                            </td>
+                                                            <td>
+                                                                <div class="dropdown">
+                                                                    <button
+                                                                        class="btn dropdown-toggle status-badge status-<%= order.status %>"
+                                                                        type="button" data-bs-toggle="dropdown">
+                                                                        <%= statusText %>
+                                                                    </button>
+                                                                    <ul class="dropdown-menu shadow">
+                                                                        <li><a class="dropdown-item"
+                                                                                href="/admin/orders/update/<%= order.id %>/CONFIRMED">Xác
+                                                                                nhận</a></li>
+                                                                        <li><a class="dropdown-item"
+                                                                                href="/admin/orders/update/<%= order.id %>/PROCESSING">Đóng
+                                                                                gói</a></li>
+                                                                        <li><a class="dropdown-item"
+                                                                                href="/admin/orders/update/<%= order.id %>/SHIPPED">Vận
+                                                                                chuyển</a></li>
+                                                                        <li><a class="dropdown-item"
+                                                                                href="/admin/orders/update/<%= order.id %>/DELIVERING">Đang
+                                                                                giao</a></li>
+                                                                        <li><a class="dropdown-item"
+                                                                                href="/admin/orders/update/<%= order.id %>/COMPLETED">Đã
+                                                                                giao</a></li>
+                                                                        <li>
+                                                                            <hr class="dropdown-divider">
+                                                                        </li>
+                                                                        <li><a class="dropdown-item text-danger"
+                                                                                href="/admin/orders/update/<%= order.id %>/CANCELLED">Hủy
+                                                                                / Thất bại</a></li>
+                                                                    </ul>
+                                                                </div>
+                                                            </td>
+                                                            <td>
+                                                                <div class="dropdown">
+                                                                    <button
+                                                                        class="btn dropdown-toggle payment-badge <%= order.payment_status === 'PAID' ? 'PAID' : 'UNPAID' %>"
+                                                                        type="button" data-bs-toggle="dropdown">
+                                                                        <%= order.payment_status==='PAID'
+                                                                            ? 'Đã thanh toán' : 'Chưa thanh toán' %>
+                                                                    </button>
+                                                                    <ul class="dropdown-menu shadow">
+                                                                        <li><a class="dropdown-item"
+                                                                                href="/admin/orders/update-payment/<%= order.id %>/PAID">Đã
+                                                                                thanh toán</a></li>
+                                                                        <li><a class="dropdown-item"
+                                                                                href="/admin/orders/update-payment/<%= order.id %>/UNPAID">Chưa
+                                                                                thanh toán</a></li>
+                                                                    </ul>
+                                                                </div>
+                                                            </td>
+                                                            <td class="text-center">
+                                                                <button
+                                                                    class="btn btn-sm btn-outline-info rounded-circle"
+                                                                    style="width: 32px; height: 32px;"
+                                                                    onclick="showOrderDetail('<%= order.id %>')"
+                                                                    title="Xem chi tiết">
+                                                                    <i class="fas fa-eye"></i>
+                                                                </button>
+                                                            </td>
+                                                        </tr>
+                                                        <% }); %>
+                                                            <% } else { %>
+                                                                <tr>
+                                                                    <td colspan="6" class="text-center py-5 text-muted">
+                                                                        <i
+                                                                            class="fas fa-box-open fa-3x mb-3 text-secondary"></i><br>
+                                                                        Không tìm thấy đơn hàng nào phù hợp.
+                                                                    </td>
+                                                                </tr>
+                                                                <% } %>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </main>
         </div>
     </div>
 
@@ -241,15 +328,19 @@
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title fw-bold">Chi tiết đơn hàng <span id="modalOrderId" class="text-primary"></span></h5>
+                    <h5 class="modal-title fw-bold">Chi tiết đơn hàng <span id="modalOrderId"
+                            class="text-primary"></span></h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body" id="modalOrderContent">
-                    <div class="text-center py-5"><div class="spinner-border"></div></div>
+                    <div class="text-center py-5">
+                        <div class="spinner-border"></div>
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
-                    <button type="button" class="btn btn-primary" onclick="printOrderFromModal()"><i class="fas fa-print me-2"></i> In đơn hàng</button>
+                    <button type="button" class="btn btn-primary" onclick="printOrderFromModal()"><i
+                            class="fas fa-print me-2"></i> In đơn hàng</button>
                 </div>
             </div>
         </div>
@@ -302,17 +393,51 @@
                         const paymentText = order.payment_status === 'PAID' ? 'Đã thanh toán' : 'Chưa thanh toán';
                         const paymentClass = order.payment_status === 'PAID' ? 'PAID' : 'UNPAID';
 
-                        const html = `
+                        // Parsing shipping address
+                        let parsedName = order.full_name || 'Khách vãng lai';
+                        let parsedPhone = order.phone || 'Chưa có SĐT';
+                        let cityDistrict = '';
+                        let specificAddress = '';
+                        let orderNote = '';
+
+                        if (order.shipping_address) {
+                            let rawAddress = order.shipping_address;
+                            let noteMatch = rawAddress.match(/\((.*?)\)$/);
+                            if (noteMatch) {
+                                orderNote = noteMatch[1];
+                                rawAddress = rawAddress.replace(/\s*\(.*?\)$/, '');
+                            }
+                            let parts = rawAddress.split(',').map(p => p.trim());
+                            if (parts.length >= 5) {
+                                let province = parts.pop();
+                                let district = parts.pop();
+                                let ward = parts.pop();
+                                cityDistrict = `${ward}, ${district}, ${province}`;
+
+                                parsedName = parts[0] || parsedName;
+                                parsedPhone = parts[1] || parsedPhone;
+                                specificAddress = parts.slice(2).join(', ');
+                            } else {
+                                specificAddress = rawAddress;
+                            }
+                        }
+
+                        let html = `
                         <div id="printableArea">
                             <div class="row mb-4">
                                 <div class="col-6">
                                     <h5 class="fw-bold">Thông tin khách hàng</h5>
-                                    <p class="mb-1"><strong>Họ tên:</strong> ${order.full_name || 'Khách vãng lai'}</p>
-                                    <p class="mb-1"><strong>SĐT:</strong> ${order.phone || 'Chưa có SĐT'}</p>
-                                    <div class="mb-1">
-                                        <strong>Địa chỉ:</strong><br>
-                                        <span class="text-muted">${order.shipping_address}</span>
+                                    <p class="mb-1"><strong>Họ tên:</strong> ${parsedName}</p>
+                                    <p class="mb-1"><strong>SĐT:</strong> ${parsedPhone}</p>
+                                    <div class="mb-2 mt-2">
+                                        <strong>Khu vực giao:</strong><br>
+                                        <span class="text-muted">${cityDistrict || 'Không rõ'}</span>
                                     </div>
+                                    <div class="mb-1">
+                                        <strong>Địa chỉ cụ thể:</strong><br>
+                                        <span class="text-muted">${specificAddress || order.shipping_address}</span>
+                                    </div>
+                                    ${orderNote ? `<div class="mb-1 text-danger"><strong>Ghi chú:</strong> ${orderNote}</div>` : ''}
                                 </div>
                                 <div class="col-6 text-end">
                                     <h5 class="fw-bold">Thông tin đơn hàng</h5>
@@ -374,4 +499,5 @@
         }
     </script>
 </body>
+
 </html>

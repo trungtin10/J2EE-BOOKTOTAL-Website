@@ -240,6 +240,10 @@
                                                                 onclick="openImportModal('<%= p.id %>', '<%= p.name %>', <%= p.quantity %>)">
                                                                 <i class="fas fa-plus-circle"></i> Nhập
                                                             </button>
+                                                            <button class="btn btn-sm btn-outline-danger ms-1"
+                                                                onclick="openExportModal('<%= p.id %>', '<%= p.name %>', <%= p.quantity %>)">
+                                                                <i class="fas fa-minus-circle"></i> Xuất
+                                                            </button>
                                                         </td>
                                                     </tr>
                                                     <% }); %>
@@ -344,6 +348,53 @@
                         </div>
                     </div>
 
+                    <!-- Modal Xuất Hàng -->
+                    <div class="modal fade" id="exportModal" tabindex="-1">
+                        <div class="modal-dialog modal-dialog-centered">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title fw-bold">Xuất hàng khỏi kho</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                </div>
+                                <form action="/admin/inventory/export" method="POST">
+                                    <div class="modal-body">
+                                        <input type="hidden" name="product_id" id="exportProductId">
+
+                                        <div class="mb-3">
+                                            <label class="form-label text-muted">Sản phẩm:</label>
+                                            <div class="fw-bold fs-5" id="exportProductName">---</div>
+                                        </div>
+
+                                        <div class="row">
+                                            <div class="col-6">
+                                                <label class="form-label text-muted">Tồn hiện tại:</label>
+                                                <div class="fw-bold text-primary" id="exportCurrentStock">0</div>
+                                            </div>
+                                            <div class="col-6">
+                                                <label class="form-label fw-bold text-danger">Số lượng xuất:</label>
+                                                <input type="number" name="quantity" class="form-control fw-bold"
+                                                    min="1" value="1" required>
+                                            </div>
+                                        </div>
+
+                                        <div class="mt-3">
+                                            <label class="form-label text-muted small">Ghi chú xuất hàng (Tùy
+                                                chọn):</label>
+                                            <textarea name="note" class="form-control form-control-sm" rows="2"
+                                                placeholder="VD: Xuất trả NSX..."></textarea>
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary"
+                                            data-bs-dismiss="modal">Hủy</button>
+                                        <button type="submit" class="btn btn-danger fw-bold"><i
+                                                class="fas fa-minus-circle me-2"></i> Xác nhận xuất</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Modal Lịch Sử -->
                     <div class="modal fade" id="historyModal" tabindex="-1">
                         <div class="modal-dialog modal-dialog-centered modal-lg">
@@ -380,6 +431,15 @@
                             new bootstrap.Modal(document.getElementById('importModal')).show();
                         }
 
+                        function openExportModal(id, name, currentStock) {
+                            document.getElementById('exportProductId').value = id;
+                            document.getElementById('exportProductName').innerText = name;
+                            document.getElementById('exportCurrentStock').innerText = currentStock;
+                            // Cập nhật max attribute để không cho xuất quá số tồn
+                            document.querySelector('#exportModal input[name="quantity"]').setAttribute('max', currentStock);
+                            new bootstrap.Modal(document.getElementById('exportModal')).show();
+                        }
+
                         function viewHistory(id, name) {
                             document.getElementById('historyProductName').innerText = name;
                             const tbody = document.getElementById('historyTableBody');
@@ -396,7 +456,7 @@
                                             html += `
                                             <tr>
                                                 <td>${new Date(log.created_at).toLocaleString('vi-VN')}</td>
-                                                <td class="fw-bold text-success">+${log.quantity}</td>
+                                                <td class="fw-bold ${log.quantity > 0 ? 'text-success' : 'text-danger'}">${log.quantity > 0 ? '+' : ''}${log.quantity}</td>
                                                 <td>${log.note || '---'}</td>
                                             </tr>
                                         `;
