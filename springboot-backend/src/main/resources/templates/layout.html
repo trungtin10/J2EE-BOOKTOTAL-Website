@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title layout:title-pattern="$CONTENT_TITLE - Bookstore">Bookstore - Thế giới sách</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <th:block layout:fragment="css"></th:block>
+</head>
+
+<body>
+    <!-- Header & Menu -->
+    <header th:replace="~{partials/header :: header}"></header>
+
+    <!-- Nội dung chính -->
+    <main>
+        <div layout:fragment="content"></div>
+    </main>
+
+    <!-- Footer -->
+    <footer th:replace="~{partials/footer :: footer}"></footer>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <!-- Script tự động mở Login Modal khi có lỗi -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.has('loginError')) {
+                const loginModal = new bootstrap.Modal(document.getElementById('loginModal'));
+                const returnUrlInput = document.getElementById('loginReturnUrl');
+                if(returnUrlInput) {
+                    // Loại bỏ tham số loginError khỏi URL để không bị lặp lại
+                    let cleanUrl = window.location.href.split('?')[0];
+                    returnUrlInput.value = cleanUrl;
+                }
+                loginModal.show();
+            }
+        });
+    </script>
+    <th:block layout:fragment="script"></th:block>
+</body>
+</html>
