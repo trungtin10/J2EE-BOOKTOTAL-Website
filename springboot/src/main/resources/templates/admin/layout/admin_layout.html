@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+
+<head>
+    <meta charset="UTF-8">
+    <title layout:title-pattern="$CONTENT_TITLE | BOOKTOTAL ADMIN">Admin</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --admin-bg: #f1f5f9;
+            --admin-primary: #0b2d5c;
+            --admin-accent: #1e40af;
+            --admin-accent-rgb: 30, 64, 175;
+
+            /* Bootstrap semantic mapping (đồng bộ tone xanh-đen) */
+            --bs-primary: var(--admin-accent);
+            --bs-primary-rgb: var(--admin-accent-rgb);
+            --bs-danger: var(--admin-accent);
+            --bs-danger-rgb: var(--admin-accent-rgb);
+        }
+
+        body { background-color: var(--admin-bg); font-family: 'Segoe UI', sans-serif; color: #0b1b33; }
+        .card { border: none; border-radius: 12px; box-shadow: 0 4px 20px rgba(15, 23, 42, 0.08); }
+
+        .btn-primary,
+        .btn-danger { background-color: var(--admin-accent) !important; border-color: var(--admin-accent) !important; }
+        .btn-primary:hover,
+        .btn-danger:hover { background-color: #1e3a8a !important; border-color: #1e3a8a !important; }
+        .btn-outline-primary,
+        .btn-outline-danger { color: var(--admin-accent) !important; border-color: var(--admin-accent) !important; }
+        .btn-outline-primary:hover,
+        .btn-outline-danger:hover { background-color: var(--admin-accent) !important; color: #fff !important; }
+        .text-primary,
+        .text-danger { color: var(--admin-accent) !important; }
+
+        .alert-danger {
+            color: var(--admin-primary) !important;
+            background-color: rgba(var(--admin-accent-rgb), 0.08) !important;
+            border-color: rgba(var(--admin-accent-rgb), 0.25) !important;
+        }
+
+        .bg-danger { background-color: var(--admin-accent) !important; }
+        .border-danger { border-color: rgba(var(--admin-accent-rgb), 0.35) !important; }
+    </style>
+    <th:block layout:fragment="css"></th:block>
+</head>
+
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Đồng bộ sidebar với toàn bộ trang admin (admin/partials/layout) -->
+            <div th:replace="~{admin/partials/layout :: sidebar}"></div>
+
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 py-4">
+                <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4 pb-2 border-bottom">
+                    <h5 class="mb-0 fw-bold text-muted" layout:fragment="pageTitle">Hệ thống quản trị</h5>
+                    <div th:replace="~{admin/partials/layout :: topbar}"></div>
+                </div>
+
+                <div layout:fragment="content"></div>
+            </main>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <th:block layout:fragment="script"></th:block>
+</body>
+
+</html>

@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorate="~{layout}">
+
+<head>
+    <title>Sản Phẩm</title>
+    <th:block layout:fragment="css">
+        <style>
+            .product-card { transition: transform 0.3s; }
+            .product-card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important; }
+            .text-truncate-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+            .sale-badge {
+                position: absolute;
+                top: 12px;
+                left: 12px;
+                background: linear-gradient(90deg, #ef4444, #f97316);
+                color: #fff;
+                font-weight: 800;
+                font-size: 0.8rem;
+                padding: 6px 10px;
+                border-radius: 999px;
+                box-shadow: 0 10px 20px rgba(15, 23, 42, 0.15);
+            }
+        </style>
+    </th:block>
+</head>
+
+<body>
+    <div layout:fragment="content">
+        <div class="container mt-4 mb-5">
+            <div class="row">
+                <!-- Sidebar: Categories -->
+                <div class="col-lg-3">
+                    <div class="card shadow-sm border-0 rounded-3 mb-4">
+                        <div class="card-header bg-white border-0 py-3">
+                            <h5 class="fw-bold mb-0">DANH MỤC</h5>
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="list-group list-group-flush">
+                                <a th:href="@{/products}" class="list-group-item list-group-item-action py-3 border-0"
+                                   th:classappend="${param.categoryId == null} ? 'active bg-danger text-white' : ''">
+                                    Tất cả sản phẩm
+                                </a>
+                                <a th:each="category : ${categories}"
+                                   th:href="@{/products(categoryId=${category.id})}"
+                                   class="list-group-item list-group-item-action py-3 border-0"
+                                   th:classappend="${param.categoryId != null and param.categoryId[0] == category.id.toString()} ? 'active bg-danger text-white' : ''"
+                                   th:text="${category.name}">
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Main Content -->
+                <div class="col-lg-9">
+                    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+                        <div class="text-muted small">
+                            <span th:if="${products != null}" th:text="'Hiển thị: ' + ${products.size()} + ' sản phẩm'"></span>
+                        </div>
+                        <form method="get" th:action="@{/products}" class="d-flex flex-wrap align-items-center gap-2" id="filterForm">
+                            <input type="hidden" name="page" value="1">
+                            <input type="hidden" name="categoryId" th:value="${categoryId}">
+                            <input type="hidden" name="search" th:value="${search}">
+                            <div class="d-flex align-items-center gap-2">
+                                <label class="text-muted small mb-0">Giá</label>
+                                <input class="form-control form-control-sm" type="number" name="minPrice" min="0"
+                                       placeholder="Từ" style="width: 110px;" th:value="${minPrice}">
+                                <span class="text-muted small">-</span>
+                                <input class="form-control form-control-sm" type="number" name="maxPrice" min="0"
+                                       placeholder="Đến" style="width: 110px;" th:value="${maxPrice}">
+                            </div>
+                            <label class="text-muted small mb-0" for="sortSelect">Sắp xếp</label>
+                            <select id="sortSelect" name="sort" class="form-select form-select-sm" style="width: 200px;" onchange="this.form.submit()">
+                                <option value="" th:selected="${sort == null or sort == ''}">Mới nhất</option>
+                                <option value="priceAsc" th:selected="${sort == 'priceAsc'}">Giá: Tăng dần</option>
+                                <option value="priceDesc" th:selected="${sort == 'priceDesc'}">Giá: Giảm dần</option>
+                            </select>
+                            <button type="submit" class="btn btn-sm btn-outline-primary">Lọc</button>
+                        </form>
+                    </div>
+
+                    <div class="row row-cols-1 row-cols-md-3 g-4">
+                        <div class="col" th:each="product : ${products}">
+                            <div class="card h-100 border-0 shadow-sm rounded-3 product-card">
+                                <a th:href="@{'/product/' + ${product.id}}" class="text-decoration-none">
+                                    <div class="position-relative overflow-hidden">
+                                        <div class="sale-badge"
+                                             th:if="${product.originalPrice != null and product.originalPrice > product.price}"
+                                             th:text="'-' + ${T(java.lang.Math).round((1 - (product.price / product.originalPrice)) * 100)} + '%'">
+                                        </div>
+                                        <img th:src="@{${product.imageUrl != null ? (product.imageUrl.startsWith('http') or product.imageUrl.startsWith('/uploads/') ? product.imageUrl : '/uploads/' + product.imageUrl) : '/uploads/default.jpg'}}"
+                                             class="card-img-top p-3 rounded-4" th:alt="${product.name}"
+                                             style="height: 250px; object-fit: contain;"
+                                             onerror="this.src='/uploads/default.jpg'">
+                                    </div>
+                                    <div class="card-body">
+                                        <h6 class="card-title text-dark fw-bold mb-2 text-truncate-2" th:text="${product.name}" style="height: 48px;"></h6>
+                                        <div class="mt-3">
+                                            <div class="d-flex align-items-end gap-2">
+                                                <span class="text-danger fw-bold fs-5"
+                                                      th:text="${#numbers.formatDecimal(product.price, 0, 'COMMA', 0, 'POINT')} + ' đ'"></span>
+                                                <span class="text-muted text-decoration-line-through small"
+                                                      th:if="${product.originalPrice != null and product.originalPrice > product.price}"
+                                                      th:text="${#numbers.formatDecimal(product.originalPrice, 0, 'COMMA', 0, 'POINT')} + ' đ'"></span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </a>
+                                <div class="card-footer bg-white border-0 pb-3 d-grid">
+                                    <button class="btn btn-outline-danger btn-sm rounded-pill fw-bold"
+                                            th:onclick="'addToCart(' + ${product.id} + ')'">
+                                        THÊM VÀO GIỎ
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div th:if="${products == null or products.empty}" class="alert alert-warning mt-4">
+                        Không tìm thấy kết quả
+                        <span th:if="${search != null and !#strings.isEmpty(search)}" th:text="' cho từ khóa: “' + ${search} + '”'"></span>.
+                    </div>
+
+                    <nav th:if="${totalPages != null and totalPages > 1}" class="mt-4" aria-label="Products pagination">
+                        <ul class="pagination justify-content-center flex-wrap">
+                            <li class="page-item" th:classappend="${currentPage <= 1} ? 'disabled'">
+                                <a class="page-link"
+                                   th:href="@{/products(page=${currentPage-1}, categoryId=${categoryId}, search=${search}, sort=${sort}, minPrice=${minPrice}, maxPrice=${maxPrice})}">&laquo;</a>
+                            </li>
+                            <li class="page-item"
+                                th:each="i : ${#numbers.sequence(1, totalPages)}"
+                                th:classappend="${i == currentPage} ? 'active'">
+                                <a class="page-link"
+                                   th:href="@{/products(page=${i}, categoryId=${categoryId}, search=${search}, sort=${sort}, minPrice=${minPrice}, maxPrice=${maxPrice})}"
+                                   th:text="${i}"></a>
+                            </li>
+                            <li class="page-item" th:classappend="${currentPage >= totalPages} ? 'disabled'">
+                                <a class="page-link"
+                                   th:href="@{/products(page=${currentPage+1}, categoryId=${categoryId}, search=${search}, sort=${sort}, minPrice=${minPrice}, maxPrice=${maxPrice})}">&raquo;</a>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <th:block layout:fragment="script">
+        <script>
+            // Auto-apply filters for "ngay lập tức"
+            (function () {
+                const form = document.getElementById('filterForm');
+                if (!form) return;
+                let t;
+                form.querySelectorAll('input[name="minPrice"], input[name="maxPrice"]').forEach((inp) => {
+                    inp.addEventListener('input', () => {
+                        clearTimeout(t);
+                        t = setTimeout(() => form.submit(), 450);
+                    });
+                });
+            })();
+
+            function addToCart(productId) {
+                const params = new URLSearchParams();
+                params.append('productId', productId);
+                params.append('quantity', 1);
+
+                fetch('/cart/add', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: params
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        // Persist cart for refresh (guest/local)
+                        try {
+                            const raw = localStorage.getItem('cart_items_v1');
+                            const items = raw ? JSON.parse(raw) : [];
+                            const list = Array.isArray(items) ? items : [];
+                            const idx = list.findIndex(x => Number(x.productId) === Number(productId));
+                            if (idx >= 0) list[idx].quantity = Number(list[idx].quantity || 0) + 1;
+                            else list.push({ productId: Number(productId), quantity: 1 });
+                            localStorage.setItem('cart_items_v1', JSON.stringify(list));
+                        } catch (e) {}
+
+                        if (typeof refreshCartDropdownHeader === 'function') refreshCartDropdownHeader();
+                        const Toast = Swal.mixin({
+                            toast: true,
+                            position: 'top-end',
+                            showConfirmButton: false,
+                            timer: 3000,
+                            timerProgressBar: true
+                        });
+                        Toast.fire({ icon: 'success', title: 'Đã thêm vào giỏ hàng' });
+                    } else {
+                        Swal.fire({ icon: 'error', title: 'Lỗi', text: data.message });
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    Swal.fire({ icon: 'error', title: 'Lỗi kết nối', text: 'Có lỗi xảy ra, vui lòng thử lại sau.' });
+                });
+            }
+        </script>
+    </th:block>
+</body>
+
+</html>
