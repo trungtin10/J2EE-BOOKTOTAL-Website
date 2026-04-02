@@ -13,6 +13,7 @@
             .status-PROCESSING { background-color: #e0cffc; color: #6610f2; border: 1px solid #6610f2; }
             .status-SHIPPED { background-color: #d1e7dd; color: #0f5132; }
             .status-DELIVERING { background-color: #cff4fc; color: #055160; }
+            .status-SHIPPING { background-color: #cff4fc; color: #055160; }
             .status-COMPLETED { background-color: #d1e7dd; color: #0f5132; }
             .status-CANCELLED { background-color: #f8d7da; color: #842029; }
             .payment-badge { padding: 5px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; width: 100%; text-align: left; }
@@ -20,6 +21,8 @@
             .payment-badge.UNPAID { background-color: #f8d7da; color: #842029; }
             .table-responsive { overflow: visible !important; }
             .bulk-actions { display: none; background: #fff; padding: 10px 20px; border-radius: 8px; box-shadow: 0 -5px 15px rgba(0, 0, 0, 0.05); position: sticky; bottom: 20px; z-index: 100; border: 1px solid #dee2e6; }
+            .order-filter-label { font-size: 0.85rem; font-weight: 800; color: #52606d; }
+            .btn-icon-reset { width: 44px; height: 38px; display: inline-flex; align-items: center; justify-content: center; }
         </style>
     </th:block>
 </head>
@@ -39,42 +42,49 @@
         <div class="card mb-4">
             <div class="card-body">
                 <form id="filterForm" th:action="@{/admin/orders}" method="GET">
-                    <div class="row g-3">
-                        <div class="col-md-3">
-                            <label class="form-label fw-bold">Từ khóa</label>
+                    <div class="row g-3 align-items-end">
+                        <div class="col-lg-4">
+                            <label class="order-filter-label mb-1">Từ khóa</label>
                             <input type="text" class="form-control" name="keyword" placeholder="Mã ĐH, Tên KH, SĐT..." th:value="${param.keyword}">
                         </div>
-                        <div class="col-md-2">
-                            <label class="form-label fw-bold">Trạng thái</label>
+                        <div class="col-lg-3">
+                            <label class="order-filter-label mb-1">Trạng thái đơn hàng</label>
                             <select class="form-select" name="status">
-                                <option value="all" th:selected="${param.status == null or param.status[0] == 'all'}">Tất cả</option>
-                                <option value="PENDING" th:selected="${param.status != null and param.status[0] == 'PENDING'}">Chờ xác nhận</option>
-                                <option value="CONFIRMED" th:selected="${param.status != null and param.status[0] == 'CONFIRMED'}">Đã xác nhận</option>
-                                <option value="PROCESSING" th:selected="${param.status != null and param.status[0] == 'PROCESSING'}">Đang xử lý</option>
-                                <option value="SHIPPED" th:selected="${param.status != null and param.status[0] == 'SHIPPED'}">Đã giao VC</option>
+                                <option value="all" th:selected="${param.status == null or param.status[0] == 'all'}">Tất cả trạng thái</option>
+                                <option value="PENDING" th:selected="${param.status != null and param.status[0] == 'PENDING'}">Chờ duyệt</option>
+                                <option value="CONFIRMED" th:selected="${param.status != null and param.status[0] == 'CONFIRMED'}">Đã duyệt</option>
                                 <option value="DELIVERING" th:selected="${param.status != null and param.status[0] == 'DELIVERING'}">Đang giao</option>
-                                <option value="COMPLETED" th:selected="${param.status != null and param.status[0] == 'COMPLETED'}">Hoàn thành</option>
+                                <option value="COMPLETED" th:selected="${param.status != null and param.status[0] == 'COMPLETED'}">Đã giao</option>
                                 <option value="CANCELLED" th:selected="${param.status != null and param.status[0] == 'CANCELLED'}">Đã hủy</option>
+                                <option value="PROCESSING" th:selected="${param.status != null and param.status[0] == 'PROCESSING'}">(Cũ) Đang chuẩn bị</option>
+                                <option value="SHIPPED" th:selected="${param.status != null and param.status[0] == 'SHIPPED'}">(Cũ) Đã bàn giao VC</option>
                             </select>
                         </div>
-                        <div class="col-md-2">
-                            <label class="form-label fw-bold">Thanh toán</label>
+                        <div class="col-lg-3">
+                            <label class="order-filter-label mb-1">Trạng thái thanh toán</label>
                             <select class="form-select" name="payment_status">
                                 <option value="all" th:selected="${param.payment_status == null or param.payment_status[0] == 'all'}">Tất cả</option>
                                 <option value="PAID" th:selected="${param.payment_status != null and param.payment_status[0] == 'PAID'}">Đã thanh toán</option>
                                 <option value="UNPAID" th:selected="${param.payment_status != null and param.payment_status[0] == 'UNPAID'}">Chưa thanh toán</option>
                             </select>
                         </div>
-                        <div class="col-md-5 d-flex align-items-end gap-2">
-                            <button type="submit" class="btn btn-primary"><i class="fas fa-search"></i> Lọc</button>
-                            <a th:href="@{/admin/orders(status='PROCESSING')}" class="btn btn-purple text-white" style="background-color: #6610f2;">
-                                <i class="fas fa-box-open"></i> Đơn đang xử lý
+                        <div class="col-lg-2 d-flex gap-2 justify-content-end">
+                            <button type="submit" class="btn btn-primary flex-grow-1">
+                                <i class="fas fa-search me-2"></i> Tìm
+                            </button>
+                            <a th:href="@{/admin/orders}" class="btn btn-outline-secondary btn-icon-reset" title="Reset">
+                                <i class="fas fa-undo"></i>
                             </a>
-                            <a th:href="@{/admin/orders(status='PENDING')}" class="btn btn-warning">
-                                <i class="fas fa-clock"></i> Chờ xác nhận
-                            </a>
-                            <a th:href="@{/admin/orders}" class="btn btn-outline-secondary" title="Reset"><i class="fas fa-undo"></i></a>
                         </div>
+                    </div>
+
+                    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mt-3">
+                        <a id="exportBtnTop"
+                           th:href="@{/admin/orders/export(keyword=${param.keyword}, status=${param.status}, payment_status=${param.payment_status})}"
+                           class="btn btn-success btn-sm">
+                            <i class="fas fa-file-excel me-2"></i> Xuất Excel (.xlsx)
+                        </a>
+                        <small class="text-muted">Theo bộ lọc hiện tại</small>
                     </div>
                 </form>
             </div>
@@ -84,10 +94,7 @@
         <div class="card mb-4 min-vh-50">
             <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
                 <h5 class="mb-0 fw-bold">Danh sách đơn hàng</h5>
-                <a id="exportBtn" th:href="@{/admin/orders/export(keyword=${param.keyword}, status=${param.status}, payment_status=${param.payment_status})}"
-                   class="btn btn-sm btn-success">
-                    <i class="fas fa-file-excel me-1"></i> Xuất Excel
-                </a>
+                <span class="text-muted small">Kết quả</span>
             </div>
             <div class="card-body p-0">
                 <div class="table-responsive">
@@ -118,27 +125,33 @@
                                 </td>
                                 <td class="fw-bold text-danger" th:text="${#numbers.formatDecimal(order.finalTotal, 0, 'COMMA', 0, 'POINT')} + ' đ'"></td>
                                 <td>
-                                    <div class="dropdown">
-                                        <button class="btn dropdown-toggle status-badge" th:classappend="'status-' + ${order.status}" type="button" data-bs-toggle="dropdown" th:text="${order.status}"></button>
+                                    <div th:if="${order.status != 'CANCELLED'}" class="dropdown">
+                                        <button class="btn dropdown-toggle status-badge" th:classappend="'status-' + ${order.status}" type="button" data-bs-toggle="dropdown" th:text="${order.statusVietnamese}"></button>
                                         <ul class="dropdown-menu shadow">
-                                            <li><a class="dropdown-item" href="javascript:void(0)" th:onclick="'updateStatusAjax(' + ${order.id} + ', \'CONFIRMED\', this)'">Xác nhận</a></li>
-                                            <li><a class="dropdown-item" href="javascript:void(0)" th:onclick="'updateStatusAjax(' + ${order.id} + ', \'PROCESSING\', this)'">Đóng gói</a></li>
-                                            <li><a class="dropdown-item" href="javascript:void(0)" th:onclick="'updateStatusAjax(' + ${order.id} + ', \'SHIPPED\', this)'">Vận chuyển</a></li>
+                                            <li><a class="dropdown-item" href="javascript:void(0)" th:onclick="'updateStatusAjax(' + ${order.id} + ', \'PENDING\', this)'">Chờ duyệt</a></li>
+                                            <li><a class="dropdown-item" href="javascript:void(0)" th:onclick="'updateStatusAjax(' + ${order.id} + ', \'CONFIRMED\', this)'">Đã duyệt</a></li>
                                             <li><a class="dropdown-item" href="javascript:void(0)" th:onclick="'updateStatusAjax(' + ${order.id} + ', \'DELIVERING\', this)'">Đang giao</a></li>
                                             <li><a class="dropdown-item" href="javascript:void(0)" th:onclick="'updateStatusAjax(' + ${order.id} + ', \'COMPLETED\', this)'">Đã giao</a></li>
                                             <li><hr class="dropdown-divider"></li>
-                                            <li><a class="dropdown-item text-danger" href="javascript:void(0)" th:onclick="'updateStatusAjax(' + ${order.id} + ', \'CANCELLED\', this)'">Hủy / Thất bại</a></li>
+                                            <li><a class="dropdown-item text-danger" href="javascript:void(0)" th:onclick="'updateStatusAjax(' + ${order.id} + ', \'CANCELLED\', this)'">Hủy đơn</a></li>
                                         </ul>
+                                    </div>
+                                    <div th:if="${order.status == 'CANCELLED'}">
+                                        <span class="status-badge status-CANCELLED" th:text="${order.statusVietnamese}">Đã hủy</span>
                                     </div>
                                 </td>
                                 <td>
-                                    <div class="dropdown">
+                                    <div th:if="${order.status != 'CANCELLED'}" class="dropdown">
                                         <button class="btn dropdown-toggle payment-badge" th:classappend="${order.paymentStatus == 'PAID' ? 'PAID' : 'UNPAID'}" type="button" data-bs-toggle="dropdown"
                                                 th:text="(${order.paymentMethod ?: 'N/A'}) + ' - ' + (${order.paymentStatus == 'PAID'} ? 'Đã TT' : 'Chưa TT')"></button>
                                         <ul class="dropdown-menu shadow">
                                             <li><a class="dropdown-item" href="javascript:void(0)" th:onclick="'updatePaymentAjax(' + ${order.id} + ', \'PAID\', this)'">Đã thanh toán</a></li>
                                             <li><a class="dropdown-item" href="javascript:void(0)" th:onclick="'updatePaymentAjax(' + ${order.id} + ', \'UNPAID\', this)'">Chưa thanh toán</a></li>
                                         </ul>
+                                    </div>
+                                    <div th:if="${order.status == 'CANCELLED'}">
+                                        <span class="payment-badge" th:classappend="${order.paymentStatus == 'PAID' ? ' PAID' : ' UNPAID'}"
+                                              th:text="(${order.paymentMethod ?: 'N/A'}) + ' - ' + (${order.paymentStatus == 'PAID'} ? 'Đã TT' : 'Chưa TT')">N/A - Chưa TT</span>
                                     </div>
                                 </td>
                                 <td class="text-center">
@@ -228,7 +241,8 @@
                 .then(data => {
                     if (data.success) {
                         const badge = element.closest('.dropdown').querySelector('.status-badge');
-                        badge.innerText = newStatus;
+                        const label = data.statusLabel || newStatus;
+                        badge.innerText = label;
                         badge.className = 'btn dropdown-toggle status-badge status-' + newStatus;
                         Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Cập nhật thành công', showConfirmButton: false, timer: 1500 });
                     }

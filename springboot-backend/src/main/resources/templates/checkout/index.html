@@ -327,7 +327,7 @@
                                         th:text="${#numbers.formatDecimal(subtotal, 0, 'COMMA', 0, 'POINT')} + ' đ'">
                                     </td>
                                 </tr>
-                                <tr>
+                                <tr id="shippingRow" style="display: none;">
                                     <td>Phí vận chuyển:</td>
                                     <td class="text-end" id="shippingFeeDisplay">0 đ</td>
                                     <input type="hidden" id="shippingFeeInput" value="0">
@@ -371,50 +371,75 @@
                 });
             });
 
+            const COUPON_STORAGE_KEY = 'booktotal_coupon_code';
+            function formatMoney(amount) {
+                const n = Number(amount) || 0;
+                return Math.round(n).toLocaleString('vi-VN') + ' đ';
+            }
+
+            function setCouponUi(code, discount) {
+                const safe = Math.max(0, Number(discount) || 0);
+                const msgDiv = document.getElementById('couponMessage');
+                document.getElementById('couponDiscountValue').value = String(safe);
+                if (code && code.trim()) {
+                    document.getElementById('couponCode').value = code.trim();
+                    try { localStorage.setItem(COUPON_STORAGE_KEY, code.trim()); } catch (e) { /* ignore */ }
+                    if (msgDiv) msgDiv.innerHTML = '<span class="text-success"><i class="fas fa-check"></i> Đã áp dụng mã: <b>' + code.trim() + '</b></span>';
+                    document.getElementById('discountRow').style.display = safe > 0 ? 'table-row' : 'none';
+                    document.getElementById('discountDisplay').innerText = safe > 0 ? ('-' + formatMoney(safe)) : '-0 đ';
+                } else {
+                    try { localStorage.removeItem(COUPON_STORAGE_KEY); } catch (e) { /* ignore */ }
+                    if (msgDiv) msgDiv.innerHTML = '';
+                    document.getElementById('discountRow').style.display = 'none';
+                    document.getElementById('discountDisplay').innerText = '-0 đ';
+                }
+            }
+
+            function recalcTotal() {
+                const subtotal = parseInt(document.getElementById('originSubtotal').value || '0');
+                const fee = parseInt(document.getElementById('shippingFeeInput').value || '0');
+                const discount = parseInt(document.getElementById('couponDiscountValue').value || '0');
+                const total = Math.max(0, subtotal + fee - discount);
+                const totalDisplay = document.getElementById('totalDisplay');
+                if (totalDisplay) totalDisplay.innerText = formatMoney(total);
+            }
+
+            function validateCoupon(code) {
+                const subtotal = parseInt(document.getElementById('originSubtotal').value || '0');
+                const msgDiv = document.getElementById('couponMessage');
+                if (!code || !code.trim()) {
+                    if (msgDiv) msgDiv.innerHTML = '<span class="text-danger">Vui lòng nhập mã giảm giá</span>';
+                    setCouponUi(null, 0);
+                    recalcTotal();
+                    return;
+                }
+                fetch('/api/coupon/check', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ code: code.trim(), totalAmount: subtotal })
+                })
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data && data.success) {
+                            setCouponUi(code.trim(), data.discount);
+                        } else {
+                            if (msgDiv) msgDiv.innerHTML = '<span class="text-danger"><i class="fas fa-times"></i> ' + ((data && (data.message || data.error)) ? (data.message || data.error) : 'Mã không hợp lệ') + '</span>';
+                            setCouponUi(null, 0);
+                        }
+                        recalcTotal();
+                    })
+                    .catch(() => {
+                        if (msgDiv) msgDiv.innerHTML = '<span class="text-danger">Lỗi mạng, kiểm tra lại!</span>';
+                        recalcTotal();
+                    });
+            }
+
             // Handle Coupon
             const btnApplyCoupon = document.getElementById('btnApplyCoupon');
             if (btnApplyCoupon) {
                 btnApplyCoupon.addEventListener('click', function () {
                     const code = document.getElementById('couponCode').value;
-                    const subtotal = parseInt(document.getElementById('originSubtotal').value);
-                    const msgDiv = document.getElementById('couponMessage');
-
-                    if (!code) {
-                        msgDiv.innerHTML = '<span class="text-danger">Vui lòng nhập mã giảm giá</span>';
-                        return;
-                    }
-
-                    // Gọi API kiểm tra coupon (REST Controller /api/coupon/validate)
-                    fetch('/api/coupon/validate?code=' + encodeURIComponent(code) + '&orderTotal=' + subtotal)
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.valid) {
-                                msgDiv.innerHTML = '<span class="text-success"><i class="fas fa-check"></i> Áp dụng mã thành công!</span>';
-
-                                document.getElementById('appliedCouponId').value = data.couponId;
-                                document.getElementById('couponDiscountValue').value = data.discountAmount;
-
-                                // Hiện dòng giảm giá
-                                document.getElementById('discountRow').style.display = 'table-row';
-                                document.getElementById('discountDisplay').innerText = '-' + data.discountAmount.toLocaleString('vi-VN') + ' đ';
-
-                                // Cập nhật tổng
-                                const newTotal = subtotal - data.discountAmount;
-                                document.getElementById('totalDisplay').innerText = newTotal.toLocaleString('vi-VN') + ' đ';
-
-                            } else {
-                                msgDiv.innerHTML = '<span class="text-danger"><i class="fas fa-times"></i> ' + data.message + '</span>';
-
-                                // Reset
-                                document.getElementById('appliedCouponId').value = '';
-                                document.getElementById('couponDiscountValue').value = 0;
-                                document.getElementById('discountRow').style.display = 'none';
-                                document.getElementById('totalDisplay').innerText = subtotal.toLocaleString('vi-VN') + ' đ';
-                            }
-                        })
-                        .catch(err => {
-                            msgDiv.innerHTML = '<span class="text-danger">Lỗi mạng, kiểm tra lại!</span>';
-                        });
+                    validateCoupon(code);
                 });
             }
 
@@ -423,6 +448,7 @@
             const districtSelect = document.getElementById('districtSelect');
             const wardSelect = document.getElementById('wardSelect');
             const shippingFeeDisplay = document.getElementById('shippingFeeDisplay');
+            const shippingRow = document.getElementById('shippingRow');
             const totalDisplay = document.getElementById('totalDisplay');
             const subtotal = parseInt(document.getElementById('originSubtotal').value);
 
@@ -453,6 +479,12 @@
                         });
                     
                     calculateShipping(code);
+                } else {
+                    // Chưa chọn Tỉnh/Thành -> ẩn phí vận chuyển và tính lại tổng (fee=0)
+                    if (shippingRow) shippingRow.style.display = 'none';
+                    document.getElementById('shippingFeeInput').value = '0';
+                    if (shippingFeeDisplay) shippingFeeDisplay.innerText = '—';
+                    recalcTotal();
                 }
             });
 
@@ -476,16 +508,32 @@
                     .then(data => {
                         if (data.success) {
                             const fee = data.fee;
-                            const discount = parseInt(document.getElementById('couponDiscountValue').value || 0);
-                            
-                            shippingFeeDisplay.innerText = fee.toLocaleString('vi-VN') + ' đ';
-                            const finalTotal = subtotal + fee - discount;
-                            totalDisplay.innerText = finalTotal.toLocaleString('vi-VN') + ' đ';
+                            shippingFeeDisplay.innerText = formatMoney(fee);
+                            document.getElementById('shippingFeeInput').value = String(fee);
+                            if (shippingRow) shippingRow.style.display = '';
+                            recalcTotal();
                         }
                     });
             }
 
             loadProvinces();
+
+            // Default: ẩn phí vận chuyển cho tới khi chọn Tỉnh/Thành
+            if (shippingRow) shippingRow.style.display = 'none';
+            if (shippingFeeDisplay) shippingFeeDisplay.innerText = '—';
+            document.getElementById('shippingFeeInput').value = '0';
+
+            // Auto-apply coupon from cart (if any)
+            try {
+                const saved = localStorage.getItem(COUPON_STORAGE_KEY);
+                if (saved && saved.trim()) {
+                    validateCoupon(saved.trim());
+                } else {
+                    recalcTotal();
+                }
+            } catch (e) {
+                recalcTotal();
+            }
         });
     </script>
 </body>

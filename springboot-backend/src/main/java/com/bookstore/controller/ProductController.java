@@ -25,27 +25,33 @@ public class ProductController {
     public String listProducts(@RequestParam(name = "page", defaultValue = "1") int page,
                                @RequestParam(name = "categoryId", required = false) Long categoryId,
                                @RequestParam(name = "search", required = false) String search,
+                               @RequestParam(name = "sort", defaultValue = "newest") String sort,
+                               @RequestParam(name = "minPrice", required = false) Double filterMinPrice,
+                               @RequestParam(name = "maxPrice", required = false) Double filterMaxPrice,
                                Model model) {
-        Page<Product> productPage;
-        PageRequest pageable = PageRequest.of(page - 1, 9);
-
-        if (search != null && !search.isEmpty()) {
-            productPage = productService.searchProducts(search, pageable);
-        } else if (categoryId != null) {
-            productPage = productService.getProductsByCategory(categoryId, pageable);
-        } else {
-            productPage = productService.getAllProducts(pageable);
-        }
+        int pageSize = 12;
+        String kw = search != null ? search : "";
+        Page<Product> productPage = productService.searchShopPage(
+                categoryId, kw, sort, filterMinPrice, filterMaxPrice,
+                PageRequest.of(Math.max(0, page - 1), pageSize));
 
         model.addAttribute("products", productPage.getContent());
         model.addAttribute("currentPage", page);
         model.addAttribute("totalPages", productPage.getTotalPages());
+        model.addAttribute("totalElements", productPage.getTotalElements());
+        model.addAttribute("pageSize", pageSize);
+        model.addAttribute("filterCategoryId", categoryId);
+        model.addAttribute("filterSearch", kw);
+        model.addAttribute("filterSort", sort);
+        model.addAttribute("filterMinPrice", filterMinPrice);
+        model.addAttribute("filterMaxPrice", filterMaxPrice);
+        model.addAttribute("maxShopPrice", productService.getMaxVisibleProductPrice());
         return "product";
     }
 
     @GetMapping("/product/{id}")
     public String productDetail(@PathVariable Long id, Model model) {
-        Product product = productService.getProductById(id)
+        Product product = productService.getActiveProductById(id)
                 .orElseThrow(() -> new RuntimeException("Product not found"));
         
         model.addAttribute("product", product);

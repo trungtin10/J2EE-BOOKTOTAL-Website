@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="800" viewBox="0 0 600 800">
+  <defs>
+    <linearGradient id="bg" x1="0" x2="0" y1="0" y2="1">
+      <stop offset="0" stop-color="#0b1f33"/>
+      <stop offset="1" stop-color="#102a43"/>
+    </linearGradient>
+  </defs>
+  <rect width="600" height="800" fill="url(#bg)"/>
+  <rect x="60" y="90" width="480" height="620" rx="18" fill="rgba(255,255,255,0.06)" stroke="rgba(255,255,255,0.18)" stroke-width="2"/>
+  <path d="M175 350c0-20 16-36 36-36h178c20 0 36 16 36 36v132c0 20-16 36-36 36H211c-20 0-36-16-36-36V350z" fill="rgba(255,255,255,0.10)"/>
+  <circle cx="235" cy="370" r="16" fill="rgba(255,255,255,0.22)"/>
+  <path d="M214 482l56-58c8-8 20-8 28 0l34 34 20-20c8-8 20-8 28 0l64 64v18H214v-38z" fill="rgba(255,255,255,0.22)"/>
+  <text x="300" y="260" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="26" fill="rgba(255,255,255,0.78)" font-weight="700">
+    BOOKTOTAL
+  </text>
+  <text x="300" y="295" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="16" fill="rgba(255,255,255,0.70)">
+    Không có hình ảnh
+  </text>
+</svg>

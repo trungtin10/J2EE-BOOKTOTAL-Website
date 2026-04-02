@@ -1,9 +1,15 @@
 package com.bookstore.controller.admin;
 
 import com.bookstore.model.User;
+import com.bookstore.security.CustomUserDetails;
 import com.bookstore.service.UserService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -15,6 +21,8 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 @RequestMapping("/admin/user")
 public class AdminUserController {
 
+    private static final int PAGE_SIZE = 10;
+
     @Autowired
     private UserService userService;
 
@@ -22,9 +30,46 @@ public class AdminUserController {
     private PasswordEncoder passwordEncoder;
 
     @GetMapping
-    public String listUsers(Model model) {
-        model.addAttribute("users", userService.getAllUsers());
+    public String listUsers(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(required = false) String keyword,
+            Model model) {
+        Pageable pageable = PageRequest.of(page, PAGE_SIZE, Sort.by(Sort.Direction.DESC, "id"));
+        Page<User> userPage = userService.searchUsersPage(keyword, pageable);
+        model.addAttribute("users", userPage.getContent());
+        model.addAttribute("currentPage", page);
+        model.addAttribute("totalPages", userPage.getTotalPages());
+        model.addAttribute("totalElements", userPage.getTotalElements());
+        model.addAttribute("keyword", keyword != null ? keyword : "");
+        model.addAttribute("hasNext", userPage.hasNext());
+        model.addAttribute("hasPrevious", userPage.hasPrevious());
         return "admin/user/user_list";
+    }
+
+    @PostMapping("/set-enabled")
+    public String setUserEnabled(
+            @RequestParam Long id,
+            @RequestParam boolean enabled,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(required = false) String keyword,
+            @AuthenticationPrincipal CustomUserDetails principal,
+            RedirectAttributes redirectAttributes) {
+        if (principal != null && principal.getUser() != null && principal.getUser().getId().equals(id)) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Bạn không thể khóa hoặc thay đổi trạng thái tài khoản của chính mình.");
+        } else {
+            try {
+                userService.setUserEnabled(id, enabled);
+                redirectAttributes.addFlashAttribute("successMessage",
+                        enabled ? "Đã mở khóa tài khoản." : "Đã khóa tài khoản.");
+            } catch (Exception e) {
+                redirectAttributes.addFlashAttribute("errorMessage", "Không thể cập nhật trạng thái tài khoản.");
+            }
+        }
+        redirectAttributes.addAttribute("page", page);
+        if (keyword != null && !keyword.isBlank()) {
+            redirectAttributes.addAttribute("keyword", keyword.trim());
+        }
+        return "redirect:/admin/user";
     }
 
     @GetMapping("/add")
@@ -47,6 +92,7 @@ public class AdminUserController {
             return "admin/user/add";
         }
         user.setPassword(passwordEncoder.encode(user.getPassword()));
+        user.setEnabled(true);
         userService.saveUser(user);
         redirectAttributes.addFlashAttribute("successMessage", "Thêm người dùng thành công");
         return "redirect:/admin/user";

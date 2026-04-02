@@ -9,6 +9,11 @@
             .order-card { border-radius: 10px; border-left: 5px solid #C92127; transition: 0.3s; }
             .order-card:hover { transform: translateX(5px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
             .status-badge { font-size: 0.8rem; padding: 5px 12px; border-radius: 20px; }
+            .mini-track { display: flex; align-items: center; gap: 6px; margin-top: 10px; flex-wrap: wrap; }
+            .mini-track .dot { width: 10px; height: 10px; border-radius: 50%; background: #dee2e6; }
+            .mini-track .dot.on { background: #198754; }
+            .mini-track .dot.current { background: #C92127; box-shadow: 0 0 0 3px rgba(201,33,39,.25); }
+            .mini-track .lbl { font-size: 0.72rem; color: #6c757d; margin-left: 4px; }
         </style>
     </th:block>
 </head>
@@ -41,16 +46,24 @@
                                     <h5 class="fw-bold mb-1" th:text="'Đơn hàng #' + ${order.id}"></h5>
                                     <p class="text-muted small mb-0">
                                         <i class="far fa-calendar-alt me-1"></i>
-                                        Ngày đặt: <span th:text="${#temporals.format(order.orderDate, 'dd/MM/yyyy HH:mm')}"></span>
+                                        Ngày đặt: <span th:text="${order.orderDate != null ? #temporals.format(order.orderDate, 'dd/MM/yyyy HH:mm') : '—'}"></span>
                                     </p>
                                 </div>
                                 <div class="text-md-end">
-                                    <span th:class="'badge status-badge mb-2 ' + 
-                                        (${order.status == 'PENDING'} ? 'bg-warning text-dark' : 
-                                        (${order.status == 'COMPLETED'} ? 'bg-success' : 
-                                        (${order.status == 'CANCELLED'} ? 'bg-danger' : 'bg-info')))"
-                                        th:text="${order.status}"></span>
+                                    <span th:if="${order.customerOrderCancelled}" class="badge status-badge mb-2 bg-danger"
+                                          th:text="${order.customerProgressPhaseLabel}">Đã hủy</span>
+                                    <span th:if="${!order.customerOrderCancelled}"
+                                          th:class="'badge status-badge mb-2 ' + 
+                                          (${order.customerProgressStep == 1} ? 'bg-warning text-dark' : 
+                                          (${order.customerProgressStep == 3} ? 'bg-success' : 'bg-primary'))"
+                                          th:text="${order.customerProgressPhaseLabel}"></span>
                                     <div class="h5 fw-bold text-danger mb-0" th:text="${#numbers.formatDecimal(order.finalTotal, 0, 'COMMA', 0, 'POINT')} + ' đ'"></div>
+                                    <div th:if="${!order.customerOrderCancelled}" class="mini-track justify-content-md-end">
+                                        <span class="dot" th:classappend="${(order.customerProgressStep >= 1 ? ' on' : '') + (order.customerProgressStep == 1 ? ' current' : '')}"></span>
+                                        <span class="dot" th:classappend="${(order.customerProgressStep >= 2 ? ' on' : '') + (order.customerProgressStep == 2 ? ' current' : '')}"></span>
+                                        <span class="dot" th:classappend="${(order.customerProgressStep >= 3 ? ' on' : '') + (order.customerProgressStep == 3 ? ' current' : '')}"></span>
+                                        <span class="lbl d-none d-sm-inline">Chờ xác nhận → Đang giao → Hoàn thành</span>
+                                    </div>
                                 </div>
                                 <div>
                                     <a th:href="@{'/profile/orders/' + ${order.id}}" class="btn btn-outline-dark btn-sm">Chi tiết</a>

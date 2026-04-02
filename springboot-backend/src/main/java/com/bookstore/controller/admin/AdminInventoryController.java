@@ -42,6 +42,7 @@ public class AdminInventoryController {
         // Top indicators
         model.addAttribute("totalProducts", productService.getTotalStockQuantity());
         model.addAttribute("lowStockProducts", productService.countLowStockProducts());
+        model.addAttribute("outOfStockProducts", productService.countOutOfStockProducts());
         
         return "admin/inventory_list";
     }

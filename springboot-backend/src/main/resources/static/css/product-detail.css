@@ -87,6 +87,51 @@ body {
 .progress-bar { background: #FFD700; }
 .review-item { border-bottom: 1px solid #f0f0f0; padding: 12px 0; }
 
+/* Product description (rich text) */
+.product-desc {
+    color: #2c3e50;
+    font-size: 15.5px;
+    line-height: 1.85;
+    text-align: justify;
+    overflow: hidden;
+    font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif;
+}
+.product-desc p { margin: 0 0 12px; }
+.product-desc p:last-child { margin-bottom: 0; }
+.product-desc strong, .product-desc b { font-weight: 800; color: #111827; }
+.product-desc em, .product-desc i { font-style: italic; }
+.product-desc h1, .product-desc h2, .product-desc h3, .product-desc h4, .product-desc h5, .product-desc h6 {
+    font-weight: 900;
+    color: #0f172a;
+    margin: 18px 0 10px;
+    line-height: 1.3;
+    letter-spacing: -0.2px;
+}
+.product-desc h1 { font-size: 1.35rem; }
+.product-desc h2 { font-size: 1.25rem; }
+.product-desc h3 { font-size: 1.15rem; }
+.product-desc h4, .product-desc h5, .product-desc h6 { font-size: 1.05rem; }
+.product-desc ul, .product-desc ol {
+    margin: 10px 0 14px 20px;
+    padding: 0;
+}
+.product-desc li { margin: 6px 0; }
+.product-desc a { color: #1f4b7a; text-decoration: underline; text-underline-offset: 2px; }
+.product-desc blockquote {
+    margin: 14px 0;
+    padding: 12px 14px;
+    border-left: 4px solid #e5e7eb;
+    background: #f8fafc;
+    border-radius: 8px;
+    color: #334155;
+}
+.product-desc img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 10px;
+    margin: 10px 0;
+}
+
 /* Related Products */
 .related-card { border: none; transition: 0.3s; font-size: 13px; }
 .related-card:hover { transform: translateY(-3px); box-shadow: 0 4px 10px rgba(0,0,0,0.1); }

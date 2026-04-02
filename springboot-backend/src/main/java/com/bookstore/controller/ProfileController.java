@@ -11,9 +11,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
+import java.util.Locale;
 
 @Controller
 @RequestMapping("/profile")
@@ -31,69 +31,95 @@ public class ProfileController {
     @GetMapping
     public String viewProfile(@AuthenticationPrincipal CustomUserDetails userDetails, Model model) {
         if (userDetails == null) return "redirect:/login";
-        model.addAttribute("userInfo", userDetails.getUser()); 
-        model.addAttribute("orders", orderService.getOrdersByUserId(userDetails.getUser().getId()));
+        User fresh = userService.getUserById(userDetails.getUser().getId()).orElse(userDetails.getUser());
+        userDetails.setUser(fresh);
+        model.addAttribute("userInfo", fresh);
         return "profile";
+    }
+
+    /** Alias thân thiện: cùng nội dung với {@code GET /orders} (danh sách đơn của khách). */
+    @GetMapping("/orders")
+    public String profileOrderListAlias() {
+        return "redirect:/orders";
     }
 
     @GetMapping("/orders/{id}")
     public String orderDetail(@AuthenticationPrincipal CustomUserDetails userDetails, @PathVariable("id") Long id, Model model) {
         if (userDetails == null) return "redirect:/login";
-        Order order = orderService.getOrderById(id).orElseThrow();
-        if (!order.getUser().getId().equals(userDetails.getUser().getId())) {
-            return "redirect:/profile/orders";
+        Order order = orderService.getOrderById(id).orElse(null);
+        if (order == null || !order.getUser().getId().equals(userDetails.getUser().getId())) {
+            return "redirect:/orders";
         }
         model.addAttribute("order", order);
         return "order_detail";
     }
 
     @PostMapping("/update")
-    public String updateProfile(@AuthenticationPrincipal CustomUserDetails userDetails, 
+    public String updateProfile(@AuthenticationPrincipal CustomUserDetails userDetails,
                                 @RequestParam("fullName") String fullName,
                                 @RequestParam("email") String email,
                                 @RequestParam(name = "phone", required = false) String phone,
-                                @RequestParam(name = "address", required = false) String address) {
+                                @RequestParam(name = "address", required = false) String address,
+                                RedirectAttributes redirectAttributes) {
         if (userDetails == null) return "redirect:/login";
-        
+
         User user = userService.getUserById(userDetails.getUser().getId()).orElseThrow();
-        user.setFullName(fullName);
-        user.setEmail(email);
-        user.setPhone(phone);
-        user.setAddress(address);
-        
+        String newEmail = email != null ? email.trim().toLowerCase(Locale.ROOT) : "";
+        if (newEmail.isEmpty()) {
+            redirectAttributes.addFlashAttribute("error", "Email không được để trống.");
+            return "redirect:/profile";
+        }
+        if (user.getEmail() == null || !user.getEmail().equalsIgnoreCase(newEmail)) {
+            if (userService.existsByEmail(newEmail)) {
+                redirectAttributes.addFlashAttribute("error", "Email đã được sử dụng bởi tài khoản khác.");
+                return "redirect:/profile";
+            }
+        }
+
+        user.setFullName(fullName != null ? fullName.trim() : "");
+        user.setEmail(newEmail);
+        user.setPhone(phone != null ? phone.trim() : null);
+        user.setAddress(address != null ? address.trim() : null);
+
         userService.saveUser(user);
         userDetails.setUser(user);
-        
-        return "redirect:/profile?success=" + URLEncoder.encode("Cập nhật thông tin thành công!", StandardCharsets.UTF_8);
+
+        redirectAttributes.addFlashAttribute("success", "Đã lưu thông tin cá nhân.");
+        return "redirect:/profile";
     }
 
     @PostMapping("/change-password")
     public String changePassword(@AuthenticationPrincipal CustomUserDetails userDetails,
-                                 @RequestParam("current_password") String currentPassword,
-                                 @RequestParam("new_password") String newPassword,
-                                 @RequestParam("confirm_password") String confirmPassword,
-                                 Model model) {
+                                 @RequestParam("currentPassword") String currentPassword,
+                                 @RequestParam("newPassword") String newPassword,
+                                 @RequestParam("confirmPassword") String confirmPassword,
+                                 RedirectAttributes redirectAttributes) {
         if (userDetails == null) return "redirect:/login";
-        
+
         if (!newPassword.equals(confirmPassword)) {
-            return "redirect:/profile?error=" + URLEncoder.encode("Mật khẩu xác nhận không khớp!", StandardCharsets.UTF_8);
+            redirectAttributes.addFlashAttribute("error", "Mật khẩu xác nhận không khớp!");
+            return "redirect:/profile#change-password";
         }
 
         String passwordError = validatePassword(newPassword);
         if (passwordError != null) {
-            return "redirect:/profile?error=" + URLEncoder.encode(passwordError, StandardCharsets.UTF_8);
+            redirectAttributes.addFlashAttribute("error", passwordError);
+            return "redirect:/profile#change-password";
         }
 
         User user = userService.getUserById(userDetails.getUser().getId()).orElseThrow();
-        
+
         if (!passwordEncoder.matches(currentPassword, user.getPassword())) {
-            return "redirect:/profile?error=" + URLEncoder.encode("Mật khẩu hiện tại không đúng!", StandardCharsets.UTF_8);
+            redirectAttributes.addFlashAttribute("error", "Mật khẩu hiện tại không đúng!");
+            return "redirect:/profile#change-password";
         }
-        
+
         user.setPassword(passwordEncoder.encode(newPassword));
         userService.saveUser(user);
-        
-        return "redirect:/profile?success=" + URLEncoder.encode("Cập nhật mật khẩu thành công!", StandardCharsets.UTF_8);
+        userDetails.setUser(user);
+
+        redirectAttributes.addFlashAttribute("success", "Cập nhật mật khẩu thành công!");
+        return "redirect:/profile";
     }
 
     private String validatePassword(String password) {

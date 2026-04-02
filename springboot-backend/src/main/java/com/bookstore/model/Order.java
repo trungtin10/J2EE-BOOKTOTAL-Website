@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 @Entity
 @Table(name = "orders")
@@ -68,19 +69,74 @@ public class Order {
     @Column(name = "expected_delivery_date")
     private LocalDateTime expectedDeliveryDate;
 
+    /** Đã trừ tồn kho khi đơn được duyệt (CONFIRMED); dùng để hoàn tồn khi hủy / hoàn tác. */
+    @Column(name = "stock_deducted", nullable = false)
+    private Boolean stockDeducted = false;
+
     public Order() {}
 
-    // Helper method for status in Vietnamese
+    /** Nhãn tiếng Việt cho mã trạng thái (giao diện + email). */
+    public static String labelVietnamese(String code) {
+        if (code == null || code.isBlank()) return "Không xác định";
+        return switch (code.toUpperCase(Locale.ROOT)) {
+            case "PENDING" -> "Chờ duyệt";
+            case "CONFIRMED" -> "Đã duyệt";
+            case "PROCESSING" -> "Đang chuẩn bị";
+            case "SHIPPED", "SHIPPING", "DELIVERING" -> "Đang giao";
+            case "COMPLETED" -> "Đã giao";
+            case "CANCELLED" -> "Đã hủy";
+            default -> code;
+        };
+    }
+
     public String getStatusVietnamese() {
-        if (status == null) return "Không xác định";
-        switch (status.toUpperCase()) {
-            case "PENDING": return "Chờ xử lý";
-            case "PROCESSING": return "Đang xử lý";
-            case "SHIPPING": return "Đang giao hàng";
-            case "COMPLETED": return "Đã hoàn thành";
-            case "CANCELLED": return "Đã hủy";
-            default: return status;
-        }
+        return labelVietnamese(this.status);
+    }
+
+    /** Đơn đã hủy — không hiển thị thanh 3 bước. */
+    public boolean isCustomerOrderCancelled() {
+        return status != null && "CANCELLED".equalsIgnoreCase(status.trim());
+    }
+
+    private static boolean isShippingPhaseCode(String code) {
+        if (code == null || code.isBlank()) return false;
+        return switch (code.toUpperCase(Locale.ROOT)) {
+            case "SHIPPED", "SHIPPING", "DELIVERING" -> true;
+            default -> false;
+        };
+    }
+
+    /**
+     * Tiến trình 3 bước cho khách: 1 = Chờ xác nhận, 2 = Đang giao, 3 = Hoàn thành.
+     * Đồng bộ với mã trạng thái admin cập nhật trên cùng bản ghi {@code orders}.
+     */
+    public int getCustomerProgressStep() {
+        if (isCustomerOrderCancelled()) return 0;
+        String s = status == null ? "PENDING" : status.trim().toUpperCase(Locale.ROOT);
+        if ("COMPLETED".equals(s)) return 3;
+        if (isShippingPhaseCode(s)) return 2;
+        return 1;
+    }
+
+    /** Độ đầy thanh nối bước 1 → 3 (0–100). */
+    public int getCustomerProgressPercent() {
+        return switch (getCustomerProgressStep()) {
+            case 1 -> 5;
+            case 2 -> 50;
+            case 3 -> 100;
+            default -> 0;
+        };
+    }
+
+    /** Nhãn bước hiện tại theo tiến trình 3 giai đoạn (AC khách hàng). */
+    public String getCustomerProgressPhaseLabel() {
+        if (isCustomerOrderCancelled()) return "Đã hủy";
+        return switch (getCustomerProgressStep()) {
+            case 1 -> "Chờ xác nhận";
+            case 2 -> "Đang giao";
+            case 3 -> "Hoàn thành";
+            default -> "—";
+        };
     }
 
     // Getters and Setters
@@ -140,4 +196,7 @@ public class Order {
 
     public LocalDateTime getExpectedDeliveryDate() { return expectedDeliveryDate; }
     public void setExpectedDeliveryDate(LocalDateTime expectedDeliveryDate) { this.expectedDeliveryDate = expectedDeliveryDate; }
+
+    public Boolean getStockDeducted() { return stockDeducted; }
+    public void setStockDeducted(Boolean stockDeducted) { this.stockDeducted = stockDeducted != null && stockDeducted; }
 }

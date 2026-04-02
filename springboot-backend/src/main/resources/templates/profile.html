@@ -120,7 +120,7 @@
                                 <div class="mb-3 section-header">
                                     <i class="fas fa-id-card me-1 text-primary"></i> Thông tin cá nhân
                                 </div>
-                                <form th:action="@{/profile}" method="POST" autocomplete="off">
+                                <form th:action="@{/profile/update}" method="POST" autocomplete="off">
                                     <div class="mb-3">
                                         <label class="form-label">Tên đăng nhập</label>
                                         <input type="text" class="form-control" th:value="${userInfo.username}"

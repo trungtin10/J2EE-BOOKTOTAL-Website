@@ -25,4 +25,5 @@ coverage/
 
 # cache
 .cache
-.tmp
+.tmp".env" 
+".env" 

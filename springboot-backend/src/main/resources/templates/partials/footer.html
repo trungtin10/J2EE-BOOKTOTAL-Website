@@ -10,21 +10,21 @@
         <style>
             .footer {
                 background-color: #fff;
-                border-top: 4px solid #C92127;
-                /* Viền đỏ thương hiệu */
-                padding-top: 50px;
-                margin-top: 50px;
+                border-top: 2px solid #eef2f6;
+                padding-top: 44px;
+                margin-top: 44px;
                 color: #333;
                 font-size: 14px;
             }
 
             .footer-title {
-                font-size: 16px;
-                font-weight: 700;
+                font-size: 13px;
+                font-weight: 900;
                 text-transform: uppercase;
                 margin-bottom: 20px;
                 color: #333;
                 position: relative;
+                letter-spacing: 0.6px;
             }
 
             .footer-list {
@@ -44,14 +44,31 @@
             }
 
             .footer-list a:hover {
-                color: #C92127;
+                color: var(--brand, #0b1f33);
                 padding-left: 5px;
+            }
+
+            .footer-about {
+                line-height: 1.65;
+                color: #6b7c93;
+            }
+
+            .footer-contact {
+                margin-top: 14px;
+                color: #52606d;
+            }
+
+            .footer-contact .line {
+                display: flex;
+                gap: 10px;
+                align-items: flex-start;
+                margin-bottom: 10px;
             }
 
             .footer-contact i {
                 width: 20px;
-                color: #C92127;
-                margin-right: 5px;
+                color: var(--brand, #0b1f33);
+                margin-top: 2px;
             }
 
             .social-icons a {
@@ -61,7 +78,7 @@
                 width: 35px;
                 height: 35px;
                 border-radius: 50%;
-                background-color: #f0f0f0;
+                background-color: #f3f6f9;
                 color: #555;
                 margin-right: 10px;
                 transition: 0.3s;
@@ -69,7 +86,7 @@
             }
 
             .social-icons a:hover {
-                background-color: #C92127;
+                background-color: var(--brand, #0b1f33);
                 color: white;
                 transform: translateY(-3px);
             }
@@ -89,27 +106,34 @@
             }
 
             .newsletter-form .form-control {
-                border-radius: 20px 0 0 20px;
-                border: 1px solid #ddd;
+                border-radius: 8px 0 0 8px;
+                border: 1px solid #dfe7ef;
                 font-size: 13px;
             }
 
             .newsletter-form .btn {
-                border-radius: 0 20px 20px 0;
-                background-color: #C92127;
+                border-radius: 0 8px 8px 0;
+                background-color: var(--brand, #0b1f33);
                 color: white;
                 font-weight: 600;
                 font-size: 13px;
             }
 
             .copyright {
-                background-color: #f8f9fa;
-                padding: 20px 0;
-                margin-top: 40px;
-                border-top: 1px solid #eee;
+                background-color: #fff;
+                padding: 18px 0;
+                margin-top: 28px;
+                border-top: 1px solid #eef2f6;
                 text-align: center;
                 color: #777;
                 font-size: 13px;
+            }
+
+            .footer-cert {
+                font-size: 11px;
+                color: #9aa5b1;
+                margin-top: 6px;
+                line-height: 1.5;
             }
         </style>
         <div class="container">
@@ -118,18 +142,26 @@
                 <div class="col-lg-4 col-md-6 mb-4">
                     <div class="mb-3">
                         <a th:href="@{/}" class="text-decoration-none">
-                            <span style="font-size: 24px; font-weight: 800; color: #C92127;">BOOKTOTAL</span>
+                            <span style="font-size: 24px; font-weight: 800; color: var(--brand, #0b1f33);">BOOKTOTAL</span>
                         </a>
                     </div>
-                    <p class="text-muted mb-4" style="line-height: 1.6;">
+                    <p class="footer-about mb-3">
                         BookTotal là nền tảng thương mại điện tử chuyên cung cấp sách chính hãng, văn phòng phẩm và quà tặng. 
                         Chúng tôi cam kết mang tri thức đến mọi nhà.
                     </p>
-                    <div class="social-icons mb-4">
-                        <a href="#"><i class="fab fa-facebook-f"></i></a>
-                        <a href="#"><i class="fab fa-instagram"></i></a>
-                        <a href="#"><i class="fab fa-youtube"></i></a>
-                        <a href="#"><i class="fab fa-twitter"></i></a>
+                    <div class="footer-contact">
+                        <div class="line">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <div>Trường Đại học Công Nghệ TP - Hồ Chí Minh</div>
+                        </div>
+                        <div class="line">
+                            <i class="fas fa-envelope"></i>
+                            <div>booktotal01@gmail.com</div>
+                        </div>
+                        <div class="line">
+                            <i class="fas fa-phone"></i>
+                            <div>1900 636 467</div>
+                        </div>
                     </div>
                 </div>
 
@@ -156,13 +188,24 @@
 
                 <!-- Cột 4: Liên hệ -->
                 <div class="col-lg-4 col-md-6 mb-4">
-                    <h4 class="footer-title">LIÊN HỆ</h4>
-                    <ul class="footer-list footer-contact">
-                        <li><i class="fas fa-map-marker-alt"></i> Trường Đại học HUTECH, TP.HCM</li>
-                        <li><i class="fas fa-envelope"></i> booktotal01@gmail.com</li>
-                        <li><i class="fas fa-phone-alt"></i> 1900 636 467</li>
-                    </ul>
-                    <div class="mt-4 payment-methods">
+                    <h4 class="footer-title">KẾT NỐI VỚI CHÚNG TÔI</h4>
+                    <div class="social-icons mb-3">
+                        <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                        <a href="#" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+                        <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+                        <a href="#" aria-label="Pinterest"><i class="fab fa-pinterest-p"></i></a>
+                    </div>
+
+                    <div class="mb-3">
+                        <div class="fw-bold mb-2">ĐĂNG KÝ NHẬN TIN SÁCH MỚI NHẤT</div>
+                        <div class="input-group newsletter-form">
+                            <input type="email" class="form-control form-control-sm" placeholder="Nhập email của bạn...">
+                            <button class="btn btn-sm" type="button">GỬI</button>
+                        </div>
+                    </div>
+
+                    <div class="payment-methods mt-3">
                         <img src="https://frontend.tikicdn.com/_desktop-frontend/static/img/footer/visa.svg" alt="Visa">
                         <img src="https://frontend.tikicdn.com/_desktop-frontend/static/img/footer/mastercard.svg" alt="Mastercard">
                         <img src="https://frontend.tikicdn.com/_desktop-frontend/static/img/footer/jcb.svg" alt="JCB">
@@ -174,6 +217,9 @@
         <div class="copyright">
             <div class="container">
                 <p class="mb-0">&copy; 2026 <b>BookTotal Corporation</b>. All rights reserved.</p>
+                <div class="footer-cert">
+                    Giấy chứng nhận ĐKKD số 0304132047 do Sở Kế hoạch và Đầu tư TP.HCM cấp ngày 20/12/2025
+                </div>
             </div>
         </div>
     </footer>

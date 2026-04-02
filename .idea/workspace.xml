@@ -4,7 +4,116 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="f387cbf1-c135-43ac-8267-2ee2d05ed26a" name="Changes" comment="" />
+    <list default="true" id="f387cbf1-c135-43ac-8267-2ee2d05ed26a" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.env" beforeDir="false" afterPath="$PROJECT_DIR$/.env" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/compiler.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/compiler.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/springboot-backend/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/springboot-backend/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/springboot-backend/src/main/java/com/bookstore/SpringbootBackendApplication.java" beforeDir="false" afterPath="$PROJECT_DIR$/springboot-backend/src/main/java/com/bookstore/SpringbootBackendApplication.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/springboot-backend/src/main/java/com/bookstore/config/DataSeeder.java" beforeDir="false" afterPath="$PROJECT_DIR$/springboot-backend/src/main/java/com/bookstore/config/DataSeeder.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/springboot-backend/src/main/java/com/bookstore/config/WebConfig.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/springboot-backend/src/main/java/com/bookstore/controller/AuthController.java" beforeDir="false" afterPath="$PROJECT_DIR$/springboot-backend/src/main/java/com/bookstore/controller/AuthController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/springboot-backend/src/main/java/com/bookstore/controller/CartController.java" beforeDir="false" afterPath="$PROJECT_DIR$/springboot-backend/src/main/java/com/bookstore/controller/CartController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/springboot-backend/src/main/java/com/bookstore/controller/CheckoutController.java" beforeDir="false" afterPath="$PROJECT_DIR$/springboot-backend/src/main/java/com/bookstore/controller/CheckoutController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/springboot-backend/src/main/java/com/bookstore/controller/HomeController.java" beforeDir="false" afterPath="$PROJECT_DIR$/springboot-backend/src/main/java/com/bookstore/controller/HomeController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/springboot-backend/src/main/java/com/bookstore/controller/PaymentController.java" beforeDir="false" afterPath="$PROJECT_DIR$/springboot-backend/src/main/java/com/bookstore/controller/PaymentController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/springboot-backend/src/main/java/com/bookstore/controller/ProductController.java" beforeDir="false" afterPath="$PROJECT_DIR$/springboot-backend/src/main/java/com/bookstore/controller/ProductController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/springboot-backend/src/main/java/com/bookstore/controller/ProfileController.java" beforeDir="false" afterPath="$PROJECT_DIR$/springboot-backend/src/main/java/com/bookstore/controller/ProfileController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/springboot-backend/src/main/java/com/bookstore/controller/ReviewController.java" beforeDir="false" afterPath="$PROJECT_DIR$/springboot-backend/src/main/java/com/bookstore/controller/ReviewController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/springboot-backend/src/main/java/com/bookstore/controller/admin/AdminController.java" beforeDir="false" afterPath="$PROJECT_DIR$/springboot-backend/src/main/java/com/bookstore/controller/admin/AdminController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/springboot-backend/src/main/java/com/bookstore/controller/admin/AdminInventoryController.java" beforeDir="false" afterPath="$PROJECT_DIR$/springboot-backend/src/main/java/com/bookstore/controller/admin/AdminInventoryController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/springboot-backend/src/main/java/com/bookstore/controller/admin/AdminOrderController.java" beforeDir="false" afterPath="$PROJECT_DIR$/springboot-backend/src/main/java/com/bookstore/controller/admin/AdminOrderController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/springboot-backend/src/main/java/com/bookstore/controller/admin/AdminProductController.java" beforeDir="false" afterPath="$PROJECT_DIR$/springboot-backend/src/main/java/com/bookstore/controller/admin/AdminProductController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/springboot-backend/src/main/java/com/bookstore/controller/admin/AdminUserController.java" beforeDir="false" afterPath="$PROJECT_DIR$/springboot-backend/src/main/java/com/bookstore/controller/admin/AdminUserController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/springboot-backend/src/main/java/com/bookstore/controller/api/AuthRestController.java" beforeDir="false" afterPath="$PROJECT_DIR$/springboot-backend/src/main/java/com/bookstore/controller/api/AuthRestController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/springboot-backend/src/main/java/com/bookstore/controller/api/AuthUserRestController.java" beforeDir="false" afterPath="$PROJECT_DIR$/springboot-backend/src/main/java/com/bookstore/controller/api/AuthUserRestController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/springboot-backend/src/main/java/com/bookstore/controller/api/OrderRestController.java" beforeDir="false" afterPath="$PROJECT_DIR$/springboot-backend/src/main/java/com/bookstore/controller/api/OrderRestController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/springboot-backend/src/main/java/com/bookstore/controller/api/ProductRestController.java" beforeDir="false" afterPath="$PROJECT_DIR$/springboot-backend/src/main/java/com/bookstore/controller/api/ProductRestController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/springboot-backend/src/main/java/com/bookstore/model/Order.java" beforeDir="false" afterPath="$PROJECT_DIR$/springboot-backend/src/main/java/com/bookstore/model/Order.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/springboot-backend/src/main/java/com/bookstore/model/Product.java" beforeDir="false" afterPath="$PROJECT_DIR$/springboot-backend/src/main/java/com/bookstore/model/Product.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/springboot-backend/src/main/java/com/bookstore/model/User.java" beforeDir="false" afterPath="$PROJECT_DIR$/springboot-backend/src/main/java/com/bookstore/model/User.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/springboot-backend/src/main/java/com/bookstore/repository/OrderRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/springboot-backend/src/main/java/com/bookstore/repository/OrderRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/springboot-backend/src/main/java/com/bookstore/repository/ProductRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/springboot-backend/src/main/java/com/bookstore/repository/ProductRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/springboot-backend/src/main/java/com/bookstore/repository/UserRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/springboot-backend/src/main/java/com/bookstore/repository/UserRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/springboot-backend/src/main/java/com/bookstore/security/CustomUserDetails.java" beforeDir="false" afterPath="$PROJECT_DIR$/springboot-backend/src/main/java/com/bookstore/security/CustomUserDetails.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/springboot-backend/src/main/java/com/bookstore/security/JwtAuthenticationFilter.java" beforeDir="false" afterPath="$PROJECT_DIR$/springboot-backend/src/main/java/com/bookstore/security/JwtAuthenticationFilter.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/springboot-backend/src/main/java/com/bookstore/security/WebSecurityConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/springboot-backend/src/main/java/com/bookstore/security/WebSecurityConfig.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/springboot-backend/src/main/java/com/bookstore/service/EmailService.java" beforeDir="false" afterPath="$PROJECT_DIR$/springboot-backend/src/main/java/com/bookstore/service/EmailService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/springboot-backend/src/main/java/com/bookstore/service/ExcelExportService.java" beforeDir="false" afterPath="$PROJECT_DIR$/springboot-backend/src/main/java/com/bookstore/service/ExcelExportService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/springboot-backend/src/main/java/com/bookstore/service/FileStorageService.java" beforeDir="false" afterPath="$PROJECT_DIR$/springboot-backend/src/main/java/com/bookstore/service/FileStorageService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/springboot-backend/src/main/java/com/bookstore/service/OrderService.java" beforeDir="false" afterPath="$PROJECT_DIR$/springboot-backend/src/main/java/com/bookstore/service/OrderService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/springboot-backend/src/main/java/com/bookstore/service/ProductService.java" beforeDir="false" afterPath="$PROJECT_DIR$/springboot-backend/src/main/java/com/bookstore/service/ProductService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/springboot-backend/src/main/java/com/bookstore/service/UserService.java" beforeDir="false" afterPath="$PROJECT_DIR$/springboot-backend/src/main/java/com/bookstore/service/UserService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/springboot-backend/src/main/resources/application.yml" beforeDir="false" afterPath="$PROJECT_DIR$/springboot-backend/src/main/resources/application.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/springboot-backend/src/main/resources/static/css/product-detail.css" beforeDir="false" afterPath="$PROJECT_DIR$/springboot-backend/src/main/resources/static/css/product-detail.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/springboot-backend/src/main/resources/static/js/product-detail.js" beforeDir="false" afterPath="$PROJECT_DIR$/springboot-backend/src/main/resources/static/js/product-detail.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/springboot-backend/src/main/resources/templates/admin/categories/category_add.html" beforeDir="false" afterPath="$PROJECT_DIR$/springboot-backend/src/main/resources/templates/admin/categories/category_add.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/springboot-backend/src/main/resources/templates/admin/categories/category_edit.html" beforeDir="false" afterPath="$PROJECT_DIR$/springboot-backend/src/main/resources/templates/admin/categories/category_edit.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/springboot-backend/src/main/resources/templates/admin/categories/category_list.html" beforeDir="false" afterPath="$PROJECT_DIR$/springboot-backend/src/main/resources/templates/admin/categories/category_list.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/springboot-backend/src/main/resources/templates/admin/coupons/add.html" beforeDir="false" afterPath="$PROJECT_DIR$/springboot-backend/src/main/resources/templates/admin/coupons/add.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/springboot-backend/src/main/resources/templates/admin/coupons/list.html" beforeDir="false" afterPath="$PROJECT_DIR$/springboot-backend/src/main/resources/templates/admin/coupons/list.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/springboot-backend/src/main/resources/templates/admin/fragments/sidebar.html" beforeDir="false" afterPath="$PROJECT_DIR$/springboot-backend/src/main/resources/templates/admin/fragments/sidebar.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/springboot-backend/src/main/resources/templates/admin/inventory_list.html" beforeDir="false" afterPath="$PROJECT_DIR$/springboot-backend/src/main/resources/templates/admin/inventory_list.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/springboot-backend/src/main/resources/templates/admin/layout/admin_layout.html" beforeDir="false" afterPath="$PROJECT_DIR$/springboot-backend/src/main/resources/templates/admin/layout/admin_layout.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/springboot-backend/src/main/resources/templates/admin/order_detail.html" beforeDir="false" afterPath="$PROJECT_DIR$/springboot-backend/src/main/resources/templates/admin/order_detail.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/springboot-backend/src/main/resources/templates/admin/order_list.html" beforeDir="false" afterPath="$PROJECT_DIR$/springboot-backend/src/main/resources/templates/admin/order_list.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/springboot-backend/src/main/resources/templates/admin/partials/layout.html" beforeDir="false" afterPath="$PROJECT_DIR$/springboot-backend/src/main/resources/templates/admin/partials/layout.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/springboot-backend/src/main/resources/templates/admin/products/product_add.html" beforeDir="false" afterPath="$PROJECT_DIR$/springboot-backend/src/main/resources/templates/admin/products/product_add.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/springboot-backend/src/main/resources/templates/admin/products/product_detail.html" beforeDir="false" afterPath="$PROJECT_DIR$/springboot-backend/src/main/resources/templates/admin/products/product_detail.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/springboot-backend/src/main/resources/templates/admin/products/product_edit.html" beforeDir="false" afterPath="$PROJECT_DIR$/springboot-backend/src/main/resources/templates/admin/products/product_edit.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/springboot-backend/src/main/resources/templates/admin/products/product_list.html" beforeDir="false" afterPath="$PROJECT_DIR$/springboot-backend/src/main/resources/templates/admin/products/product_list.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/springboot-backend/src/main/resources/templates/admin/reviews/review_list.html" beforeDir="false" afterPath="$PROJECT_DIR$/springboot-backend/src/main/resources/templates/admin/reviews/review_list.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/springboot-backend/src/main/resources/templates/admin/stats.html" beforeDir="false" afterPath="$PROJECT_DIR$/springboot-backend/src/main/resources/templates/admin/stats.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/springboot-backend/src/main/resources/templates/admin/user/add.html" beforeDir="false" afterPath="$PROJECT_DIR$/springboot-backend/src/main/resources/templates/admin/user/add.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/springboot-backend/src/main/resources/templates/admin/user/user_list.html" beforeDir="false" afterPath="$PROJECT_DIR$/springboot-backend/src/main/resources/templates/admin/user/user_list.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/springboot-backend/src/main/resources/templates/auth/forgot_password.html" beforeDir="false" afterPath="$PROJECT_DIR$/springboot-backend/src/main/resources/templates/auth/forgot_password.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/springboot-backend/src/main/resources/templates/auth/login.html" beforeDir="false" afterPath="$PROJECT_DIR$/springboot-backend/src/main/resources/templates/auth/login.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/springboot-backend/src/main/resources/templates/auth/register.html" beforeDir="false" afterPath="$PROJECT_DIR$/springboot-backend/src/main/resources/templates/auth/register.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/springboot-backend/src/main/resources/templates/cart.html" beforeDir="false" afterPath="$PROJECT_DIR$/springboot-backend/src/main/resources/templates/cart.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/springboot-backend/src/main/resources/templates/checkout.html" beforeDir="false" afterPath="$PROJECT_DIR$/springboot-backend/src/main/resources/templates/checkout.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/springboot-backend/src/main/resources/templates/checkout/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/springboot-backend/src/main/resources/templates/checkout/index.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/springboot-backend/src/main/resources/templates/home.html" beforeDir="false" afterPath="$PROJECT_DIR$/springboot-backend/src/main/resources/templates/home.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/springboot-backend/src/main/resources/templates/layout.html" beforeDir="false" afterPath="$PROJECT_DIR$/springboot-backend/src/main/resources/templates/layout.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/springboot-backend/src/main/resources/templates/order_detail.html" beforeDir="false" afterPath="$PROJECT_DIR$/springboot-backend/src/main/resources/templates/order_detail.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/springboot-backend/src/main/resources/templates/order_history.html" beforeDir="false" afterPath="$PROJECT_DIR$/springboot-backend/src/main/resources/templates/order_history.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/springboot-backend/src/main/resources/templates/partials/footer.html" beforeDir="false" afterPath="$PROJECT_DIR$/springboot-backend/src/main/resources/templates/partials/footer.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/springboot-backend/src/main/resources/templates/partials/header.html" beforeDir="false" afterPath="$PROJECT_DIR$/springboot-backend/src/main/resources/templates/partials/header.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/springboot-backend/src/main/resources/templates/payment_gateway.html" beforeDir="false" afterPath="$PROJECT_DIR$/springboot-backend/src/main/resources/templates/payment_gateway.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/springboot-backend/src/main/resources/templates/product.html" beforeDir="false" afterPath="$PROJECT_DIR$/springboot-backend/src/main/resources/templates/product.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/springboot-backend/src/main/resources/templates/product_detail.html" beforeDir="false" afterPath="$PROJECT_DIR$/springboot-backend/src/main/resources/templates/product_detail.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/springboot-backend/src/main/resources/templates/profile.html" beforeDir="false" afterPath="$PROJECT_DIR$/springboot-backend/src/main/resources/templates/profile.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/springboot-backend/uploads/14774-doraemon-mau-1.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/springboot-backend/uploads/1770366931633-14774-doraemon-mau-1.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/springboot-backend/uploads/1770451015985-OIP (2).jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/springboot-backend/uploads/1770451069156-laoptp.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/springboot-backend/uploads/1770451075631-OIP (2).jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/springboot-backend/uploads/1770475504026-laoptp.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/springboot-backend/uploads/1770480691835-OIP (2).jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/springboot-backend/uploads/1770480945031-laoptp.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/springboot-backend/uploads/1770481120951-OIP (2).jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/springboot-backend/uploads/1770481194811-logocoffe.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/springboot-backend/uploads/1770481405547-laoptp.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/springboot-backend/uploads/1770657644878-14774-doraemon-mau-1.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/springboot-backend/uploads/1770658457160-14774-doraemon-mau-1.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/springboot-backend/uploads/1770658806748-14774-doraemon-mau-1.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/springboot-backend/uploads/1770659327380-14774-doraemon-mau-1.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/springboot-backend/uploads/1770747930838-14774-doraemon-mau-1.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/springboot-backend/uploads/1770749397136-14774-doraemon-mau-1.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/springboot-backend/uploads/1772546767953-OIP (1).jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/springboot-backend/uploads/1772548019212-OIP.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/springboot-backend/uploads/1772548320514-OIP (2).jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/springboot-backend/uploads/1772548402269-716b044e9580b7bb939e7a0b658fd087.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/springboot-backend/uploads/1772549131926-OIP (3).jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/springboot-backend/uploads/1772549397388-sg-11134201-22100-g0f22rjztoiv39.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/springboot-backend/uploads/1772549498144-vn-11134207-7qukw-ljw72yd38o1g31.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/springboot-backend/uploads/1772549709239-OIP (4).jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/springboot-backend/uploads/1f7eb125-0c37-47a3-8602-f9b851eca3f3_logo-fpt-polytechnic-png-4.webp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/springboot-backend/uploads/38ba98e2-d93a-45cf-8d8c-fd1eb91cd128_OIP (3).jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/springboot-backend/uploads/99d8cf318a314224d1211a7e4f83f4dc.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/springboot-backend/uploads/default.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/springboot-backend/uploads/f1264bef-7f02-4c0b-891e-d6a60db8b4c1_logo-fpt-polytechnic-png-4.webp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/springboot-backend/uploads/qrck.jpg" beforeDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -43,7 +152,7 @@
     &quot;git-widget-placeholder&quot;: &quot;main&quot;,
     &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
     &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;D:/BookStoreSpB&quot;,
+    &quot;last_opened_file_path&quot;: &quot;D:/J2EE-BOOKTOTAL-Website&quot;,
     &quot;settings.editor.selected.configurable&quot;: &quot;preferences.lookFeel&quot;
   }
 }</component>

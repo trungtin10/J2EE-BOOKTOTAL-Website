@@ -409,6 +409,130 @@
             .product-image-container:hover .product-main-img {
                 transform: scale(1.05);
             }
+            .gallery-thumbs {
+                display: flex;
+                gap: 10px;
+                justify-content: flex-start;
+                margin-top: 12px;
+                overflow-x: auto;
+                padding-bottom: 4px;
+            }
+            .gallery-thumb {
+                width: 64px;
+                height: 84px;
+                object-fit: cover;
+                border-radius: 6px;
+                cursor: pointer;
+                border: 1px solid rgba(0,0,0,0.12);
+                opacity: 0.85;
+                transition: border-color 0.2s, opacity 0.2s, transform 0.2s;
+                background: #fff;
+            }
+            .gallery-thumb:hover, .gallery-thumb.active {
+                border-color: rgba(0,0,0,0.55);
+                opacity: 1;
+                transform: translateY(-1px);
+            }
+            .gallery-more {
+                width: 64px;
+                height: 84px;
+                border-radius: 6px;
+                border: 1px solid rgba(0,0,0,0.12);
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                background: rgba(0,0,0,0.06);
+                font-weight: 800;
+                color: rgba(0,0,0,0.7);
+                user-select: none;
+            }
+
+            /* Lightbox modal */
+            .gallery-lightbox .modal-content {
+                background: #000;
+                border: 0;
+                border-radius: 0;
+            }
+            .gallery-lightbox .modal-body {
+                padding: 0;
+                min-height: 60vh;
+                display: flex;
+                flex-direction: column;
+            }
+            .glb-top {
+                position: absolute;
+                top: 14px;
+                left: 14px;
+                z-index: 5;
+                color: rgba(255,255,255,0.85);
+                font-weight: 700;
+                font-size: 0.9rem;
+            }
+            .glb-close {
+                position: absolute;
+                top: 10px;
+                right: 10px;
+                z-index: 6;
+                width: 44px;
+                height: 44px;
+                border-radius: 10px;
+                border: 0;
+                background: rgba(255,255,255,0.12);
+                color: #fff;
+            }
+            .glb-stage {
+                position: relative;
+                flex: 1;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 56px 16px 16px;
+            }
+            .glb-img {
+                max-width: min(980px, 92vw);
+                max-height: min(70vh, 720px);
+                object-fit: contain;
+                background: #000;
+            }
+            .glb-nav {
+                position: absolute;
+                top: 50%;
+                transform: translateY(-50%);
+                width: 46px;
+                height: 70px;
+                border: 0;
+                border-radius: 10px;
+                background: rgba(255,255,255,0.12);
+                color: #fff;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 5;
+            }
+            .glb-nav.prev { left: 14px; }
+            .glb-nav.next { right: 14px; }
+            .glb-thumbs {
+                padding: 12px 14px 16px;
+                background: #000;
+                display: flex;
+                gap: 10px;
+                justify-content: center;
+                overflow-x: auto;
+                border-top: 1px solid rgba(255,255,255,0.08);
+            }
+            .glb-thumb {
+                width: 54px;
+                height: 72px;
+                border-radius: 8px;
+                object-fit: cover;
+                border: 2px solid transparent;
+                opacity: 0.9;
+                cursor: pointer;
+            }
+            .glb-thumb.active {
+                border-color: #ff4d4f;
+                opacity: 1;
+            }
 
             .related-title {
                 font-size: 0.9rem;
@@ -445,8 +569,11 @@
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb bg-white shadow-sm p-3 rounded">
                     <li class="breadcrumb-item"><a th:href="@{/}">Trang chủ</a></li>
-                    <li class="breadcrumb-item"><a href="#"
-                            th:text="${product.category != null ? product.category.name : 'Sách'}"></a></li>
+                    <li class="breadcrumb-item">
+                        <a th:if="${product.category != null}" th:href="@{/products(categoryId=${product.category.id})}"
+                           th:text="${product.category.name}">Danh mục</a>
+                        <span th:unless="${product.category != null}">Sách</span>
+                    </li>
                     <li class="breadcrumb-item active" th:text="${product.name}"></li>
                 </ol>
             </nav>
@@ -457,9 +584,31 @@
                     <div class="content-box left-sidebar bg-white p-3 rounded shadow-sm mb-3">
                         <div class="product-img-box text-center mb-3">
                             <div class="product-image-container">
-                                <img th:src="@{${product.imageUrl != null ? (product.imageUrl.startsWith('http') or product.imageUrl.startsWith('/uploads/') ? product.imageUrl : '/uploads/' + product.imageUrl) : '/uploads/default.jpg'}}"
+                                <img id="galleryMainImg"
+                                    th:src="${product.resolveImageSrc(product.imageUrl)}"
                                     class="product-main-img img-fluid" th:alt="${product.name}"
-                                    onerror="this.src='/uploads/default.jpg'">
+                                    style="cursor: zoom-in;"
+                                    onclick="openGalleryLightbox(0)"
+                                    onerror="this.src='/img/placeholder.svg'">
+                            </div>
+                            <div class="gallery-thumbs" th:if="${#lists.size(product.resolvedGalleryUrls) > 1}">
+                                <img th:each="gUrl, iterStat : ${product.resolvedGalleryUrls}"
+                                     th:if="${iterStat.index < 4}"
+                                     th:src="${product.resolveImageSrc(gUrl)}"
+                                     class="gallery-thumb"
+                                     th:classappend="${iterStat.first} ? ' active'"
+                                     th:attr="data-full-src=${product.resolveImageSrc(gUrl)}"
+                                     th:attrappend="data-index=${iterStat.index}"
+                                     onclick="openGalleryLightbox(parseInt(this.getAttribute('data-index') || '0'))"
+                                     alt="Ảnh sản phẩm"
+                                     onerror="this.style.display='none'">
+                                <div class="gallery-more"
+                                     th:if="${#lists.size(product.resolvedGalleryUrls) > 4}"
+                                     th:text="'+' + (${#lists.size(product.resolvedGalleryUrls)} - 4)"
+                                     style="cursor:pointer"
+                                     onclick="openGalleryLightbox(4)">
+                                    +3
+                                </div>
                             </div>
                         </div>
 
@@ -520,9 +669,17 @@
                             <div class="meta-item"><span class="meta-label">Hình thức bìa:</span><span
                                     class="meta-value"
                                     th:text="${product.coverType != null ? product.coverType : '---'}"></span></div>
+                            <div class="meta-item"><span class="meta-label">Màu sắc:</span><span class="meta-value"
+                                    th:text="${product.color != null and !product.color.isEmpty() ? product.color : '---'}"></span></div>
+                            <div class="meta-item"><span class="meta-label">Kích thước:</span><span class="meta-value"
+                                    th:text="${product.dimensions != null and !product.dimensions.isEmpty() ? product.dimensions : '---'}"></span></div>
+                            <div class="meta-item"><span class="meta-label">Ngôn ngữ:</span><span class="meta-value"
+                                    th:text="${product.language != null ? product.language : '---'}"></span></div>
                             <div class="meta-item"><span class="meta-label">Số trang:</span><span
                                     class="meta-value"
                                     th:text="${product.pages != null ? product.pages : '---'}"></span></div>
+                            <div class="meta-item"><span class="meta-label">Tồn kho:</span><span class="meta-value text-primary"
+                                    th:text="|${product.quantity != null ? product.quantity : 0} cuốn|"></span></div>
                         </div>
 
                         <div class="rating-summary-top mb-3">
@@ -540,6 +697,12 @@
                         <div class="price-box my-3">
                             <span class="current-price h2 text-danger fw-bold me-3"
                                 th:text="${#numbers.formatDecimal(product.price, 0, 'COMMA', 0, 'POINT')} + ' đ'"></span>
+                            <span class="text-muted text-decoration-line-through fs-6 me-2"
+                                  th:if="${product.originalPrice != null and product.originalPrice > product.price}"
+                                  th:text="${#numbers.formatDecimal(product.originalPrice, 0, 'COMMA', 0, 'POINT')} + ' đ'"></span>
+                            <span class="badge bg-danger me-2"
+                                  th:if="${product.discountPercent != null}"
+                                  th:text="'-' + ${product.discountPercent} + '%'">-10%</span>
                             <span th:if="${product.quantity > 0}" class="badge bg-success"><i class="fas fa-check"></i> Còn
                                 hàng</span>
                             <span th:unless="${product.quantity > 0}" class="badge bg-secondary">Hết hàng</span>
@@ -563,7 +726,8 @@
                             <div class="input-group input-group-sm" style="width: 120px;">
                                 <button class="btn btn-outline-secondary" type="button"
                                     onclick="decreaseQty()">-</button>
-                                <input type="text" class="form-control text-center fw-bold" value="1" id="qtyInput">
+                                <input type="number" class="form-control text-center fw-bold" value="1" id="qtyInput"
+                                       min="1" th:attr="max=${product.quantity != null ? product.quantity : 1}">
                                 <button class="btn btn-outline-secondary" type="button"
                                     onclick="increaseQty()">+</button>
                             </div>
@@ -573,7 +737,7 @@
                     <!-- MÔ TẢ SẢN PHẨM -->
                     <div class="content-box bg-white p-4 rounded shadow-sm mb-3">
                         <h5 class="fw-bold mb-3 border-bottom pb-2">Mô tả sản phẩm</h5>
-                        <div class="text-secondary" style="line-height: 1.6; text-align: justify; overflow: hidden;"
+                        <div class="product-desc"
                             th:utext="${product.description != null ? product.description : 'Đang cập nhật nội dung...'}">
                         </div>
                     </div>
@@ -664,14 +828,13 @@
             </div>
 
             <!-- SẢN PHẨM LIÊN QUAN -->
-            <div th:if="${relatedProducts != null and not relatedProducts.empty}"
-                class="content-box bg-white p-4 rounded shadow-sm mb-4">
-                <h5 class="fw-bold mb-4 border-bottom pb-2">Sản phẩm liên quan khác</h5>
-                <div class="row row-cols-2 row-cols-md-5 g-3">
+            <div class="content-box bg-white p-4 rounded shadow-sm mb-4">
+                <h5 class="fw-bold mb-4 border-bottom pb-2">Sản phẩm liên quan</h5>
+                <div th:if="${relatedProducts != null and not relatedProducts.empty}" class="row row-cols-2 row-cols-md-5 g-3">
                     <div class="col" th:each="item : ${relatedProducts}">
                         <a th:href="@{'/product/' + ${item.id}}" class="text-decoration-none">
                             <div class="card related-card">
-                                <img th:src="@{${item.imageUrl != null ? (item.imageUrl.startsWith('http') or item.imageUrl.startsWith('/uploads/') ? item.imageUrl : '/uploads/' + item.imageUrl) : '/uploads/default.jpg'}}"
+                                <img th:src="${item.resolveImageSrc(item.imageUrl)}"
                                     class="related-img card-img-top" th:alt="${item.name}"
                                     onerror="this.src='/uploads/default.jpg'">
                                 <div class="card-body p-2">
@@ -682,6 +845,33 @@
                                 </div>
                             </div>
                         </a>
+                    </div>
+                </div>
+                <p th:if="${relatedProducts == null or relatedProducts.empty}" class="text-muted text-center py-3 mb-0">
+                    Chưa có sản phẩm liên quan trong cùng danh mục.
+                </p>
+            </div>
+        </div>
+
+        <!-- Gallery Lightbox -->
+        <div class="modal fade gallery-lightbox" id="galleryLightboxModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-fullscreen">
+                <div class="modal-content">
+                    <div class="modal-body position-relative">
+                        <div class="glb-top" id="glbCounter">1/1</div>
+                        <button type="button" class="glb-close" data-bs-dismiss="modal" aria-label="Close">
+                            <i class="fas fa-times"></i>
+                        </button>
+                        <div class="glb-stage">
+                            <button type="button" class="glb-nav prev" onclick="glbPrev()" aria-label="Previous">
+                                <i class="fas fa-chevron-left"></i>
+                            </button>
+                            <img id="glbImage" class="glb-img" src="/img/placeholder.svg" alt="Ảnh sản phẩm">
+                            <button type="button" class="glb-nav next" onclick="glbNext()" aria-label="Next">
+                                <i class="fas fa-chevron-right"></i>
+                            </button>
+                        </div>
+                        <div class="glb-thumbs" id="glbThumbs"></div>
                     </div>
                 </div>
             </div>
@@ -779,25 +969,69 @@
             function setRatingText(text) {
                 document.getElementById('ratingText').innerText = text;
             }
-            function openLoginModal() {
-                const currentUrl = window.location.pathname;
-                const loginForm = document.querySelector('#loginModal form');
-                if (loginForm) {
-                    if (!loginForm.querySelector('input[name="returnUrl"]')) {
-                        const input = document.createElement('input');
-                        input.type = 'hidden';
-                        input.name = 'returnUrl';
-                        input.value = currentUrl;
-                        loginForm.appendChild(input);
-                    } else {
-                        loginForm.querySelector('input[name="returnUrl"]').value = currentUrl;
-                    }
-                    const loginModal = new bootstrap.Modal(document.getElementById('loginModal'));
-                    loginModal.show();
-                } else {
-                    window.location.href = '/login?returnUrl=' + encodeURIComponent(currentUrl);
-                }
+        </script>
+        <script th:inline="javascript">
+            /*<![CDATA[*/
+            const glbImages = /*[[${product.resolvedGalleryUrls}]]*/ [];
+            const glbResolved = (glbImages || []).map(u => {
+                if (!u) return '/img/placeholder.svg';
+                const s = ('' + u).trim();
+                if (!s) return '/img/placeholder.svg';
+                if (s.startsWith('http://') || s.startsWith('https://') || s.startsWith('/uploads/')) return s;
+                return '/uploads/' + s;
+            });
+            let glbIndex = 0;
+
+            function glbRenderThumbs() {
+                const wrap = document.getElementById('glbThumbs');
+                if (!wrap) return;
+                wrap.innerHTML = '';
+                glbResolved.forEach((src, idx) => {
+                    const img = document.createElement('img');
+                    img.className = 'glb-thumb' + (idx === glbIndex ? ' active' : '');
+                    img.src = src;
+                    img.alt = 'thumb';
+                    img.onerror = function() { this.style.display = 'none'; };
+                    img.addEventListener('click', () => glbGo(idx));
+                    wrap.appendChild(img);
+                });
             }
+
+            function glbUpdate() {
+                const img = document.getElementById('glbImage');
+                const counter = document.getElementById('glbCounter');
+                if (img) img.src = glbResolved[glbIndex] || '/img/placeholder.svg';
+                if (counter) counter.textContent = (glbIndex + 1) + '/' + (glbResolved.length || 1);
+                glbRenderThumbs();
+            }
+
+            function glbGo(i) {
+                const n = glbResolved.length || 0;
+                if (!n) return;
+                glbIndex = ((i % n) + n) % n;
+                glbUpdate();
+            }
+
+            function glbPrev() { glbGo(glbIndex - 1); }
+            function glbNext() { glbGo(glbIndex + 1); }
+
+            function openGalleryLightbox(index) {
+                const n = glbResolved.length || 0;
+                if (!n) return;
+                glbIndex = Math.min(Math.max(0, index || 0), n - 1);
+                glbUpdate();
+                const modalEl = document.getElementById('galleryLightboxModal');
+                if (!modalEl) return;
+                bootstrap.Modal.getOrCreateInstance(modalEl).show();
+            }
+
+            document.addEventListener('keydown', function(e) {
+                const modalEl = document.getElementById('galleryLightboxModal');
+                if (!modalEl || !modalEl.classList.contains('show')) return;
+                if (e.key === 'ArrowLeft') glbPrev();
+                if (e.key === 'ArrowRight') glbNext();
+            });
+            /*]]>*/
         </script>
     </th:block>
 </body>

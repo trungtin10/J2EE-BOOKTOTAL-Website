@@ -5,9 +5,7 @@ import com.bookstore.model.Product;
 import com.bookstore.model.InventoryLog;
 import com.bookstore.repository.CategoryRepository;
 import com.bookstore.repository.InventoryLogRepository;
-import com.bookstore.repository.OrderDetailRepository;
 import com.bookstore.repository.ProductRepository;
-import com.bookstore.repository.ReviewRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -30,57 +28,72 @@ public class ProductService {
     @Autowired
     private InventoryLogRepository inventoryLogRepository;
 
-    @Autowired
-    private OrderDetailRepository orderDetailRepository;
-
-    @Autowired
-    private ReviewRepository reviewRepository;
-
     public Page<Product> getAllProducts(Pageable pageable) {
-        return productRepository.findAll(pageable);
+        return productRepository.findAllVisibleOrderByIdDesc(pageable);
     }
 
     public Page<Product> searchProducts(String keyword, Pageable pageable) {
-        return productRepository.findByNameContainingIgnoreCaseOrderByIdDesc(keyword, pageable);
+        return productRepository.searchVisibleByNameOrderByIdDesc(keyword.trim(), pageable);
     }
 
     public Page<Product> getProductsByCategory(Long categoryId, Pageable pageable) {
-        return productRepository.findByCategoryIdOrderByIdDesc(categoryId, pageable);
+        return productRepository.findVisibleByCategoryIdOrderByIdDesc(categoryId, pageable);
     }
 
     public List<Product> searchProducts(Long categoryId, String keyword, String sort) {
-        org.springframework.data.domain.Sort sortOrder;
-        switch (sort) {
-            case "priceAsc":
-                sortOrder = org.springframework.data.domain.Sort.by("price").ascending();
-                break;
-            case "priceDesc":
-                sortOrder = org.springframework.data.domain.Sort.by("price").descending();
-                break;
-            case "soldDesc":
-                sortOrder = org.springframework.data.domain.Sort.by("soldCount").descending();
-                break;
-            default:
-                sortOrder = org.springframework.data.domain.Sort.by("id").descending();
-                break;
+        return searchProducts(categoryId, keyword, sort, null, null);
+    }
+
+    public List<Product> searchProducts(Long categoryId, String keyword, String sort, Double minPrice, Double maxPrice) {
+        return searchShopPage(categoryId, keyword, sort, minPrice, maxPrice, Pageable.unpaged()).getContent();
+    }
+
+    public Page<Product> searchShopPage(Long categoryId, String keyword, String sort,
+                                        Double minPrice, Double maxPrice, Pageable pageable) {
+        String kw = (keyword == null || keyword.isBlank()) ? "" : keyword.trim();
+        Double min = minPrice;
+        Double max = maxPrice;
+        if (min != null && max != null && min > max) {
+            double t = min;
+            min = max;
+            max = t;
         }
-        return productRepository.searchProducts(keyword, categoryId, sortOrder);
+        org.springframework.data.domain.Sort sortOrder = resolveShopSort(sort);
+        Pageable pg = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), sortOrder);
+        return productRepository.searchProductsForShopPage(kw, categoryId, min, max, pg);
+    }
+
+    private static org.springframework.data.domain.Sort resolveShopSort(String sort) {
+        switch (sort != null ? sort : "newest") {
+            case "priceAsc":
+                return org.springframework.data.domain.Sort.by("price").ascending();
+            case "priceDesc":
+                return org.springframework.data.domain.Sort.by("price").descending();
+            case "soldDesc":
+                return org.springframework.data.domain.Sort.by("soldCount").descending();
+            default:
+                return org.springframework.data.domain.Sort.by("id").descending();
+        }
+    }
+
+    public double getMaxVisibleProductPrice() {
+        return productRepository.findMaxPriceAmongVisible().orElse(1_000_000.0);
     }
 
     public List<Product> getBestSellingProducts(int limit) {
-        return productRepository.findAll(PageRequest.of(0, limit, org.springframework.data.domain.Sort.by("soldCount").descending())).getContent();
+        return productRepository.findByDeletedIsFalseOrderBySoldCountDesc(PageRequest.of(0, limit));
     }
 
     public List<Product> getNewArrivals(int limit) {
-        return productRepository.findAll(PageRequest.of(0, limit, org.springframework.data.domain.Sort.by("id").descending())).getContent();
+        return productRepository.findByDeletedIsFalseOrderByIdDesc(PageRequest.of(0, limit));
     }
 
     public List<Product> getBestSellers() {
-        return productRepository.findTop10ByOrderBySoldCountDesc();
+        return productRepository.findByDeletedIsFalseOrderBySoldCountDesc(PageRequest.of(0, 10));
     }
 
     public List<Product> getNewArrivals() {
-        return productRepository.findTop10ByOrderByCreatedAtDesc();
+        return productRepository.findByDeletedIsFalseOrderByIdDesc(PageRequest.of(0, 10));
     }
 
     public List<Product> getOnSaleProducts() {
@@ -94,23 +107,46 @@ public class ProductService {
         return productRepository.findRandomRelatedProducts(productId, categoryId, 5);
     }
 
+    /** Admin / khôi phục: bao gồm cả sản phẩm đã xóa mềm. */
     public Optional<Product> getProductById(Long id) {
         return productRepository.findById(id);
     }
 
+    /** Shop, giỏ, API công khai: chỉ sản phẩm chưa xóa mềm. */
+    public Optional<Product> getActiveProductById(Long id) {
+        return productRepository.findByIdAndDeletedIsFalse(id);
+    }
+
     public Product saveProduct(Product product) {
+        if (product.getId() == null) {
+            product.setDeleted(false);
+            product.setDeletedAt(null);
+        }
+        // Tối ưu tìm kiếm có/không dấu
+        if (product.getName() != null) {
+            product.setNameNormalized(Product.normalizeVietnamese(product.getName()));
+        }
         return productRepository.save(product);
     }
 
     @Transactional
-    public void deleteProduct(Long id) {
-        // Delete related records first to avoid Foreign Key constraints
-        reviewRepository.deleteByProductId(id);
-        inventoryLogRepository.deleteByProductId(id);
-        orderDetailRepository.deleteByProductId(id);
-        
-        // Finally delete the product
-        productRepository.deleteById(id);
+    public void softDeleteProduct(Long id) {
+        Product p = productRepository.findById(id).orElseThrow(() -> new RuntimeException("Không tìm thấy sản phẩm"));
+        if (Boolean.TRUE.equals(p.getDeleted())) {
+            return;
+        }
+        p.setDeleted(true);
+        p.setDeletedAt(java.time.LocalDateTime.now());
+        p.setIsHidden(true);
+        productRepository.save(p);
+    }
+
+    @Transactional
+    public void restoreProduct(Long id) {
+        Product p = productRepository.findById(id).orElseThrow(() -> new RuntimeException("Không tìm thấy sản phẩm"));
+        p.setDeleted(false);
+        p.setDeletedAt(null);
+        productRepository.save(p);
     }
 
     public List<Category> getAllCategories() {
@@ -135,6 +171,9 @@ public class ProductService {
 
     public void importStock(Long productId, Integer quantity, String note) {
         Product product = productRepository.findById(productId).orElseThrow();
+        if (Boolean.TRUE.equals(product.getDeleted())) {
+            throw new RuntimeException("Sản phẩm đã xóa mềm — không nhập kho được.");
+        }
         product.setQuantity(product.getQuantity() + quantity);
         productRepository.save(product);
         
@@ -144,6 +183,9 @@ public class ProductService {
 
     public void exportStock(Long productId, Integer quantity, String note) {
         Product product = productRepository.findById(productId).orElseThrow();
+        if (Boolean.TRUE.equals(product.getDeleted())) {
+            throw new RuntimeException("Sản phẩm đã xóa mềm — không xuất kho được.");
+        }
         if (product.getQuantity() < quantity) {
             throw new RuntimeException("Số lượng tồn kho không đủ để xuất!");
         }
@@ -167,8 +209,43 @@ public class ProductService {
         return total != null ? total : 0L;
     }
 
+    /** Số SKU có tồn kho &lt; 5 (cảnh báo nhập hàng). */
     public long countLowStockProducts() {
-        return productRepository.countByQuantityLessThan(10);
+        return productRepository.countActiveByQuantityLessThan(5);
+    }
+
+    /** Số SKU đang hết hàng (quantity = 0). */
+    public long countOutOfStockProducts() {
+        return productRepository.countActiveOutOfStockProducts();
+    }
+
+    @Transactional
+    public void deductStockForOrderConfirmation(Long productId, int qty, Long orderId) {
+        Product product = productRepository.findById(productId).orElseThrow();
+        if (Boolean.TRUE.equals(product.getDeleted())) {
+            throw new RuntimeException("Sản phẩm \"" + product.getName() + "\" đã ngừng kinh doanh (xóa mềm).");
+        }
+        if (product.getQuantity() < qty) {
+            throw new RuntimeException("Không đủ tồn kho cho \"" + product.getName()
+                    + "\" (còn " + product.getQuantity() + ", đơn cần " + qty + ").");
+        }
+        product.setQuantity(product.getQuantity() - qty);
+        int sold = product.getSoldCount() != null ? product.getSoldCount() : 0;
+        product.setSoldCount(sold + qty);
+        productRepository.save(product);
+        inventoryLogRepository.save(new InventoryLog(product, -qty, "EXPORT",
+                "Trừ tồn khi duyệt đơn #" + orderId));
+    }
+
+    @Transactional
+    public void restoreStockAfterOrderRelease(Long productId, int qty, Long orderId) {
+        Product product = productRepository.findById(productId).orElseThrow();
+        product.setQuantity(product.getQuantity() + qty);
+        int sold = product.getSoldCount() != null ? product.getSoldCount() : 0;
+        product.setSoldCount(Math.max(0, sold - qty));
+        productRepository.save(product);
+        inventoryLogRepository.save(new InventoryLog(product, qty, "IMPORT",
+                "Hoàn tồn khi hủy/hoàn tác đơn #" + orderId));
     }
 
     public Page<Product> searchAdminProducts(String keyword, Long categoryId, String status, Pageable pageable) {

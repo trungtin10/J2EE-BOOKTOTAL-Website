@@ -5,13 +5,16 @@
 <head>
     <title>Chi tiết đơn hàng - BookTotal</title>
     <style>
-        .progress-track { display: flex; margin-bottom: 30px; position: relative; }
-        .step { flex: 1; text-align: center; position: relative; font-size: 0.75rem; color: #999; z-index: 2; }
-        .progress-line { position: absolute; top: 12px; left: 10%; width: 80%; height: 3px; background-color: #eee; z-index: 1; }
-        .progress-line-fill { height: 100%; background-color: #2ecc71; transition: width 0.5s; }
-        .step-icon { width: 28px; height: 28px; background-color: #eee; border-radius: 50%; margin: 0 auto 8px; display: flex; align-items: center; justify-content: center; color: white; border: 2px solid white; }
-        .step.active { color: #2ecc71; font-weight: 700; }
-        .step.active .step-icon { background-color: #2ecc71; }
+        .progress-track-3 { display: flex; margin-bottom: 24px; position: relative; padding-top: 8px; }
+        .progress-track-3 .step { flex: 1; text-align: center; position: relative; font-size: 0.8rem; color: #999; z-index: 2; }
+        .progress-line { position: absolute; top: 22px; left: 16%; width: 68%; height: 4px; background-color: #e9ecef; z-index: 1; border-radius: 2px; }
+        .progress-line-fill { height: 100%; background: linear-gradient(90deg, #C92127, #2ecc71); border-radius: 2px; transition: width 0.45s ease; }
+        .step-icon { width: 36px; height: 36px; background-color: #e9ecef; border-radius: 50%; margin: 0 auto 10px; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 0.85rem; border: 3px solid #fff; box-shadow: 0 1px 4px rgba(0,0,0,.08); }
+        .step.done { color: #198754; font-weight: 600; }
+        .step.done .step-icon { background-color: #198754; }
+        .step.current { color: #C92127; font-weight: 700; }
+        .step.current .step-icon { background-color: #C92127; }
+        .track-hint { font-size: 0.75rem; color: #6c757d; }
     </style>
 </head>
 
@@ -21,10 +24,14 @@
             <nav aria-label="breadcrumb" class="mb-4">
                 <ol class="breadcrumb">
                     <li class="breadcrumb-item"><a th:href="@{/}">Trang chủ</a></li>
-                    <li class="breadcrumb-item"><a th:href="@{/profile/orders}">Lịch sử đơn hàng</a></li>
+                    <li class="breadcrumb-item"><a th:href="@{/orders}">Lịch sử đơn hàng</a></li>
                     <li class="breadcrumb-item active" th:text="'Đơn hàng #' + ${order.id}"></li>
                 </ol>
             </nav>
+
+            <div class="mb-3">
+                <a th:href="@{/orders}" class="btn btn-outline-secondary btn-sm"><i class="fas fa-arrow-left me-1"></i> Danh sách đơn hàng</a>
+            </div>
 
             <div class="row">
                 <div class="col-lg-8">
@@ -33,27 +40,33 @@
                             <h5 class="mb-0 fw-bold">Trạng thái đơn hàng</h5>
                         </div>
                         <div class="card-body">
-                            <div th:if="${order.status != 'CANCELLED'}" class="progress-track mt-3">
+                            <p class="track-hint mb-2" th:if="${!order.customerOrderCancelled}">
+                                <i class="fas fa-sync-alt me-1"></i> Trạng thái cập nhật theo hệ thống. Trang tự làm mới khi có thay đổi (khoảng 15 giây).
+                            </p>
+                            <div th:if="${!order.customerOrderCancelled}" id="order-progress-root" class="progress-track-3 mt-2">
                                 <div class="progress-line">
-                                    <div class="progress-line-fill" th:style="'width: ' + 
-                                        (${order.status == 'PENDING'} ? '0%' : 
-                                        (${order.status == 'PROCESSING'} ? '33.3%' : 
-                                        (${order.status == 'SHIPPED'} ? '66.6%' : '100%')))"></div>
+                                    <div id="order-progress-fill" class="progress-line-fill" th:style="'width: ' + ${order.customerProgressPercent} + '%'"></div>
                                 </div>
-                                <div th:class="'step ' + (${order.status == 'PENDING' or order.status == 'PROCESSING' or order.status == 'SHIPPED' or order.status == 'COMPLETED' ? 'active' : ''})">
-                                    <div class="step-icon"><i class="fas fa-file-alt"></i></div> Đặt hàng
+                                <div class="step"
+                                     th:classappend="${(order.customerProgressStep >= 1 ? ' done' : '') + (order.customerProgressStep == 1 ? ' current' : '')}">
+                                    <div class="step-icon"><i class="fas fa-clipboard-check"></i></div>
+                                    Chờ xác nhận
                                 </div>
-                                <div th:class="'step ' + (${order.status == 'PROCESSING' or order.status == 'SHIPPED' or order.status == 'COMPLETED' ? 'active' : ''})">
-                                    <div class="step-icon"><i class="fas fa-box"></i></div> Đóng gói
+                                <div class="step"
+                                     th:classappend="${(order.customerProgressStep >= 2 ? ' done' : '') + (order.customerProgressStep == 2 ? ' current' : '')}">
+                                    <div class="step-icon"><i class="fas fa-truck"></i></div>
+                                    Đang giao
                                 </div>
-                                <div th:class="'step ' + (${order.status == 'SHIPPED' or order.status == 'COMPLETED' ? 'active' : ''})">
-                                    <div class="step-icon"><i class="fas fa-truck"></i></div> Vận chuyển
-                                </div>
-                                <div th:class="'step ' + (${order.status == 'COMPLETED' ? 'active' : ''})">
-                                    <div class="step-icon"><i class="fas fa-star"></i></div> Hoàn thành
+                                <div class="step"
+                                     th:classappend="${(order.customerProgressStep >= 3 ? ' done' : '') + (order.customerProgressStep == 3 ? ' current' : '')}">
+                                    <div class="step-icon"><i class="fas fa-check-double"></i></div>
+                                    Hoàn thành
                                 </div>
                             </div>
-                            <div th:if="${order.status == 'CANCELLED'}" class="alert alert-danger text-center mb-0">
+                            <p th:if="${!order.customerOrderCancelled}" class="mb-0 mt-3 text-center">
+                                <span class="badge bg-light text-dark border">Chi tiết hệ thống: <span th:text="${order.statusVietnamese}">—</span></span>
+                            </p>
+                            <div th:if="${order.customerOrderCancelled}" class="alert alert-danger text-center mb-0">
                                 <i class="fas fa-times-circle me-2"></i> Đơn hàng này đã bị hủy.
                             </div>
                         </div>
@@ -65,18 +78,25 @@
                         </div>
                         <div class="card-body p-0">
                             <table class="table table-borderless mb-0">
-                                <tbody th:each="detail : ${order.orderDetails}">
-                                    <tr class="align-middle">
+                                <thead class="table-light small text-muted">
+                                    <tr>
+                                        <th colspan="2">Sản phẩm</th>
+                                        <th class="text-end">Đơn giá</th>
+                                        <th class="text-end">SL</th>
+                                        <th class="text-end">Thành tiền</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="detail : ${order.orderDetails}" class="align-middle">
                                         <td style="width: 80px;">
                                             <img th:src="${detail.product.imageUrl}" class="img-fluid rounded" style="width: 60px; height: 80px; object-fit: cover;" onerror="this.src='/images/default.jpg'">
                                         </td>
                                         <td>
                                             <div class="fw-bold" th:text="${detail.product.name}"></div>
-                                            <div class="text-muted small" th:text="'Số lượng: x' + ${detail.quantity}"></div>
                                         </td>
-                                        <td class="text-end">
-                                            <span class="fw-bold text-danger" th:text="${#numbers.formatDecimal(detail.priceAtPurchase, 0, 'COMMA', 0, 'POINT')} + ' đ'"></span>
-                                        </td>
+                                        <td class="text-end" th:text="${#numbers.formatDecimal(detail.priceAtPurchase, 0, 'COMMA', 0, 'POINT')} + ' đ'"></td>
+                                        <td class="text-end" th:text="${detail.quantity}"></td>
+                                        <td class="text-end fw-bold text-danger" th:text="${#numbers.formatDecimal(detail.priceAtPurchase * detail.quantity, 0, 'COMMA', 0, 'POINT')} + ' đ'"></td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -119,5 +139,30 @@
             </div>
         </div>
     </div>
+
+    <th:block layout:fragment="script">
+        <script th:inline="javascript">
+            /*<![CDATA[*/
+            (function () {
+                var cancelled = /*[[${order.customerOrderCancelled}]]*/ false;
+                if (cancelled) return;
+                var lastStatus = /*[[${order.status != null ? order.status : ''}]]*/ '';
+                var lastStep = /*[[${order.customerProgressStep}]]*/ 0;
+                var pollUrl = /*[[@{/api/user/orders/{id}/status(id=${order.id})}]]*/ '';
+                setInterval(function () {
+                    fetch(pollUrl, { credentials: 'same-origin', headers: { 'Accept': 'application/json' } })
+                        .then(function (r) { return r.ok ? r.json() : null; })
+                        .then(function (data) {
+                            if (!data || !data.success) return;
+                            if (data.status !== lastStatus || data.progressStep !== lastStep) {
+                                location.reload();
+                            }
+                        })
+                        .catch(function () { /* bỏ qua lỗi mạng tạm thời */ });
+                }, 15000);
+            })();
+            /*]]>*/
+        </script>
+    </th:block>
 </body>
 </html>

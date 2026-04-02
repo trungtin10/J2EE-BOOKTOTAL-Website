@@ -1,161 +1,95 @@
 <!DOCTYPE html>
-<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<html lang="vi"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{admin/layout/admin_layout}">
 
 <head>
     <meta charset="UTF-8">
-    <title>Thống Kê & Báo Cáo | Admin</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@600;700&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style>
-        body {
-            background-color: #f4f6f9;
-            font-family: 'Segoe UI', sans-serif;
-        }
-
-        .card {
-            border: none;
-            border-radius: .75rem;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
-            margin-bottom: 2rem;
-        }
-
-        .card-header {
-            background-color: #fff;
-            border-bottom: none;
-            padding: 1.25rem 1.5rem;
-            font-weight: 600;
-        }
-
-        .stat-card {
-            position: relative;
-            overflow: hidden;
-            color: #fff;
-            border-radius: .75rem;
-        }
-
-        .stat-card .icon {
-            position: absolute;
-            top: 50%;
-            right: 20px;
-            transform: translateY(-50%);
-            font-size: 4rem;
-            opacity: 0.2;
-        }
-
-        .stat-card h3 {
-            font-size: 2.5rem;
-            font-weight: 700;
-        }
-
-        .bg-success-light {
-            background-color: #28a745;
-        }
-
-        .bg-info-light {
-            background-color: #17a2b8;
-        }
-
-        .bg-warning-light {
-            background-color: #ffc107;
-            color: #333 !important;
-        }
-
-        .bg-primary-light {
-            background-color: #007bff;
-        }
-
-        .bg-danger-light {
-            background-color: #dc3545;
-        }
-
-        .order-status-box {
-            padding: 1rem;
-            border-radius: .5rem;
-            color: #fff;
-            text-align: center;
-        }
-
-        .status-badge {
-            display: inline-block;
-            padding: .35em .65em;
-            font-size: .75em;
-            font-weight: 700;
-            line-height: 1;
-            color: #fff;
-            text-align: center;
-            white-space: nowrap;
-            vertical-align: baseline;
-            border-radius: .25rem;
-        }
-
-        .status-COMPLETED {
-            background-color: #28a745;
-        }
-
-        .status-PENDING {
-            background-color: #fff3cd;
-            color: #664d03;
-        }
-
-        .status-CONFIRMED {
-            background-color: #cfe2ff;
-            color: #084298;
-        }
-
-        .status-PROCESSING {
-            background-color: #e2e3e5;
-            color: #41464b;
-        }
-
-        .status-SHIPPED {
-            background-color: #d1e7dd;
-            color: #0f5132;
-        }
-
-        .status-DELIVERING {
-            background-color: #cff4fc;
-            color: #055160;
-        }
-
-        .status-CANCELLED {
-            background-color: #f8d7da;
-            color: #842029;
-        }
-    </style>
+    <title>Thống kê</title>
+    <th:block layout:fragment="css">
+        <style>
+            .stat-card { position: relative; overflow: hidden; color: #fff; border-radius: .75rem; }
+            .stat-card .icon { position: absolute; top: 50%; right: 20px; transform: translateY(-50%); font-size: 4rem; opacity: 0.2; }
+            .stat-card h3 { font-size: 2.25rem; font-weight: 800; margin: 0; }
+            .bg-success-light { background-color: #28a745; }
+            .bg-info-light { background-color: #17a2b8; }
+            .order-status-box { padding: 1rem; border-radius: .5rem; text-align: center; }
+            .status-badge { display: inline-block; padding: .35em .65em; font-size: .75em; font-weight: 700; line-height: 1; border-radius: .25rem; }
+            .status-COMPLETED { background-color: #28a745; color: #fff; }
+            .status-PENDING { background-color: #fff3cd; color: #664d03; }
+            .status-CONFIRMED { background-color: #cfe2ff; color: #084298; }
+            .status-PROCESSING { background-color: #e2e3e5; color: #41464b; }
+            .status-SHIPPED { background-color: #d1e7dd; color: #0f5132; }
+            .status-DELIVERING { background-color: #cff4fc; color: #055160; }
+            .status-CANCELLED { background-color: #f8d7da; color: #842029; }
+        </style>
+    </th:block>
 </head>
 
 <body>
-    <div class="container-fluid">
-        <div class="row">
-            <!-- Sidebar -->
-            <div th:replace="~{admin/partials/layout :: sidebar}"></div>
+<th:block layout:fragment="pageTitle">Thống kê</th:block>
 
-            <!-- Main Content -->
-            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 py-4">
-                <div
-                    class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-                    <h1 class="h2"><i class="fas fa-chart-pie me-2"></i> THỐNG KÊ & BÁO CÁO</h1>
-                    <div th:replace="~{admin/partials/layout :: topbar}"></div>
+<div layout:fragment="content" class="container-fluid py-3" th:with="activePage='stats'">
+    <div class="admin-page-header">
+        <div>
+            <div class="admin-page-title"><i class="fas fa-chart-pie me-2"></i>Thống kê & báo cáo</div>
+            <div class="admin-page-subtitle">Doanh thu, số đơn và tình hình đơn hàng</div>
+        </div>
+    </div>
+
+                <!-- Bộ lọc khoảng thời gian -->
+                <div class="card mb-4">
+                    <div class="card-body py-3">
+                        <form method="get" th:action="@{/admin/stats}" class="row g-3 align-items-end">
+                            <div class="col-md-3 col-lg-2">
+                                <label class="form-label small fw-bold mb-1">Từ ngày</label>
+                                <input type="date" name="start" class="form-control form-control-sm" required
+                                       th:value="${rangeStart}">
+                            </div>
+                            <div class="col-md-3 col-lg-2">
+                                <label class="form-label small fw-bold mb-1">Đến ngày</label>
+                                <input type="date" name="end" class="form-control form-control-sm" required
+                                       th:value="${rangeEnd}">
+                            </div>
+                            <div class="col-md-4 col-lg-3">
+                                <label class="form-label small fw-bold mb-1">Biểu đồ theo</label>
+                                <select name="group" class="form-select form-select-sm">
+                                    <option value="day" th:selected="${groupBy == 'day'}">Ngày (đường)</option>
+                                    <option value="month" th:selected="${groupBy == 'month'}">Tháng (cột)</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2 col-lg-2">
+                                <button type="submit" class="btn btn-primary btn-sm w-100">
+                                    <i class="fas fa-filter me-1"></i> Áp dụng
+                                </button>
+                            </div>
+                        </form>
+                    </div>
                 </div>
 
-                <!-- Tổng quan Doanh thu và Đơn hàng -->
+                <!-- Tổng quan Doanh thu và Đơn hàng (theo khoảng đã chọn) -->
                 <div class="row">
                     <div class="col-lg-6 mb-4">
                         <div class="stat-card bg-success-light p-4 h-100">
                             <div class="icon"><i class="fas fa-dollar-sign"></i></div>
-                            <p class="mb-2 fs-5">Tổng Doanh Thu (Đã Hoàn Thành)</p>
+                            <p class="mb-1 fs-5">Tổng doanh thu</p>
+                            <p class="small opacity-75 mb-2"
+                               th:text="${#temporals.format(rangeStart, 'dd/MM/yyyy')} + ' — ' + ${#temporals.format(rangeEnd, 'dd/MM/yyyy')}"></p>
                             <h3
                                 th:text="${#numbers.formatDecimal(totalRevenue != null ? totalRevenue : 0, 0, 'COMMA', 0, 'POINT')} + ' đ'">
                             </h3>
+                            <span class="small opacity-75">Đơn hoàn thành</span>
                         </div>
                     </div>
                     <div class="col-lg-6 mb-4">
                         <div class="stat-card bg-info-light p-4 h-100">
                             <div class="icon"><i class="fas fa-shopping-cart"></i></div>
-                            <p class="mb-2 fs-5">Tổng Số Đơn Hàng</p>
+                            <p class="mb-1 fs-5">Tổng số đơn hàng</p>
+                            <p class="small opacity-75 mb-2"
+                               th:text="${#temporals.format(rangeStart, 'dd/MM/yyyy')} + ' — ' + ${#temporals.format(rangeEnd, 'dd/MM/yyyy')}"></p>
                             <h3 th:text="${totalOrders != null ? totalOrders : 0}"></h3>
+                            <span class="small opacity-75">Mọi trạng thái</span>
                         </div>
                     </div>
                 </div>
@@ -169,12 +103,12 @@
                         <div class="row">
                             <div class="col">
                                 <div class="order-status-box" style="background-color: #fff3cd; color: #664d03;">
-                                    <strong>Chờ xác nhận</strong><br><span
+                                    <strong>Chờ duyệt</strong><br><span
                                         th:text="${orderStats != null ? orderStats['PENDING'] : 0}"></span></div>
                             </div>
                             <div class="col">
                                 <div class="order-status-box" style="background-color: #cfe2ff; color: #084298;">
-                                    <strong>Đã xác nhận</strong><br><span
+                                    <strong>Đã duyệt</strong><br><span
                                         th:text="${orderStats != null ? orderStats['CONFIRMED'] : 0}"></span></div>
                             </div>
                             <div class="col">
@@ -184,7 +118,7 @@
                             </div>
                             <div class="col">
                                 <div class="order-status-box" style="background-color: #d1e7dd; color: #0f5132;">
-                                    <strong>Hoàn thành</strong><br><span
+                                    <strong>Đã giao</strong><br><span
                                         th:text="${orderStats != null ? orderStats['COMPLETED'] : 0}"></span></div>
                             </div>
                             <div class="col">
@@ -198,15 +132,20 @@
 
                 <!-- Biểu đồ doanh thu -->
                 <div class="card">
-                    <div class="card-header">
-                        <h5 class="card-title fw-bold mb-0">Doanh Thu Gần Đây (Đơn Hoàn Thành)</h5>
+                    <div class="card-header d-flex flex-wrap justify-content-between align-items-center gap-2">
+                        <h5 class="card-title fw-bold mb-0">Biểu đồ doanh thu (đơn hoàn thành)</h5>
+                        <span class="badge bg-secondary"
+                              th:text="${groupBy == 'month'} ? 'Theo tháng' : 'Theo ngày'"></span>
                     </div>
                     <div class="card-body">
-                        <div th:if="${chartData != null and !chartData.empty}">
-                            <canvas id="revenueChart"></canvas>
+                        <p class="text-muted small mb-3">
+                            Doanh thu tính trên đơn <strong>COMPLETED</strong> trong khoảng. Tổng số đơn: mọi trạng thái đặt trong khoảng.
+                        </p>
+                        <div th:if="${chartData != null and !chartData.empty and !chartEmpty}">
+                            <canvas id="revenueChart" height="100"></canvas>
                         </div>
-                        <div th:if="${chartData == null or chartData.empty}">
-                            <p class="text-center text-muted py-5">Chưa có dữ liệu doanh thu để vẽ biểu đồ.</p>
+                        <div th:if="${chartData == null or chartData.empty or chartEmpty}">
+                            <p class="text-center text-muted py-5">Không có dữ liệu doanh thu trong khoảng thời gian đã chọn.</p>
                         </div>
                     </div>
                 </div>
@@ -262,10 +201,6 @@
                         </div>
                     </div>
                 </div>
-            </main>
-        </div>
-    </div>
-
     <!-- Modal Chi Tiết Đơn Hàng -->
     <div class="modal fade" id="orderDetailModal" tabindex="-1">
         <div class="modal-dialog modal-lg">
@@ -284,25 +219,29 @@
         </div>
     </div>
 
-    <!-- Pass chart data from Spring model to JS variables -->
-    <script th:inline="javascript">
-        /*<![CDATA[*/
-        var labels = /*[[${chartLabels}]]*/[];
-        var data = /*[[${chartData}]]*/[];
+    <th:block layout:fragment="script">
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <!-- Pass chart data from Spring model to JS variables -->
+        <script th:inline="javascript">
+            /*<![CDATA[*/
+            var labels = /*[[${chartLabels}]]*/[];
+            var data = /*[[${chartData}]]*/[];
+            var chartJsType = /*[[${chartJsType}]]*/ 'line';
 
-        if (data && data.length > 0) {
+        if (data && data.length > 0 && document.getElementById('revenueChart')) {
             const ctx = document.getElementById('revenueChart').getContext('2d');
+            const isBar = chartJsType === 'bar';
             new Chart(ctx, {
-                type: 'line',
+                type: chartJsType === 'bar' ? 'bar' : 'line',
                 data: {
                     labels: labels,
                     datasets: [{
                         label: 'Doanh thu (VNĐ)',
                         data: data,
                         borderColor: '#28a745',
-                        backgroundColor: 'rgba(40, 167, 69, 0.1)',
-                        fill: true,
-                        tension: 0.4
+                        backgroundColor: isBar ? 'rgba(40, 167, 69, 0.55)' : 'rgba(40, 167, 69, 0.1)',
+                        fill: !isBar,
+                        tension: 0.35
                     }]
                 },
                 options: {
@@ -323,9 +262,9 @@
                 }
             });
         }
-        /*]]>*/
+            /*]]>*/
 
-        function showOrderDetail(orderId) {
+            function showOrderDetail(orderId) {
             document.getElementById('modalOrderId').innerText = '#' + orderId;
             document.getElementById('modalOrderContent').innerHTML = '<div class="text-center py-5"><div class="spinner-border"></div></div>';
             new bootstrap.Modal(document.getElementById('orderDetailModal')).show();
@@ -357,11 +296,12 @@
                     };
 
                     const statusMap = {
-                        'PENDING': 'Chờ xác nhận',
-                        'CONFIRMED': 'Đã xác nhận',
-                        'PROCESSING': 'Đang xử lý',
-                        'SHIPPED': 'Đã giao VC',
-                        'DELIVERING': 'Đang giao hàng',
+                        'PENDING': 'Chờ duyệt',
+                        'CONFIRMED': 'Đã duyệt',
+                        'PROCESSING': 'Đang chuẩn bị',
+                        'SHIPPED': 'Đang giao',
+                        'SHIPPING': 'Đang giao',
+                        'DELIVERING': 'Đang giao',
                         'COMPLETED': 'Đã giao',
                         'CANCELLED': 'Đã hủy'
                     };
@@ -465,9 +405,10 @@
                 .catch(err => {
                     document.getElementById('modalOrderContent').innerHTML = '<p class="text-danger p-3">Lỗi tải dữ liệu: ' + err.message + '</p>';
                 });
-        }
-    </script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+            }
+        </script>
+    </th:block>
+</div>
 </body>
 
 </html>

@@ -27,10 +27,16 @@ public class OrderService {
     private ProductRepository productRepository;
 
     @Autowired
+    private ProductService productService;
+
+    @Autowired
     private com.bookstore.repository.CouponRepository couponRepository;
 
     @Autowired
     private NotificationService notificationService;
+
+    @Autowired
+    private EmailService emailService;
 
     public List<Order> getAllOrders() {
         return orderRepository.findAllByOrderByOrderDateDesc();
@@ -59,15 +65,12 @@ public class OrderService {
             detail.setOrder(savedOrder);
             orderDetailRepository.save(detail);
 
-            // Cập nhật số lượng tồn kho và số lượng đã bán
             Product product = detail.getProduct();
             if (product != null) {
                 if (product.getQuantity() < detail.getQuantity()) {
                     throw new RuntimeException("Sản phẩm '" + product.getName() + "' không đủ số lượng trong kho.");
                 }
-                product.setQuantity(product.getQuantity() - detail.getQuantity());
-                product.setSoldCount(product.getSoldCount() + detail.getQuantity());
-                productRepository.save(product);
+                // Tồn kho chỉ trừ khi admin duyệt đơn (CONFIRMED), không trừ lúc đặt hàng
             }
         }
 
@@ -102,74 +105,146 @@ public class OrderService {
     @Transactional
     public void updateOrderStatus(Long orderId, String status) {
         Order order = orderRepository.findById(orderId).orElseThrow(() -> new RuntimeException("Order not found"));
+        if (order.isCustomerOrderCancelled() && (status == null || !"CANCELLED".equalsIgnoreCase(status.trim()))) {
+            throw new RuntimeException("Đơn hàng đã hủy, không thể cập nhật trạng thái.");
+        }
+        String previous = order.getStatus();
+        if (status != null && status.equals(previous)) {
+            return;
+        }
+
+        boolean wasDeducted = Boolean.TRUE.equals(order.getStockDeducted());
+        if (wasDeducted && ("CANCELLED".equals(status) || "PENDING".equals(status))) {
+            restoreOrderInventory(order);
+            order.setStockDeducted(false);
+        }
+
         order.setStatus(status);
 
-        if ("SHIPPED".equals(status) && (order.getTrackingCode() == null || order.getTrackingCode().isEmpty())) {
-            // Simulate generating tracking code (parity with Node.js)
+        if (("DELIVERING".equals(status) || "SHIPPED".equals(status) || "SHIPPING".equals(status))
+                && (order.getTrackingCode() == null || order.getTrackingCode().isEmpty())) {
             long randomNum = (long) (Math.random() * 90000000L + 10000000L);
-            String trackingCode = "GHN-" + randomNum;
-            order.setTrackingCode(trackingCode);
+            order.setTrackingCode("GHN-" + randomNum);
             order.setExpectedDeliveryDate(LocalDateTime.now().plusDays(3));
+        }
+
+        if ("CONFIRMED".equals(status) && !Boolean.TRUE.equals(order.getStockDeducted())) {
+            deductOrderInventory(order);
+            order.setStockDeducted(true);
         }
 
         orderRepository.save(order);
 
-        // Trigger notification for status change
         String title = "Cập nhật đơn hàng";
-        String message = "Đơn hàng #" + order.getId() + " đã thay đổi trạng thái.";
+        String message = "Đơn hàng #" + order.getId() + " đã chuyển sang: " + Order.labelVietnamese(status) + ".";
         String type = "info";
 
         switch (status) {
+            case "PENDING":
+                title = "Đơn hàng chờ duyệt";
+                message = "Đơn hàng #" + order.getId() + " đang ở trạng thái chờ duyệt.";
+                type = "warning";
+                break;
             case "CONFIRMED":
-                title = "Đơn hàng đã được xác nhận";
-                message = "Đơn hàng #" + order.getId() + " của bạn đã được xác nhận.";
+                title = "Đơn hàng đã được duyệt";
+                message = "Đơn hàng #" + order.getId() + " đã được duyệt và sẽ được chuẩn bị giao.";
                 break;
             case "PROCESSING":
-                title = "Đang xử lý đơn hàng";
-                message = "Đơn hàng #" + order.getId() + " đang được đóng gói.";
+                title = "Đơn hàng đang được chuẩn bị";
+                message = "Đơn hàng #" + order.getId() + " đang được chuẩn bị.";
                 break;
             case "SHIPPED":
-                title = "Đã giao cho vận chuyển";
-                message = "Đơn hàng #" + order.getId() + " đã được bàn giao cho đơn vị vận chuyển GHN. Mã vận đơn: " + order.getTrackingCode();
+                title = "Đơn hàng đang giao";
+                message = "Đơn hàng #" + order.getId() + " đã có mã vận đơn: " + order.getTrackingCode() + ".";
+                type = "warning";
                 break;
             case "DELIVERING":
-                title = "Đang giao hàng";
-                message = "Shipper đang giao đơn hàng #" + order.getId() + " đến bạn.";
+            case "SHIPPING":
+                title = "Đơn hàng đang được giao";
+                message = "Đơn hàng #" + order.getId() + " đang trên đường giao đến bạn."
+                        + (order.getTrackingCode() != null && !order.getTrackingCode().isEmpty()
+                        ? " Mã vận đơn: " + order.getTrackingCode() + "." : "");
                 type = "warning";
                 break;
             case "COMPLETED":
-                title = "Giao hàng thành công";
-                message = "Đơn hàng #" + order.getId() + " đã hoàn tất. Cảm ơn bạn đã mua sắm!";
+                title = "Đơn hàng đã giao";
+                message = "Đơn hàng #" + order.getId() + " đã giao thành công. Cảm ơn bạn đã mua sắm!";
                 type = "success";
                 break;
             case "CANCELLED":
-                title = "Đơn hàng bị hủy";
+                title = "Đơn hàng đã hủy";
                 message = "Đơn hàng #" + order.getId() + " đã bị hủy.";
                 type = "danger";
+                break;
+            default:
                 break;
         }
 
         if (order.getUser() != null) {
             notificationService.createNotification(order.getUser().getId(), title, message, type);
+            String email = order.getUser().getEmail();
+            if (email != null && !email.isBlank()) {
+                String recipientName = resolveRecipientName(order);
+                String detailHtml = buildOrderStatusEmailDetail(order, status);
+                emailService.sendOrderStatusEmail(email, recipientName, order.getId(), Order.labelVietnamese(status), detailHtml);
+            }
         }
     }
 
-    private String translateStatus(String status) {
-        switch (status) {
-            case "PENDING": return "Chờ xác nhận";
-            case "CONFIRMED": return "Đã xác nhận";
-            case "PROCESSING": return "Đang xử lý";
-            case "SHIPPED": return "Đã giao cho ĐVVC";
-            case "DELIVERING": return "Đang giao hàng";
-            case "COMPLETED": return "Đã hoàn thành";
-            case "CANCELLED": return "Đã hủy";
-            default: return status;
+    private static String resolveRecipientName(Order order) {
+        String n = order.getShippingName();
+        if (n != null && !n.trim().isEmpty()) return n.trim();
+        if (order.getUser() != null) {
+            if (order.getUser().getFullName() != null && !order.getUser().getFullName().isBlank()) {
+                return order.getUser().getFullName().trim();
+            }
+            return order.getUser().getUsername();
+        }
+        return "Quý khách";
+    }
+
+    private static String buildOrderStatusEmailDetail(Order order, String status) {
+        if (("DELIVERING".equals(status) || "SHIPPED".equals(status) || "SHIPPING".equals(status))
+                && order.getTrackingCode() != null && !order.getTrackingCode().isBlank()) {
+            return "<p><strong>Mã vận đơn:</strong> " + order.getTrackingCode() + "</p>";
+        }
+        if ("COMPLETED".equals(status)) {
+            return "<p>Bạn có thể xem lại chi tiết đơn hàng trong mục <strong>Lịch sử đơn hàng</strong> trên website.</p>";
+        }
+        if ("CANCELLED".equals(status)) {
+            return "<p>Nếu cần hỗ trợ, vui lòng liên hệ bộ phận chăm sóc khách hàng.</p>";
+        }
+        return "";
+    }
+
+    private void deductOrderInventory(Order order) {
+        if (order.getOrderDetails() == null) {
+            return;
+        }
+        for (OrderDetail d : order.getOrderDetails()) {
+            if (d.getProduct() != null && d.getQuantity() != null && d.getQuantity() > 0) {
+                productService.deductStockForOrderConfirmation(d.getProduct().getId(), d.getQuantity(), order.getId());
+            }
+        }
+    }
+
+    private void restoreOrderInventory(Order order) {
+        if (order.getOrderDetails() == null) {
+            return;
+        }
+        for (OrderDetail d : order.getOrderDetails()) {
+            if (d.getProduct() != null && d.getQuantity() != null && d.getQuantity() > 0) {
+                productService.restoreStockAfterOrderRelease(d.getProduct().getId(), d.getQuantity(), order.getId());
+            }
         }
     }
 
     @Transactional
     public void updatePaymentStatus(Long orderId, String paymentStatus) {
         Order order = orderRepository.findById(orderId).orElseThrow(() -> new RuntimeException("Order not found"));
+        if (order.isCustomerOrderCancelled()) {
+            throw new RuntimeException("Đơn hàng đã hủy, không thể cập nhật thanh toán.");
+        }
         order.setPaymentStatus(paymentStatus);
         orderRepository.save(order);
     }
@@ -177,6 +252,9 @@ public class OrderService {
     @Transactional
     public void updatePaymentMethod(Long orderId, String paymentMethod) {
         Order order = orderRepository.findById(orderId).orElseThrow(() -> new RuntimeException("Order not found"));
+        if (order.isCustomerOrderCancelled()) {
+            throw new RuntimeException("Đơn hàng đã hủy, không thể cập nhật phương thức thanh toán.");
+        }
         order.setPaymentMethod(paymentMethod);
         orderRepository.save(order);
     }
@@ -184,6 +262,9 @@ public class OrderService {
     @Transactional
     public void updateShippingInfo(Long orderId, String shippingName, String shippingPhone, String shippingAddress, String orderNote) {
         Order order = orderRepository.findById(orderId).orElseThrow(() -> new RuntimeException("Order not found"));
+        if (order.isCustomerOrderCancelled()) {
+            throw new RuntimeException("Đơn hàng đã hủy, không thể cập nhật thông tin giao hàng.");
+        }
         order.setShippingName(shippingName);
         order.setShippingPhone(shippingPhone);
         order.setShippingAddress(shippingAddress);
@@ -204,10 +285,9 @@ public class OrderService {
             throw new RuntimeException("Mục này không thuộc về đơn hàng đã chọn");
         }
 
-        // Adjust stock
         Product product = item.getProduct();
         int diff = quantity - item.getQuantity();
-        if (product != null) {
+        if (product != null && Boolean.TRUE.equals(order.getStockDeducted())) {
             if (product.getQuantity() < diff) {
                 throw new RuntimeException("Số lượng tồn kho không đủ");
             }
@@ -231,9 +311,8 @@ public class OrderService {
             throw new RuntimeException("Mục này không thuộc về đơn hàng đã chọn");
         }
 
-        // Return stock
         Product product = item.getProduct();
-        if (product != null) {
+        if (product != null && Boolean.TRUE.equals(order.getStockDeducted())) {
             product.setQuantity(product.getQuantity() + item.getQuantity());
             product.setSoldCount(product.getSoldCount() - item.getQuantity());
             productRepository.save(product);
@@ -262,7 +341,13 @@ public class OrderService {
         orderRepository.save(order);
     }
 
+    @Transactional
     public void deleteOrder(Long id) {
-        orderRepository.deleteById(id);
+        orderRepository.findById(id).ifPresent(order -> {
+            if (Boolean.TRUE.equals(order.getStockDeducted())) {
+                restoreOrderInventory(order);
+            }
+            orderRepository.deleteById(id);
+        });
     }
 }

@@ -34,7 +34,7 @@ public class ReviewController {
             return "redirect:/login";
         }
 
-        Product product = productService.getProductById(productId)
+        Product product = productService.getActiveProductById(productId)
                 .orElseThrow(() -> new RuntimeException("Product not found"));
         
         User user = userDetails.getUser();

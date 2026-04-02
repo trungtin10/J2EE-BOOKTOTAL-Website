@@ -1,65 +1,86 @@
 package com.bookstore.service;
 
 import com.bookstore.model.Order;
-import org.apache.poi.ss.usermodel.*;
+import com.bookstore.model.User;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.CreationHelper;
+import org.apache.poi.ss.usermodel.Font;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.time.format.DateTimeFormatter;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.Date;
 import java.util.List;
 
+/**
+ * Xuất đơn hàng ra .xlsx (Office Open XML) — tương thích Excel, LibreOffice Calc, Google Sheets.
+ */
 @Service
 public class ExcelExportService {
 
-    public ByteArrayInputStream exportOrdersToExcel(List<Order> orders) throws IOException {
-        String[] columns = {"Mã ĐH", "Khách Hàng", "Số Điện Thoại", "Địa Chỉ", "Tổng Tiền", "Trạng Thái", "Thanh Toán", "Ngày Đặt"};
+    private static final String[] COLUMNS = {"Mã đơn", "Khách hàng", "Ngày đặt", "Tổng tiền"};
 
+    public ByteArrayInputStream exportOrdersToExcel(List<Order> orders) throws IOException {
         try (Workbook workbook = new XSSFWorkbook(); ByteArrayOutputStream out = new ByteArrayOutputStream()) {
-            Sheet sheet = workbook.createSheet("Danh Sách Đơn Hàng");
+            CreationHelper helper = workbook.getCreationHelper();
+            Sheet sheet = workbook.createSheet("Đơn hàng");
 
             Font headerFont = workbook.createFont();
             headerFont.setBold(true);
-            headerFont.setColor(IndexedColors.BLACK.getIndex());
 
-            CellStyle headerCellStyle = workbook.createCellStyle();
-            headerCellStyle.setFont(headerFont);
+            CellStyle headerStyle = workbook.createCellStyle();
+            headerStyle.setFont(headerFont);
 
-            // Create Header Row
+            CellStyle dateStyle = workbook.createCellStyle();
+            dateStyle.setDataFormat(helper.createDataFormat().getFormat("dd/mm/yyyy hh:mm"));
+
+            CellStyle moneyStyle = workbook.createCellStyle();
+            moneyStyle.setDataFormat(helper.createDataFormat().getFormat("#,##0"));
+
             Row headerRow = sheet.createRow(0);
-            for (int col = 0; col < columns.length; col++) {
+            for (int col = 0; col < COLUMNS.length; col++) {
                 Cell cell = headerRow.createCell(col);
-                cell.setCellValue(columns[col]);
-                cell.setCellStyle(headerCellStyle);
+                cell.setCellValue(COLUMNS[col]);
+                cell.setCellStyle(headerStyle);
             }
 
+            ZoneId zone = ZoneId.systemDefault();
             int rowIdx = 1;
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
-
             for (Order order : orders) {
                 Row row = sheet.createRow(rowIdx++);
 
                 row.createCell(0).setCellValue("#" + order.getId());
-                
-                String customerName = order.getShippingName();
-                if (customerName == null || customerName.isEmpty()) {
-                    customerName = order.getUser() != null ? order.getUser().getFullName() : "Khách Vãng Lai";
-                }
-                row.createCell(1).setCellValue(customerName);
 
-                String customerPhone = order.getShippingPhone();
-                if (customerPhone == null || customerPhone.isEmpty()) {
-                    customerPhone = order.getUser() != null ? order.getUser().getPhone() : "";
-                }
-                row.createCell(2).setCellValue(customerPhone);
+                row.createCell(1).setCellValue(resolveCustomerLabel(order));
 
-                row.createCell(3).setCellValue(order.getShippingAddress());
-                row.createCell(4).setCellValue(String.format("%,.0f đ", order.getFinalTotal()));
-                row.createCell(5).setCellValue(translateStatus(order.getStatus()));
-                row.createCell(6).setCellValue("PAID".equals(order.getPaymentStatus()) ? "Đã thanh toán" : "Chưa thanh toán");
-                row.createCell(7).setCellValue(order.getOrderDate() != null ? order.getOrderDate().format(formatter) : "");
+                Cell dateCell = row.createCell(2);
+                LocalDateTime orderDate = order.getOrderDate();
+                if (orderDate != null) {
+                    Date excelDate = Date.from(orderDate.atZone(zone).toInstant());
+                    dateCell.setCellValue(excelDate);
+                    dateCell.setCellStyle(dateStyle);
+                } else {
+                    dateCell.setBlank();
+                }
+
+                Cell moneyCell = row.createCell(3);
+                double total = order.getFinalTotal() != null ? order.getFinalTotal() : 0.0;
+                moneyCell.setCellValue(total);
+                moneyCell.setCellStyle(moneyStyle);
+            }
+
+            for (int i = 0; i < COLUMNS.length; i++) {
+                sheet.autoSizeColumn(i);
+                int w = sheet.getColumnWidth(i);
+                sheet.setColumnWidth(i, Math.min(w + 1024, 55 * 256));
             }
 
             workbook.write(out);
@@ -67,17 +88,22 @@ public class ExcelExportService {
         }
     }
 
-    private String translateStatus(String status) {
-        if (status == null) return "";
-        return switch (status) {
-            case "PENDING" -> "Chờ xác nhận";
-            case "CONFIRMED" -> "Đã xác nhận";
-            case "PROCESSING" -> "Đang xử lý";
-            case "SHIPPED" -> "Đã giao cho ĐVVC";
-            case "DELIVERING" -> "Đang giao hàng";
-            case "COMPLETED" -> "Hoàn thành";
-            case "CANCELLED" -> "Đã hủy";
-            default -> status;
-        };
+    private static String resolveCustomerLabel(Order order) {
+        String s = firstNonBlank(order.getShippingName());
+        if (s != null) return s;
+        User u = order.getUser();
+        if (u != null) {
+            s = firstNonBlank(u.getFullName());
+            if (s != null) return s;
+            s = firstNonBlank(u.getUsername());
+            if (s != null) return s;
+        }
+        return "—";
+    }
+
+    private static String firstNonBlank(String s) {
+        if (s == null) return null;
+        String t = s.trim();
+        return t.isEmpty() ? null : t;
     }
 }

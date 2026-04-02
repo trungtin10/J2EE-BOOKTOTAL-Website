@@ -1,12 +1,14 @@
 <!DOCTYPE html>
-<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<html lang="vi"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{admin/layout/admin_layout}">
 
 <head>
     <meta charset="UTF-8">
-    <title>Cập Nhật Sách | Admin</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
+    <title>Cập nhật sản phẩm</title>
+    <th:block layout:fragment="css">
+        <style>
         body {
             background-color: #f4f6f9;
             font-family: 'Segoe UI', sans-serif;
@@ -68,10 +70,7 @@
             background: #fff;
         }
 
-        .upload-box:hover {
-            border-color: #C92127;
-            background: #fff5f5;
-        }
+        .upload-box:hover { border-color: var(--brand, #0b1f33); background: #f6f9fc; }
 
         #previewImg {
             max-height: 200px;
@@ -80,25 +79,50 @@
             margin: 0 auto;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
         }
-    </style>
+
+        .gallery-thumb {
+            width: 72px;
+            height: 72px;
+            object-fit: cover;
+            border-radius: 8px;
+            border: 1px solid rgba(0,0,0,0.06);
+        }
+        .gallery-thumb-wrap { position: relative; }
+        .gallery-thumb-remove {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            width: 24px;
+            height: 24px;
+            border-radius: 8px;
+            border: 0;
+            background: #dc3545;
+            color: #fff;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 6px 16px rgba(0,0,0,0.15);
+            cursor: pointer;
+        }
+        </style>
+    </th:block>
 </head>
 
 <body>
-    <div class="container-fluid">
-        <div class="row">
-            <!-- Sidebar -->
-            <div th:replace="~{admin/partials/layout :: sidebar}"></div>
+<th:block layout:fragment="pageTitle">Cập nhật sản phẩm</th:block>
 
-            <!-- Main Content -->
-            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 py-4">
-                <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h3 class="fw-bold text-dark"><i class="fas fa-edit text-primary me-2"></i> Cập Nhật Sách</h3>
-                    <div>
-                        <a th:href="@{/admin/products}" class="btn btn-outline-secondary me-3"><i
-                                class="fas fa-arrow-left me-2"></i> Quay lại</a>
-                        <div th:replace="~{admin/partials/layout :: topbar}" class="d-inline-block"></div>
-                    </div>
-                </div>
+<div layout:fragment="content" class="container-fluid py-3" th:with="activePage='products'">
+    <div class="admin-page-header">
+        <div>
+            <div class="admin-page-title"><i class="fas fa-edit me-2"></i>Cập nhật sản phẩm</div>
+            <div class="admin-page-subtitle">Chỉnh sửa thông tin và hình ảnh sản phẩm</div>
+        </div>
+        <div class="d-flex gap-2">
+            <a th:href="@{/admin/products}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-2"></i> Quay lại
+            </a>
+        </div>
+    </div>
 
                 <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
                     <i class="fas fa-exclamation-circle me-1"></i> <span th:text="${errorMessage}"></span>
@@ -108,6 +132,10 @@
                 <div th:if="${param.success}" class="alert alert-success alert-dismissible fade show" role="alert">
                     <i class="fas fa-check-circle me-1"></i> <span th:text="${param.success}"></span>
                     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+
+                <div th:if="${product.deleted == true}" class="alert alert-secondary">
+                    <i class="fas fa-archive me-2"></i>Sản phẩm đang <strong>xóa mềm</strong> (ẩn khỏi cửa hàng). Dùng danh sách lọc «Đã xóa mềm» để khôi phục.
                 </div>
 
                 <form th:action="@{'/admin/products/edit/' + ${product.id}}" method="POST" enctype="multipart/form-data"
@@ -125,6 +153,7 @@
                                         <label class="form-label">Tên sách <span class="text-danger">*</span></label>
                                         <input type="text" th:field="*{name}" class="form-control"
                                             placeholder="Nhập tên sách..." required>
+                                        <div class="text-danger small mt-1" th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></div>
                                     </div>
                                     <div class="row">
                                         <div class="col-md-6 mb-3">
@@ -191,6 +220,11 @@
                                                 <option value="Khác">Khác</option>
                                             </select>
                                         </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label">Kích thước</label>
+                                            <input type="text" th:field="*{dimensions}" class="form-control"
+                                                   placeholder="VD: 20 x 14 x 2 cm">
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -208,10 +242,24 @@
                                         <label class="form-label">Giá bán (VNĐ) <span
                                                 class="text-danger">*</span></label>
                                         <div class="input-group">
-                                            <input type="number" th:field="*{price}"
-                                                class="form-control fw-bold text-danger" required min="0">
+                                            <input type="text" id="priceDisplay" class="form-control fw-bold text-danger"
+                                                   inputmode="numeric" autocomplete="off"
+                                                   placeholder="Ví dụ: 76.000" required>
+                                            <input type="hidden" th:field="*{price}" id="priceHidden">
                                             <span class="input-group-text">₫</span>
                                         </div>
+                                        <div class="text-danger small mt-1" th:if="${#fields.hasErrors('price')}" th:errors="*{price}"></div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Giá niêm yết / gốc (VNĐ)</label>
+                                        <div class="input-group">
+                                            <input type="text" id="originalPriceDisplay" class="form-control"
+                                                   inputmode="numeric" autocomplete="off"
+                                                   placeholder="Để trống nếu không giảm giá">
+                                            <input type="hidden" th:field="*{originalPrice}" id="originalPriceHidden">
+                                            <span class="input-group-text">₫</span>
+                                        </div>
+                                        <div class="text-danger small mt-1" th:if="${#fields.hasErrors('originalPrice')}" th:errors="*{originalPrice}"></div>
                                     </div>
                                     <div class="mb-3">
                                         <label class="form-label">Số lượng kho <span
@@ -234,12 +282,13 @@
                                 <div class="card-header">
                                     <h5 class="mb-0">Hình ảnh</h5>
                                 </div>
-                                <div class="card-body p-4 text-center">
+                                <div class="card-body p-4">
+                                    <div class="text-center">
                                     <div class="upload-box" onclick="document.getElementById('fileInput').click()">
                                         <img id="previewImg"
-                                            th:src="@{${product.imageUrl != null ? (product.imageUrl.startsWith('http') or product.imageUrl.startsWith('/uploads/') ? product.imageUrl : '/uploads/' + product.imageUrl) : '/uploads/default.jpg'}}" alt="Preview"
+                                            th:src="@{${product.imageUrl != null ? (product.imageUrl.startsWith('http') or product.imageUrl.startsWith('/uploads/') ? product.imageUrl : '/uploads/' + product.imageUrl) : '/img/placeholder.svg'}}" alt="Preview"
                                             th:style="${product.imageUrl != null ? 'display:block' : 'display:none'}"
-                                            onerror="this.src='/uploads/default.jpg'">
+                                            onerror="this.src='/img/placeholder.svg'">
 
                                         <div id="uploadPlaceholder"
                                             th:style="${product.imageUrl != null ? 'display:none' : 'display:block'}">
@@ -249,24 +298,80 @@
                                     </div>
                                     <input type="file" name="imageFile" id="fileInput" class="d-none" accept="image/*"
                                         onchange="previewFile()">
+                                    </div>
                                     <input type="hidden" th:field="*{imageUrl}">
+                                    <div class="mb-0 mt-3">
+                                        <label class="form-label">Ảnh phụ (gallery)</label>
+                                        <input type="hidden" th:field="*{galleryImages}">
+                                        <input type="hidden" name="galleryRemove" id="galleryRemove" value="">
+                                        <div class="upload-box" style="padding: 18px;" onclick="document.getElementById('galleryInput').click()">
+                                            <div id="galleryPlaceholder">
+                                                <i class="fas fa-images fa-2x text-secondary mb-2"></i>
+                                                <p class="text-muted small mb-0">Click để thêm ảnh phụ (tối đa 12)</p>
+                                            </div>
+                                            <div id="galleryExisting" class="d-flex flex-wrap gap-2 justify-content-center mt-2"
+                                                 th:if="${product.galleryImages != null and !product.galleryImages.isBlank()}">
+                                                <div class="gallery-thumb-wrap" th:each="u : ${product.resolvedGalleryOnlyUrls}"
+                                                     th:attr="data-gallery-url=${u}">
+                                                    <img class="gallery-thumb"
+                                                         th:src="@{${(u.startsWith('http') or u.startsWith('/uploads/')) ? u : '/uploads/' + u}}"
+                                                         alt="gallery"
+                                                         onerror="this.src='/img/placeholder.svg'">
+                                                    <button type="button" class="gallery-thumb-remove" title="Xóa ảnh"
+                                                            onclick="removeExistingGallery(this)">&times;</button>
+                                                </div>
+                                            </div>
+                                            <div id="galleryPreview" class="d-flex flex-wrap gap-2 justify-content-center mt-2" style="display:none;"></div>
+                                        </div>
+                                        <input type="file" name="galleryFiles" id="galleryInput" class="d-none" accept="image/*" multiple onchange="previewGalleryFiles()">
+                                        <div class="form-text">Chọn ảnh phụ bằng ô phía trên; xóa từng ảnh bằng nút ×. Tối đa 12 ảnh phụ.</div>
+                                    </div>
                                 </div>
                             </div>
 
                             <div class="mt-4">
-                                <button type="submit" class="btn btn-save w-100 py-3">
-                                    <i class="fas fa-save me-2"></i> CẬP NHẬT SẢN PHẨM
+                                <button type="submit" class="btn btn-primary w-100 py-3">
+                                    <i class="fas fa-save me-2"></i> Lưu thay đổi
                                 </button>
                             </div>
                         </div>
                     </div>
                 </form>
+    <th:block layout:fragment="script">
+        <script>
+        function formatVndDots(raw) {
+            const digits = (raw || '').toString().replace(/\D/g, '');
+            if (!digits) return '';
+            return digits.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+        }
 
-            </main>
-        </div>
-    </div>
+        function syncMoneyInput(displayEl, hiddenEl) {
+            const digits = (displayEl.value || '').toString().replace(/\D/g, '');
+            displayEl.value = formatVndDots(digits);
+            hiddenEl.value = digits;
+        }
 
-    <script>
+        function initMoneyInputs() {
+            const priceDisplay = document.getElementById('priceDisplay');
+            const priceHidden = document.getElementById('priceHidden');
+            const originalDisplay = document.getElementById('originalPriceDisplay');
+            const originalHidden = document.getElementById('originalPriceHidden');
+            if (!priceDisplay || !priceHidden || !originalDisplay || !originalHidden) return;
+
+            if (priceHidden.value) priceDisplay.value = formatVndDots(priceHidden.value);
+            if (originalHidden.value) originalDisplay.value = formatVndDots(originalHidden.value);
+
+            priceDisplay.addEventListener('input', () => syncMoneyInput(priceDisplay, priceHidden));
+            originalDisplay.addEventListener('input', () => syncMoneyInput(originalDisplay, originalHidden));
+            priceDisplay.addEventListener('blur', () => syncMoneyInput(priceDisplay, priceHidden));
+            originalDisplay.addEventListener('blur', () => syncMoneyInput(originalDisplay, originalHidden));
+
+            syncMoneyInput(priceDisplay, priceHidden);
+            syncMoneyInput(originalDisplay, originalHidden);
+        }
+
+        document.addEventListener('DOMContentLoaded', initMoneyInputs);
+
         function previewFile() {
             const preview = document.getElementById('previewImg');
             const placeholder = document.getElementById('uploadPlaceholder');
@@ -282,6 +387,97 @@
             if (file) reader.readAsDataURL(file);
         }
 
+        let selectedGalleryFiles = [];
+        const removedExistingUrls = new Set();
+
+        function syncGalleryInput() {
+            const input = document.getElementById('galleryInput');
+            if (!input) return;
+            const dt = new DataTransfer();
+            selectedGalleryFiles.forEach(f => dt.items.add(f));
+            input.files = dt.files;
+        }
+
+        function syncGalleryRemove() {
+            const el = document.getElementById('galleryRemove');
+            if (!el) return;
+            el.value = Array.from(removedExistingUrls).join('\n');
+        }
+
+        function removeExistingGallery(btn) {
+            const wrap = btn && btn.closest ? btn.closest('[data-gallery-url]') : null;
+            if (!wrap) return;
+            const u = wrap.getAttribute('data-gallery-url');
+            if (u) {
+                removedExistingUrls.add(u);
+                syncGalleryRemove();
+            }
+            wrap.remove();
+
+            const existing = document.getElementById('galleryExisting');
+            const placeholder = document.getElementById('galleryPlaceholder');
+            if (placeholder && (!existing || existing.children.length === 0) && selectedGalleryFiles.length === 0) {
+                placeholder.style.display = 'block';
+            }
+        }
+
+        function renderGalleryPreview() {
+            const preview = document.getElementById('galleryPreview');
+            const placeholder = document.getElementById('galleryPlaceholder');
+            const existing = document.getElementById('galleryExisting');
+            if (!preview || !placeholder) return;
+
+            preview.innerHTML = '';
+            if (!selectedGalleryFiles.length) {
+                preview.style.display = 'none';
+                const hasExisting = existing && existing.children.length > 0;
+                placeholder.style.display = hasExisting ? 'none' : 'block';
+                return;
+            }
+
+            if (existing) existing.style.display = 'none';
+            placeholder.style.display = 'none';
+            preview.style.display = 'flex';
+            selectedGalleryFiles.forEach((f, idx) => {
+                const url = URL.createObjectURL(f);
+                const wrap = document.createElement('div');
+                wrap.className = 'gallery-thumb-wrap';
+
+                const img = document.createElement('img');
+                img.className = 'gallery-thumb';
+                img.src = url;
+                img.alt = f.name;
+                img.onload = () => URL.revokeObjectURL(url);
+
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'gallery-thumb-remove';
+                btn.innerHTML = '&times;';
+                btn.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    selectedGalleryFiles.splice(idx, 1);
+                    syncGalleryInput();
+                    renderGalleryPreview();
+                });
+
+                wrap.appendChild(img);
+                wrap.appendChild(btn);
+                preview.appendChild(wrap);
+            });
+        }
+
+        function previewGalleryFiles() {
+            const input = document.getElementById('galleryInput');
+            if (!input) return;
+
+            const incoming = Array.from(input.files || []);
+            const merged = selectedGalleryFiles.concat(incoming);
+            selectedGalleryFiles = merged.slice(0, 12);
+            syncGalleryInput();
+            renderGalleryPreview();
+        }
+
         document.addEventListener("DOMContentLoaded", function () {
             const preview = document.getElementById('previewImg');
             const placeholder = document.getElementById('uploadPlaceholder');
@@ -293,10 +489,17 @@
                 preview.style.display = 'none';
                 placeholder.style.display = 'block';
             }
+
+            // init gallery placeholder visibility
+            const existing = document.getElementById('galleryExisting');
+            const galleryPlaceholder = document.getElementById('galleryPlaceholder');
+            if (galleryPlaceholder) {
+                galleryPlaceholder.style.display = (existing && existing.children.length) ? 'none' : 'block';
+            }
         });
-    </script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/tinymce/6.8.2/tinymce.min.js" referrerpolicy="origin"></script>
-    <script>
+        </script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/tinymce/6.8.2/tinymce.min.js" referrerpolicy="origin"></script>
+        <script>
         tinymce.init({
             selector: 'textarea[name="description"]',
             height: 400,
@@ -305,8 +508,9 @@
             toolbar: 'undo redo | blocks | bold italic underline | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | removeformat | help',
             content_style: 'body { font-family:Helvetica,Arial,sans-serif; font-size:16px }'
         });
-    </script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+        </script>
+    </th:block>
+</div>
 </body>
 
 </html>

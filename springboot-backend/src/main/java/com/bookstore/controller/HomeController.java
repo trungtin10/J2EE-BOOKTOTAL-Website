@@ -25,11 +25,15 @@ public class HomeController {
             Page<Product> productsPage = productService.getAllProducts(PageRequest.of(0, 12));
             List<Product> products = productsPage.getContent();
 
+            // home.html đang render theo biến "products"
+            model.addAttribute("products", products);
+
             // Sử dụng cùng một danh sách sản phẩm cho cả hai mục
             model.addAttribute("bestSellers", products);
             model.addAttribute("newArrivals", products);
         } catch (Exception e) {
             // Nếu có lỗi DB, truyền vào list rỗng để trang không bị crash
+            model.addAttribute("products", new ArrayList<>());
             model.addAttribute("bestSellers", new ArrayList<>());
             model.addAttribute("newArrivals", new ArrayList<>());
             System.err.println("Lỗi khi tải sản phẩm cho trang chủ: " + e.getMessage());

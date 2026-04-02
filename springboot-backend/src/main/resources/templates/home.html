@@ -156,9 +156,9 @@
                     <a th:href="@{'/product/' + ${item.id}}" class="product-link">
                         <div class="card book-card shadow-sm">
                             <div style="overflow: hidden;">
-                                <img th:src="@{${item.imageUrl != null ? (item.imageUrl.startsWith('http') or item.imageUrl.startsWith('/uploads/') ? item.imageUrl : '/uploads/' + item.imageUrl) : '/uploads/default.jpg'}}"
+                                <img th:src="@{${item.imageUrl != null ? (item.imageUrl.startsWith('http') or item.imageUrl.startsWith('/uploads/') ? item.imageUrl : '/uploads/' + item.imageUrl) : '/img/placeholder.svg'}}"
                                     class="card-img-top" th:alt="${item.name}"
-                                    th:onerror="'this.src=\'/uploads/default.jpg\''">
+                                    th:onerror="'this.src=\'/img/placeholder.svg\''">
                             </div>
 
                             <div class="card-body">

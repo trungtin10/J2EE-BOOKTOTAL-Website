@@ -14,13 +14,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Controller
@@ -75,6 +79,45 @@ public class CheckoutController {
         return "checkout";
     }
 
+    /**
+     * Tính lại phí ship / tổng thanh toán khi khách chọn Tỉnh/TP (mã trùng open-api.vn / bảng provinces).
+     */
+    @GetMapping("/api/checkout/shipping-preview")
+    @ResponseBody
+    public ResponseEntity<Map<String, Double>> shippingPreview(
+            @RequestParam(name = "provinceCode") String provinceCode,
+            HttpSession session,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+
+        if (userDetails == null) {
+            return ResponseEntity.status(401).build();
+        }
+
+        @SuppressWarnings("unchecked")
+        List<CartItem> items = (List<CartItem>) session.getAttribute("checkoutItems");
+        if (items == null || items.isEmpty()) {
+            return ResponseEntity.ok(Map.of(
+                    "subtotal", 0.0,
+                    "shippingFee", 0.0,
+                    "discount", 0.0,
+                    "finalTotal", 0.0));
+        }
+
+        double total = subtotal(items);
+        double discount = sessionDouble(session, "discountAmount");
+        double shipping = provinceCode == null || provinceCode.isBlank()
+                ? 0.0
+                : shippingService.calculateShippingFee(provinceCode, total);
+        double finalTotal = Math.max(0, total + shipping - discount);
+
+        Map<String, Double> body = new HashMap<>();
+        body.put("subtotal", total);
+        body.put("shippingFee", shipping);
+        body.put("discount", discount);
+        body.put("finalTotal", finalTotal);
+        return ResponseEntity.ok(body);
+    }
+
     // ────────────────────────────────────────────────
     // Step 2: POST /order  (submit checkout form)
     // ────────────────────────────────────────────────
@@ -84,9 +127,9 @@ public class CheckoutController {
             @RequestParam(name = "phone")        String phone,
             @RequestParam(name = "email")        String email,
             @RequestParam(name = "province")     String provinceCode,
-            @RequestParam(name = "district")     String districtCode,
-            @RequestParam(name = "ward")         String wardCode,
-            @RequestParam(name = "address")      String detailAddress,
+            @RequestParam(name = "district", required = false, defaultValue = "") String districtCode,
+            @RequestParam(name = "ward", required = false, defaultValue = "") String wardCode,
+            @RequestParam(name = "address")      String shippingAddress,
             @RequestParam(name = "paymentMethod") String paymentMethod,
             @RequestParam(name = "note", required = false, defaultValue = "") String note,
             HttpSession session,
@@ -112,9 +155,11 @@ public class CheckoutController {
         double finalTotal = total + shipping - discount;
 
         User user = userDetails.getUser();
-        String fullAddress = detailAddress + ", " + wardCode + ", " + districtCode + ", " + provinceCode;
+        if (shippingAddress == null || shippingAddress.isBlank()) {
+            return "redirect:/cart";
+        }
 
-        Order order = buildOrder(user, fullName, phone, fullAddress, note, paymentMethod,
+        Order order = buildOrder(user, fullName, phone, shippingAddress.trim(), note, paymentMethod,
                                  total, shipping, discount, finalTotal);
 
         List<OrderDetail> details = buildDetails(items);
@@ -213,7 +258,7 @@ public class CheckoutController {
     private List<OrderDetail> buildDetails(List<CartItem> items) {
         List<OrderDetail> list = new ArrayList<>();
         for (CartItem item : items) {
-            Optional<Product> p = productService.getProductById(item.getId());
+            Optional<Product> p = productService.getActiveProductById(item.getId());
             if (p.isPresent()) {
                 OrderDetail d = new OrderDetail();
                 d.setProduct(p.get());

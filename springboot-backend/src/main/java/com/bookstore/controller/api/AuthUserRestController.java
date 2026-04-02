@@ -2,6 +2,7 @@ package com.bookstore.controller.api;
 
 import com.bookstore.model.User;
 import com.bookstore.security.CustomUserDetails;
+import com.bookstore.service.OrderService;
 import com.bookstore.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -18,7 +19,32 @@ public class AuthUserRestController {
     private UserService userService;
 
     @Autowired
+    private OrderService orderService;
+
+    @Autowired
     private org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
+
+    /** Polling tiến trình đơn: dữ liệu mới nhất từ DB sau khi admin đổi trạng thái. */
+    @GetMapping("/orders/{id}/status")
+    public ResponseEntity<?> getOrderTracking(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @PathVariable("id") Long id) {
+        if (userDetails == null) {
+            return ResponseEntity.status(401).body(Map.of("success", false, "message", "Unauthorized"));
+        }
+        return orderService.getOrderById(id)
+                .filter(o -> o.getUser().getId().equals(userDetails.getUser().getId()))
+                .map(o -> ResponseEntity.ok(Map.of(
+                        "success", true,
+                        "orderId", o.getId(),
+                        "status", o.getStatus() != null ? o.getStatus() : "",
+                        "statusVietnamese", o.getStatusVietnamese(),
+                        "progressStep", o.getCustomerProgressStep(),
+                        "progressPercent", o.getCustomerProgressPercent(),
+                        "phaseLabel", o.getCustomerProgressPhaseLabel(),
+                        "cancelled", o.isCustomerOrderCancelled())))
+                .orElseGet(() -> ResponseEntity.status(404).body(Map.of("success", false, "message", "Không tìm thấy đơn hàng")));
+    }
 
     @GetMapping("/profile")
     public ResponseEntity<?> getProfile(@AuthenticationPrincipal CustomUserDetails userDetails) {

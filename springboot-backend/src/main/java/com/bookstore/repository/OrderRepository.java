@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Repository
@@ -35,4 +36,24 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
             "GROUP BY DATE(order_date) " +
             "ORDER BY date ASC", nativeQuery = true)
     List<Object[]> getRevenueByDay();
+
+    @Query(value = "SELECT DATE(order_date) AS d, COALESCE(SUM(final_total), 0) AS rev FROM orders " +
+            "WHERE status = 'COMPLETED' AND order_date IS NOT NULL " +
+            "AND DATE(order_date) BETWEEN :start AND :end " +
+            "GROUP BY DATE(order_date) ORDER BY d ASC", nativeQuery = true)
+    List<Object[]> getRevenueByDayInRange(@Param("start") LocalDate start, @Param("end") LocalDate end);
+
+    @Query(value = "SELECT DATE_FORMAT(order_date, '%Y-%m') AS ym, COALESCE(SUM(final_total), 0) AS rev FROM orders " +
+            "WHERE status = 'COMPLETED' AND order_date IS NOT NULL " +
+            "AND DATE(order_date) BETWEEN :start AND :end " +
+            "GROUP BY DATE_FORMAT(order_date, '%Y-%m') ORDER BY ym ASC", nativeQuery = true)
+    List<Object[]> getRevenueByMonthInRange(@Param("start") LocalDate start, @Param("end") LocalDate end);
+
+    @Query(value = "SELECT COALESCE(SUM(final_total), 0) FROM orders WHERE status = 'COMPLETED' " +
+            "AND order_date IS NOT NULL AND DATE(order_date) BETWEEN :start AND :end", nativeQuery = true)
+    Double getTotalRevenueBetween(@Param("start") LocalDate start, @Param("end") LocalDate end);
+
+    @Query(value = "SELECT COUNT(*) FROM orders WHERE order_date IS NOT NULL " +
+            "AND DATE(order_date) BETWEEN :start AND :end", nativeQuery = true)
+    Long countOrdersBetween(@Param("start") LocalDate start, @Param("end") LocalDate end);
 }

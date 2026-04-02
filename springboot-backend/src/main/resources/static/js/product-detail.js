@@ -15,7 +15,8 @@ function decreaseQty() {
 }
 
 function addToCart(productId) {
-    const quantity = document.getElementById('qtyInput').value;
+    const raw = document.getElementById('qtyInput').value;
+    const quantity = Math.max(1, parseInt(raw, 10) || 1);
     const params = new URLSearchParams();
     params.append('productId', productId);
     params.append('quantity', quantity);
@@ -47,6 +48,9 @@ function addToCart(productId) {
             
             // Cập nhật số lượng trên header
             if (typeof refreshCartDropdownHeader === 'function') refreshCartDropdownHeader();
+            if (window.booktotalCart && typeof window.booktotalCart.persistFromServer === 'function') {
+                window.booktotalCart.persistFromServer().catch(function () { /* ignore */ });
+            }
         } else {
             Swal.fire({
                 icon: 'error',
@@ -66,7 +70,8 @@ function addToCart(productId) {
 }
 
 function buyNow(productId) {
-    const quantity = document.getElementById('qtyInput').value;
+    const raw = document.getElementById('qtyInput').value;
+    const quantity = Math.max(1, parseInt(raw, 10) || 1);
     const params = new URLSearchParams();
     params.append('productId', productId);
     params.append('quantity', quantity);
@@ -79,6 +84,9 @@ function buyNow(productId) {
     .then(res => res.json())
     .then(data => {
         if (data.success) {
+            if (window.booktotalCart && typeof window.booktotalCart.persistFromServer === 'function') {
+                window.booktotalCart.persistFromServer().catch(function () { /* ignore */ });
+            }
             window.location.href = '/cart';
         } else {
             Swal.fire({ 
@@ -113,14 +121,21 @@ function updateDeliveryDate() {
     deliveryEl.innerText = `Dự kiến giao ${formattedDate}`;
 }
 
-// Các hàm xử lý Modal và Địa chỉ (Giữ nguyên hoặc chuyển sang file riêng nếu muốn)
-function openLoginModal() {
-    // Logic mở modal login...
-    // (Để đơn giản, phần này có thể giữ lại trong EJS hoặc chuyển sang file JS chung)
-    const loginModalEl = document.getElementById('loginModal');
-    if (loginModalEl) {
-        const modal = new bootstrap.Modal(loginModalEl);
-        modal.show();
+// Đóng modal Bootstrap an toàn khi getInstance() chưa có (tránh lỗi 'backdrop' trong modal.js)
+function hideBootstrapModal(modalElement) {
+    if (!modalElement || typeof bootstrap === 'undefined' || !bootstrap.Modal) return;
+    try {
+        const Modal = bootstrap.Modal;
+        const inst = Modal.getInstance(modalElement) ?? Modal.getOrCreateInstance(modalElement);
+        inst.hide();
+    } catch (e) {
+        modalElement.classList.remove('show');
+        modalElement.setAttribute('aria-hidden', 'true');
+        modalElement.removeAttribute('aria-modal');
+        document.body.classList.remove('modal-open');
+        document.body.style.removeProperty('padding-right');
+        document.body.style.removeProperty('overflow');
+        document.querySelectorAll('.modal-backdrop').forEach((b) => b.remove());
     }
 }
 
@@ -162,8 +177,7 @@ function saveAddress() {
         currentAddressEl.innerText = `${district}, ${province}`;
 
         if (addressModalEl) {
-            const modal = bootstrap.Modal.getInstance(addressModalEl);
-            if (modal) modal.hide();
+            hideBootstrapModal(addressModalEl);
         }
         updateDeliveryDate();
     }

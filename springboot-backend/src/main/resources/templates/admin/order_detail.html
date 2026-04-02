@@ -63,24 +63,25 @@
                 <div class="card mb-4 shadow-sm no-print">
                     <div class="card-body">
                         <h5 class="info-card-title"><i class="fas fa-tasks text-primary me-2"></i>Trạng thái đơn hàng</h5>
-                        <div class="status-tracker">
-                            <div class="status-step" th:classappend="${order.status == 'PENDING' ? 'active' : ''}">
+                        <div class="status-tracker" th:if="${order.status != 'CANCELLED'}">
+                            <div class="status-step" th:classappend="${order.status == 'PENDING'} ? 'active' : ''">
                                 <div class="status-dot"></div>
-                                <div class="status-text">Chờ xử lý</div>
+                                <div class="status-text">Chờ duyệt</div>
                             </div>
-                            <div class="status-step" th:classappend="${order.status == 'CONFIRMED' ? 'active' : ''}">
+                            <div class="status-step" th:classappend="${order.status == 'CONFIRMED' or order.status == 'PROCESSING'} ? 'active' : ''">
                                 <div class="status-dot"></div>
-                                <div class="status-text">Đã xác nhận</div>
+                                <div class="status-text">Đã duyệt</div>
                             </div>
-                            <div class="status-step" th:classappend="${order.status == 'SHIPPING' or order.status == 'DELIVERING' ? 'active' : ''}">
+                            <div class="status-step" th:classappend="${order.status == 'DELIVERING' or order.status == 'SHIPPED' or order.status == 'SHIPPING'} ? 'active' : ''">
                                 <div class="status-dot"></div>
                                 <div class="status-text">Đang giao</div>
                             </div>
-                            <div class="status-step" th:classappend="${order.status == 'COMPLETED' ? 'active' : ''}">
+                            <div class="status-step" th:classappend="${order.status == 'COMPLETED'} ? 'active' : ''">
                                 <div class="status-dot"></div>
-                                <div class="status-text">Hoàn thành</div>
+                                <div class="status-text">Đã giao</div>
                             </div>
                         </div>
+                        <div th:if="${order.status == 'CANCELLED'}" class="alert alert-danger mb-0">Đơn hàng đã hủy.</div>
 
                         <form th:action="@{'/admin/orders/update-status/' + ${order.id}}" method="POST" class="row g-3 align-items-center no-print">
                             <div class="col-auto">
@@ -88,11 +89,13 @@
                             </div>
                             <div class="col-auto">
                                 <select name="status" class="form-select form-select-sm">
-                                    <option value="PENDING" th:selected="${order.status == 'PENDING'}">Chờ xử lý</option>
-                                    <option value="CONFIRMED" th:selected="${order.status == 'CONFIRMED'}">Xác nhận đơn hàng</option>
-                                    <option value="PROCESSING" th:selected="${order.status == 'PROCESSING'}">Đang đóng gói</option>
-                                    <option value="SHIPPING" th:selected="${order.status == 'SHIPPING'}">Đang giao hàng</option>
-                                    <option value="COMPLETED" th:selected="${order.status == 'COMPLETED'}">Đã hoàn thành</option>
+                                    <option value="PENDING" th:selected="${order.status == 'PENDING'}">Chờ duyệt</option>
+                                    <option value="CONFIRMED" th:selected="${order.status == 'CONFIRMED'}">Đã duyệt</option>
+                                    <option value="DELIVERING" th:selected="${order.status == 'DELIVERING'}">Đang giao</option>
+                                    <option value="COMPLETED" th:selected="${order.status == 'COMPLETED'}">Đã giao</option>
+                                    <option value="PROCESSING" th:selected="${order.status == 'PROCESSING'}">(Cũ) Đang chuẩn bị</option>
+                                    <option value="SHIPPED" th:selected="${order.status == 'SHIPPED'}">(Cũ) Đã bàn giao VC</option>
+                                    <option value="SHIPPING" th:selected="${order.status == 'SHIPPING'}">(Cũ) Đang giao hàng</option>
                                     <option value="CANCELLED" th:selected="${order.status == 'CANCELLED'}">Hủy đơn hàng</option>
                                 </select>
                             </div>

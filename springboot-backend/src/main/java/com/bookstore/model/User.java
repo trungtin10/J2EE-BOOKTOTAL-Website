@@ -29,10 +29,15 @@ public class User {
     @Column(nullable = false, unique = true)
     private String email;
 
+    @NotBlank(message = "Họ và tên không được để trống")
     @Column(name = "full_name")
     private String fullName;
 
     private String role = "user"; // user, admin
+
+    /** false = tài khoản bị khóa, không đăng nhập được */
+    @Column(nullable = false)
+    private Boolean enabled = true;
 
     private String phone;
 
@@ -69,6 +74,13 @@ public class User {
 
     public String getRole() { return role; }
     public void setRole(String role) { this.role = role; }
+
+    public Boolean getEnabled() { return enabled; }
+    public void setEnabled(Boolean enabled) {
+        if (enabled != null) {
+            this.enabled = enabled;
+        }
+    }
 
     public String getPhone() { return phone; }
     public void setPhone(String phone) { this.phone = phone; }

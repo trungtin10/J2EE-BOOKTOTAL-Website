@@ -90,6 +90,8 @@
         <p>Đơn hàng: <b th:text="'#' + ${orderId}"></b></p>
         <div class="amount" th:text="${#numbers.formatDecimal(amount, 0, 'COMMA', 0, 'POINT')} + ' đ'"></div>
 
+        <div th:if="${momoError != null}" class="alert alert-danger small text-start mt-3" th:text="${momoError}"></div>
+
         <!-- Sử dụng ảnh qrck.jpg cho VNPAY, API QR cho MOMO -->
         <img th:if="${method == 'VNPAY'}" th:src="@{/images/qrck.jpg}" class="qr-code" alt="VNPAY QR">
         <img th:unless="${method == 'VNPAY'}"

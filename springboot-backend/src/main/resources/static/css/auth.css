@@ -1,0 +1,267 @@
+/* Auth pages + login modal: responsive, validation, password toggle */
+.auth-page {
+    min-height: calc(100vh - 140px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.auth-shell {
+    width: 100%;
+    padding: clamp(1rem, 4vw, 2.5rem) clamp(0.75rem, 3vw, 1rem);
+}
+
+.auth-card {
+    width: 100%;
+    max-width: 28rem;
+    margin: 0 auto;
+    background: #fff;
+    padding: clamp(1.25rem, 4vw, 2.5rem);
+    border-radius: 12px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+}
+
+.auth-title {
+    font-weight: 800;
+    color: #C92127;
+    text-align: center;
+    margin-bottom: clamp(1rem, 3vw, 1.75rem);
+    font-size: clamp(1.35rem, 4vw, 1.85rem);
+    letter-spacing: 0.02em;
+}
+
+.auth-card .form-label {
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: #444;
+}
+
+.auth-card .form-control {
+    padding: 0.65rem 0.85rem;
+    border-radius: 8px;
+}
+
+.auth-card .form-control.is-invalid {
+    border-color: #dc3545;
+    padding-right: 0.85rem;
+}
+
+.password-field {
+    position: relative;
+}
+
+.password-field .form-control {
+    padding-right: 3rem;
+}
+
+.btn-toggle-password {
+    position: absolute;
+    right: 0.4rem;
+    top: 50%;
+    transform: translateY(-50%);
+    border: none;
+    background: transparent;
+    color: #6c757d;
+    padding: 0.45rem;
+    z-index: 5;
+    line-height: 1;
+    border-radius: 6px;
+    cursor: pointer;
+    min-width: 2.25rem;
+    min-height: 2.25rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-toggle-password:hover {
+    color: #C92127;
+    background: rgba(201, 33, 39, 0.08);
+}
+
+.btn-toggle-password:focus-visible {
+    outline: 2px solid #C92127;
+    outline-offset: 2px;
+}
+
+.btn-auth {
+    background-color: #C92127;
+    color: #fff;
+    font-weight: 700;
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    width: 100%;
+    border: none;
+    transition: background 0.2s;
+    font-size: 1rem;
+}
+
+.btn-auth:hover {
+    background-color: #a11b20;
+    color: #fff;
+}
+
+.auth-card .invalid-feedback {
+    display: none;
+    font-size: 0.875rem;
+    margin-top: 0.35rem;
+}
+
+.auth-card .form-control.is-invalid ~ .invalid-feedback,
+.auth-card .password-field.field-invalid + .invalid-feedback {
+    display: block;
+}
+
+#loginModal .password-field .form-control,
+#registerModal .password-field .form-control {
+    padding-right: 3rem;
+}
+
+/* ──────────────────────────────────────────────
+   Auth modals (login/register) (match provided design)
+   ────────────────────────────────────────────── */
+#loginModal .modal-dialog,
+#registerModal .modal-dialog {
+    max-width: 540px;
+}
+
+#loginModal .login-modal-content,
+#registerModal .login-modal-content {
+    border: none;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 18px 60px rgba(0, 0, 0, 0.18);
+}
+
+#loginModal .login-modal-body,
+#registerModal .login-modal-body {
+    position: relative;
+    padding: 2.25rem 2.25rem 1.75rem;
+}
+
+#loginModal .login-modal-close,
+#registerModal .login-modal-close {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    z-index: 2;
+    opacity: 0.6;
+}
+
+#loginModal .login-modal-close:hover,
+#registerModal .login-modal-close:hover {
+    opacity: 1;
+}
+
+#loginModal .login-modal-title,
+#registerModal .login-modal-title {
+    margin: 0 0 1.5rem;
+    text-align: center;
+    font-weight: 900;
+    font-size: 2rem;
+    letter-spacing: 0.04em;
+    color: #111827;
+}
+
+#loginModal .login-modal-label,
+#registerModal .login-modal-label {
+    font-weight: 700;
+    color: #111827;
+    margin-bottom: 0.5rem;
+}
+
+#loginModal .login-modal-input,
+#registerModal .login-modal-input {
+    border-radius: 10px;
+    padding: 0.9rem 1rem;
+    border: 1px solid #e5e7eb;
+}
+
+#loginModal .login-modal-input:focus,
+#registerModal .login-modal-input:focus {
+    border-color: #cbd5e1;
+    box-shadow: 0 0 0 3px rgba(17, 24, 39, 0.08);
+}
+
+#loginModal .login-modal-password .login-modal-input,
+#registerModal .login-modal-password .login-modal-input {
+    padding-right: 3.25rem;
+}
+
+#loginModal .login-modal-eye,
+#registerModal .login-modal-eye {
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: 3.15rem;
+    border-left: 1px solid #e5e7eb;
+    border-radius: 0 10px 10px 0;
+    background: #fff;
+    color: #6b7280;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    line-height: 1;
+}
+
+#loginModal .login-modal-eye i,
+#registerModal .login-modal-eye i {
+    line-height: 1;
+    font-size: 1.05rem;
+    display: block;
+}
+
+#loginModal .login-modal-eye:hover,
+#registerModal .login-modal-eye:hover {
+    background: #f9fafb;
+    color: #111827;
+}
+
+#loginModal .login-modal-link,
+#registerModal .login-modal-link {
+    color: #6b7280;
+    text-decoration: none;
+}
+
+#loginModal .login-modal-link:hover,
+#registerModal .login-modal-link:hover {
+    text-decoration: underline;
+    color: #111827;
+}
+
+#loginModal .login-modal-link-muted,
+#registerModal .login-modal-link-muted {
+    font-size: 0.95rem;
+    color: #6b7280;
+}
+
+#loginModal .login-modal-submit,
+#registerModal .login-modal-submit {
+    width: 100%;
+    padding: 0.95rem 1rem;
+    border-radius: 12px;
+    border: none;
+    font-weight: 800;
+    font-size: 1.05rem;
+    background: linear-gradient(180deg, #111827, #0b1020);
+    color: #fff;
+}
+
+#loginModal .login-modal-submit:hover,
+#registerModal .login-modal-submit:hover {
+    filter: brightness(1.05);
+    color: #fff;
+}
+
+@media (max-width: 576px) {
+    #loginModal .login-modal-body,
+    #registerModal .login-modal-body {
+        padding: 1.6rem 1.25rem 1.25rem;
+    }
+    #loginModal .login-modal-title,
+    #registerModal .login-modal-title {
+        font-size: 1.75rem;
+    }
+}

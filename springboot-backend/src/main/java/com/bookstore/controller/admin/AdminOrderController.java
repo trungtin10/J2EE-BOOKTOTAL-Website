@@ -45,20 +45,22 @@ public class AdminOrderController {
                              Model model) {
         List<Order> orders = orderService.searchOrders(keyword, status, paymentStatus);
         model.addAttribute("orders", orders);
+        model.addAttribute("activePage", "orders");
         return "admin/order_list";
     }
 
     @GetMapping("/export")
+    @Transactional(readOnly = true)
     public ResponseEntity<InputStreamResource> exportOrders(
             @RequestParam(name = "keyword", required = false) String keyword,
             @RequestParam(name = "status", required = false) String status,
             @RequestParam(name = "payment_status", required = false) String paymentStatus) throws IOException {
-        
+
         List<Order> orders = orderService.searchOrders(keyword, status, paymentStatus);
         ByteArrayInputStream in = excelExportService.exportOrdersToExcel(orders);
-        
+
         HttpHeaders headers = new HttpHeaders();
-        headers.add("Content-Disposition", "attachment; filename=orders.xlsx");
+        headers.add("Content-Disposition", "attachment; filename=don-hang.xlsx");
         
         return ResponseEntity.ok()
                 .headers(headers)
@@ -134,6 +136,7 @@ public class AdminOrderController {
         Order order = orderRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy đơn hàng: " + id));
         model.addAttribute("order", order);
+        model.addAttribute("activePage", "orders");
         return "admin/order_detail";
     }
 
@@ -146,9 +149,7 @@ public class AdminOrderController {
 
     @PostMapping("/update-payment/{id}")
     public String updatePaymentStatusPost(@PathVariable(name = "id") Long id, @RequestParam(name = "paymentStatus") String paymentStatus, RedirectAttributes ra) {
-        Order order = orderRepository.findById(id).orElseThrow();
-        order.setPaymentStatus(paymentStatus);
-        orderRepository.save(order);
+        orderService.updatePaymentStatus(id, paymentStatus);
         ra.addFlashAttribute("successMessage", "Cập nhật thanh toán thành công");
         return "redirect:/admin/orders/view/" + id;
     }
@@ -159,7 +160,10 @@ public class AdminOrderController {
     public ResponseEntity<?> updateStatusAjax(@PathVariable(name = "id") Long id, @RequestParam(name = "status") String status) {
         try {
             orderService.updateOrderStatus(id, status);
-            return ResponseEntity.ok(Map.of("success", true, "status", status));
+            return ResponseEntity.ok(Map.of(
+                    "success", true,
+                    "status", status,
+                    "statusLabel", Order.labelVietnamese(status)));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("success", false, "message", e.getMessage()));
         }
@@ -252,9 +256,7 @@ public class AdminOrderController {
 
     @GetMapping("/update-payment/{id}/{status}")
     public String updatePaymentStatus(@PathVariable(name = "id") Long id, @PathVariable(name = "status") String status, RedirectAttributes ra) {
-        Order order = orderRepository.findById(id).orElseThrow();
-        order.setPaymentStatus(status);
-        orderRepository.save(order);
+        orderService.updatePaymentStatus(id, status);
         ra.addFlashAttribute("successMessage", "Cập nhật thanh toán thành công");
         return "redirect:/admin/orders";
     }

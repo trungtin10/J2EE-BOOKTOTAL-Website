@@ -73,7 +73,7 @@
             }
 
             .btn-confirm {
-                background-color: #C92127;
+                background-color: var(--brand, #0b1f33);
                 color: white;
                 font-weight: 700;
                 width: 100%;
@@ -86,7 +86,7 @@
             }
 
             .btn-confirm:hover {
-                background-color: #a11b20;
+                background-color: var(--brand-2, #102a43);
             }
 
             .payment-method-item {
@@ -184,21 +184,21 @@
                                 <!-- ĐỊA CHỈ CHI TIẾT (API NỘI BỘ) -->
                                 <div class="col-md-4">
                                     <label class="form-label">Tỉnh/Thành phố</label>
-                                    <select class="form-select" id="province" required onchange="loadDistricts()">
+                                    <select class="form-select" id="province" name="province" required onchange="loadDistricts()">
                                         <option value="">Chọn Tỉnh/Thành</option>
                                     </select>
                                     <input type="hidden" name="provinceName" id="province_name">
                                 </div>
                                 <div class="col-md-4">
                                     <label class="form-label">Quận/Huyện</label>
-                                    <select class="form-select" id="district" required onchange="loadWards()" disabled>
+                                    <select class="form-select" id="district" name="district" required onchange="loadWards()" disabled>
                                         <option value="">Chọn Quận/Huyện</option>
                                     </select>
                                     <input type="hidden" name="districtName" id="district_name">
                                 </div>
                                 <div class="col-md-4">
                                     <label class="form-label">Phường/Xã</label>
-                                    <select class="form-select" id="ward" required onchange="updateAddressString()"
+                                    <select class="form-select" id="ward" name="ward" required onchange="updateAddressString()"
                                         disabled>
                                         <option value="">Chọn Phường/Xã</option>
                                     </select>
@@ -266,33 +266,34 @@
                                     </div>
                                 </div>
 
+                                <p class="small text-muted mb-2">Phí giao hàng cập nhật theo Tỉnh/Thành bạn chọn.</p>
+
                                 <div class="summary-row mt-3">
-                                    <span>Tạm tính:</span>
-                                    <span
+                                    <span>Tiền hàng</span>
+                                    <span id="summarySubtotal"
                                         th:text="${#numbers.formatDecimal(totalAmount, 0, 'COMMA', 0, 'POINT')} + ' đ'"></span>
                                 </div>
-                                <div class="summary-row">
-                                    <span>Phí vận chuyển:</span>
-                                    <span
-                                        th:text="${#numbers.formatDecimal(shippingFee, 0, 'COMMA', 0, 'POINT')} + ' đ'"></span>
+                                <div class="summary-row" id="shippingRow">
+                                    <span>Phí vận chuyển</span>
+                                    <span id="summaryShipping"
+                                        th:text="'—'"></span>
                                 </div>
-                                <div th:if="${productDiscount > 0}" class="summary-row text-success">
-                                    <span>Giảm giá sản phẩm:</span>
-                                    <span
-                                        th:text="'-' + ${#numbers.formatDecimal(productDiscount, 0, 'COMMA', 0, 'POINT')} + ' đ'"></span>
+                                <div class="summary-row" th:classappend="${productDiscount > 0} ? ' text-success' : ' text-muted'">
+                                    <span>Số tiền giảm giá</span>
+                                    <span id="summaryDiscount"
+                                        th:text="${productDiscount > 0 ? '-' + #numbers.formatDecimal(productDiscount, 0, 'COMMA', 0, 'POINT') + ' đ' : '0 đ'}"></span>
                                 </div>
 
                                 <div class="summary-row summary-total">
-                                    <span>Tổng cộng:</span>
-                                    <span
-                                        th:text="${#numbers.formatDecimal(totalAmount + shippingFee - productDiscount, 0, 'COMMA', 0, 'POINT')} + ' đ'"></span>
+                                    <span>Tổng thanh toán</span>
+                                    <span id="summaryFinal"
+                                        th:text="${#numbers.formatDecimal(totalAmount - productDiscount, 0, 'COMMA', 0, 'POINT')} + ' đ'"></span>
                                 </div>
                             </div>
-                            <!-- Send implicit fields that back-end expects -->
-                            <input type="hidden" name="totalAmount"
-                                th:value="${totalAmount + shippingFee - productDiscount}" />
+                            <input type="hidden" name="totalAmount" id="checkoutFinalTotalHidden"
+                                th:value="${totalAmount - productDiscount}" />
 
-                            <button type="submit" class="btn-confirm">XÁC NHẬN ĐẶT HÀNG</button>
+                            <button type="submit" class="btn-confirm">Đặt hàng</button>
                         </div>
                     </div>
                 </div>
@@ -303,13 +304,45 @@
     <th:block layout:fragment="script">
         <script th:inline="javascript">
             /*<![CDATA[*/
-            // API Tỉnh thành Việt Nam (Hoạt động ổn định không cần DB nội bộ)
             const API_HOST = "https://provinces.open-api.vn/api/";
-            const finalTotal = /*[[${totalAmount + shippingFee - productDiscount}]]*/ 0;
+            const CHECKOUT_SUBTOTAL = /*[[${totalAmount}]]*/ 0;
+            const CHECKOUT_DISCOUNT = /*[[${productDiscount}]]*/ 0;
 
             document.addEventListener("DOMContentLoaded", function () {
                 loadProvinces();
             });
+
+            function formatVnd(amount) {
+                const n = Number(amount) || 0;
+                return Math.round(n).toLocaleString('vi-VN') + ' đ';
+            }
+
+            function refreshShippingPreview() {
+                const provinceCode = document.getElementById('province').value;
+                const shipEl = document.getElementById('summaryShipping');
+                const shipRow = document.getElementById('shippingRow');
+                const finalEl = document.getElementById('summaryFinal');
+                const hiddenFinal = document.getElementById('checkoutFinalTotalHidden');
+                if (!provinceCode) {
+                    if (shipEl) shipEl.textContent = '—';
+                    if (shipRow) shipRow.style.display = 'none';
+                    if (finalEl) finalEl.textContent = formatVnd(CHECKOUT_SUBTOTAL - CHECKOUT_DISCOUNT);
+                    if (hiddenFinal) hiddenFinal.value = String(Math.max(0, CHECKOUT_SUBTOTAL - CHECKOUT_DISCOUNT));
+                    return;
+                }
+                if (shipRow) shipRow.style.display = '';
+                fetch('/api/checkout/shipping-preview?provinceCode=' + encodeURIComponent(provinceCode))
+                    .then(function (r) {
+                        if (!r.ok) throw new Error('preview');
+                        return r.json();
+                    })
+                    .then(function (data) {
+                        if (shipEl) shipEl.textContent = formatVnd(data.shippingFee);
+                        if (finalEl) finalEl.textContent = formatVnd(data.finalTotal);
+                        if (hiddenFinal) hiddenFinal.value = String(data.finalTotal);
+                    })
+                    .catch(function () { /* giữ số hiện tại trên giao diện */ });
+            }
 
             function loadProvinces() {
                 fetch(API_HOST + "p/")
@@ -317,9 +350,17 @@
                     .then(data => {
                         let html = '<option value="">Chọn Tỉnh/Thành</option>';
                         data.forEach(item => {
-                            html += `<option value="${item.code}">${item.name}</option>`;
+                            html += '<option value="' + item.code + '">' + item.name + '</option>';
                         });
-                        document.getElementById('province').innerHTML = html;
+                        const prov = document.getElementById('province');
+                        prov.innerHTML = html;
+                        const hcm = prov.querySelector('option[value="79"]');
+                        if (hcm) {
+                            prov.value = '79';
+                            loadDistricts();
+                        } else {
+                            refreshShippingPreview();
+                        }
                     })
                     .catch(error => console.error('Lỗi tải tỉnh thành:', error));
             }
@@ -337,18 +378,20 @@
                 const provinceName = provinceSelect.options[provinceSelect.selectedIndex].text;
                 document.getElementById('province_name').value = provinceName;
                 updateAddressString();
+                refreshShippingPreview();
 
                 if (provinceCode) {
-                    fetch(API_HOST + `p/${provinceCode}?depth=2`)
+                    fetch(API_HOST + 'p/' + provinceCode + '?depth=2')
                         .then(response => response.json())
                         .then(data => {
                             let html = '<option value="">Chọn Quận/Huyện</option>';
-                            data.districts.forEach(item => {
-                                html += `<option value="${item.code}">${item.name}</option>`;
+                            (data.districts || []).forEach(item => {
+                                html += '<option value="' + item.code + '">' + item.name + '</option>';
                             });
                             districtSelect.innerHTML = html;
                             districtSelect.disabled = false;
-                        });
+                        })
+                        .catch(() => { districtSelect.disabled = true; });
                 } else {
                     districtSelect.disabled = true;
                 }
@@ -366,16 +409,17 @@
                 updateAddressString();
 
                 if (districtCode) {
-                    fetch(API_HOST + `d/${districtCode}?depth=2`)
+                    fetch(API_HOST + 'd/' + districtCode + '?depth=2')
                         .then(response => response.json())
                         .then(data => {
                             let html = '<option value="">Chọn Phường/Xã</option>';
-                            data.wards.forEach(item => {
-                                html += `<option value="${item.code}">${item.name}</option>`;
+                            (data.wards || []).forEach(item => {
+                                html += '<option value="' + item.code + '">' + item.name + '</option>';
                             });
                             wardSelect.innerHTML = html;
                             wardSelect.disabled = false;
-                        });
+                        })
+                        .catch(() => { wardSelect.disabled = true; });
                 } else {
                     wardSelect.disabled = true;
                 }
@@ -394,7 +438,7 @@
                 }
 
                 if (province && district && ward && detail && province !== 'Chọn Tỉnh/Thành' && district !== 'Chọn Quận/Huyện' && ward !== 'Chọn Phường/Xã') {
-                    const fullAddress = `${detail}, ${ward}, ${district}, ${province}`;
+                    const fullAddress = detail + ', ' + ward + ', ' + district + ', ' + province;
                     document.getElementById('fullAddress').value = fullAddress;
                 }
             }

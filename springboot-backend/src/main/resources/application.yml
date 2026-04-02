@@ -1,7 +1,15 @@
 server:
-  port: 8081
+  port: ${SERVER_PORT:8081}
+  forward-headers-strategy: framework
+
+# URL gốc khi gửi link trong email (đặt APP_BASE_URL trên production)
+app:
+  base-url: ${APP_BASE_URL:http://localhost:8081}
 
 spring:
+  config:
+    # Support running app from either repo root or springboot-backend/
+    import: optional:file:.env,optional:file:../.env
   datasource:
     url: jdbc:mysql://${DB_HOST:localhost}:3306/${DB_NAME:booktotal_srpboot}?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
     username: ${DB_USER:root}
@@ -10,7 +18,8 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: none
+      # update: create missing tables/columns (e.g. provinces) for local DBs; set DDL_AUTO=none in production
+      ddl-auto: ${DDL_AUTO:update}
     show-sql: true
     properties:
       hibernate:
@@ -41,6 +50,33 @@ spring:
           starttls:
             enable: true
 
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            # Tránh crash khi chưa set env (Spring Boot yêu cầu non-empty).
+            # Khi chạy thật, hãy set GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET để override.
+            client-id: ${GOOGLE_CLIENT_ID:disabled-google-client-id}
+            client-secret: ${GOOGLE_CLIENT_SECRET:disabled-google-client-secret}
+            scope: profile, email
+
 # Folder for image uploads
 upload:
-  dir: uploads/
+  # Use ONE shared uploads folder at repo root to avoid duplicates
+  dir: ${UPLOAD_DIR:../uploads/}
+
+# Tùy chọn: đặt CLOUDINARY_* trong môi trường để upload ảnh SP lên Cloudinary; nếu thiếu → lưu cục bộ (upload.dir)
+cloudinary:
+  cloud-name: ${CLOUDINARY_CLOUD_NAME:}
+  api-key: ${CLOUDINARY_API_KEY:}
+  api-secret: ${CLOUDINARY_API_SECRET:}
+
+# MoMo payment (set env vars on real deployment; defaults are disabled)
+momo:
+  partner-code: ${MOMO_PARTNER_CODE:disabled-momo-partner}
+  access-key: ${MOMO_ACCESS_KEY:disabled-momo-access}
+  secret-key: ${MOMO_SECRET_KEY:disabled-momo-secret}
+  endpoint: ${MOMO_ENDPOINT:https://test-payment.momo.vn/v2/gateway/api/create}
+  request-type: ${MOMO_REQUEST_TYPE:captureWallet}
+  lang: ${MOMO_LANG:vi}

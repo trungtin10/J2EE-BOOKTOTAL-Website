@@ -7,77 +7,24 @@
 
 <body>
     <!-- Admin Sidebar Partial -->
-    <div th:fragment="sidebar" class="col-md-3 col-lg-2 d-md-block admin-sidebar collapse">
-        <style>
-            .admin-sidebar {
-                min-height: 100vh;
-                background-color: #1a1a2e;
-                color: #fff;
-                padding-top: 20px;
-            }
-
-            .admin-brand {
-                font-size: 1.5rem;
-                font-weight: 800;
-                color: #c49b63;
-                text-align: center;
-                margin-bottom: 30px;
-                display: block;
-                text-decoration: none;
-            }
-
-            .admin-nav .nav-link {
-                color: #a8a8b3;
-                padding: 12px 20px;
-                font-weight: 500;
-                border-left: 3px solid transparent;
-                transition: 0.2s;
-            }
-
-            .admin-nav .nav-link:hover,
-            .admin-nav .nav-link.active {
-                color: #fff;
-                background-color: rgba(255, 255, 255, 0.05);
-                border-left-color: #c49b63;
-            }
-
-            .admin-nav i {
-                width: 25px;
-                text-align: center;
-                margin-right: 10px;
-            }
-        </style>
-
-        <a th:href="@{/admin}" class="admin-brand">BOOKTOTAL ADMIN</a>
-
-        <ul class="nav flex-column admin-nav">
-            <li class="nav-item">
-                <a class="nav-link" th:href="@{/admin}" th:classappend="${activePage == 'dashboard' ? 'active' : ''}"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" th:href="@{/admin/stats}" th:classappend="${activePage == 'stats' ? 'active' : ''}"><i class="fas fa-chart-line"></i> Thống kê</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" th:href="@{/admin/products}" th:classappend="${activePage == 'products' ? 'active' : ''}"><i class="fas fa-book"></i> Sản phẩm</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" th:href="@{/admin/categories}" th:classappend="${activePage == 'categories' ? 'active' : ''}"><i class="fas fa-list"></i> Danh mục</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" th:href="@{/admin/orders}" th:classappend="${activePage == 'orders' ? 'active' : ''}"><i class="fas fa-shopping-cart"></i> Đơn hàng</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" th:href="@{/admin/inventory}" th:classappend="${activePage == 'inventory' ? 'active' : ''}"><i class="fas fa-warehouse"></i> Kho hàng</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" th:href="@{/admin/user}" th:classappend="${activePage == 'users' ? 'active' : ''}"><i class="fas fa-users"></i> Người dùng</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" th:href="@{/admin/coupons}" th:classappend="${activePage == 'coupons' ? 'active' : ''}"><i class="fas fa-ticket-alt"></i> Mã giảm giá</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" th:href="@{/admin/reviews}" th:classappend="${activePage == 'reviews' ? 'active' : ''}"><i class="fas fa-star"></i> Đánh giá</a>
-            </li>
+    <div th:fragment="sidebar" class="admin-sidebar2">
+        <a th:href="@{/admin}" class="admin-brand2">
+            <div>
+                <div>BOOKTOTAL ADMIN</div>
+                <span class="sub">SYSTEM MANAGER</span>
+            </div>
+        </a>
+        <div class="admin-menu-title">Menu</div>
+        <ul class="admin-nav2">
+            <li><a th:href="@{/admin}" th:classappend="${activePage == 'dashboard' ? ' active' : ''}"><span class="ico"><i class="fas fa-tachometer-alt"></i></span> Tổng quan hệ thống</a></li>
+            <li><a th:href="@{/admin/orders}" th:classappend="${activePage == 'orders' ? ' active' : ''}"><span class="ico"><i class="fas fa-shopping-cart"></i></span> Đơn hàng</a></li>
+            <li><a th:href="@{/admin/products}" th:classappend="${activePage == 'products' ? ' active' : ''}"><span class="ico"><i class="fas fa-book"></i></span> Sản phẩm</a></li>
+            <li><a th:href="@{/admin/categories}" th:classappend="${activePage == 'categories' ? ' active' : ''}"><span class="ico"><i class="fas fa-list"></i></span> Danh mục</a></li>
+            <li><a th:href="@{/admin/inventory}" th:classappend="${activePage == 'inventory' ? ' active' : ''}"><span class="ico"><i class="fas fa-warehouse"></i></span> Kho hàng</a></li>
+            <li><a th:href="@{/admin/user}" th:classappend="${activePage == 'users' ? ' active' : ''}"><span class="ico"><i class="fas fa-users"></i></span> Người dùng</a></li>
+            <li><a th:href="@{/admin/coupons}" th:classappend="${activePage == 'coupons' ? ' active' : ''}"><span class="ico"><i class="fas fa-ticket-alt"></i></span> Mã giảm giá</a></li>
+            <li><a th:href="@{/admin/reviews}" th:classappend="${activePage == 'reviews' ? ' active' : ''}"><span class="ico"><i class="fas fa-star"></i></span> Đánh giá</a></li>
+            <li><a th:href="@{/admin/stats}" th:classappend="${activePage == 'stats' ? ' active' : ''}"><span class="ico"><i class="fas fa-chart-line"></i></span> Thống kê</a></li>
         </ul>
     </div>
 

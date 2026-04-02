@@ -1,10 +1,8 @@
 package com.bookstore.controller;
 
 import com.bookstore.model.User;
-import com.bookstore.service.EmailService;
 import com.bookstore.service.UserService;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -15,8 +13,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.util.Optional;
-
 @Controller
 public class AuthController {
 
@@ -26,14 +22,9 @@ public class AuthController {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    @Autowired
-    private EmailService emailService;
-
     @GetMapping("/login")
-    public String showLoginForm(HttpServletRequest request, Model model) {
-        // Chuyển hướng về trang trước đó với tham số lỗi
-        String referer = request.getHeader("Referer");
-        return "redirect:" + (referer != null ? referer : "/") + "?loginError=true";
+    public String showLoginForm() {
+        return "auth/login";
     }
 
     @GetMapping("/register")
@@ -43,7 +34,11 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public String registerUser(@Valid User user, BindingResult bindingResult, Model model, RedirectAttributes redirectAttributes) {
+    public String registerUser(@Valid User user,
+                               BindingResult bindingResult,
+                               Model model,
+                               RedirectAttributes redirectAttributes,
+                               @RequestParam(name = "returnUrl", required = false) String returnUrl) {
         if (bindingResult.hasErrors()) { return "auth/register"; }
         if (userService.existsByUsername(user.getUsername())) {
             model.addAttribute("error", "Tên đăng nhập đã tồn tại.");
@@ -52,6 +47,12 @@ public class AuthController {
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         user.setRole("user");
         userService.saveUser(user);
+        // Nếu đăng ký từ popup (có returnUrl), quay về đúng trang và mở popup đăng nhập.
+        if (returnUrl != null && returnUrl.startsWith("/") && !returnUrl.startsWith("//") && !returnUrl.startsWith("/register")) {
+            String sep = returnUrl.contains("?") ? "&" : "?";
+            return "redirect:" + returnUrl + sep + "registerSuccess=1";
+        }
+
         redirectAttributes.addFlashAttribute("successMessage", "Đăng ký thành công! Vui lòng đăng nhập.");
         return "redirect:/login";
     }

@@ -1,0 +1,105 @@
+:root {
+  /* Brand (navy) */
+  --brand: #0b1f33;
+  --brand-2: #102a43;
+  --brand-3: #163a5f;
+  --brand-accent: #1f4b7a;
+  --brand-contrast: #ffffff;
+
+  /* Bootstrap override (global) */
+  --bs-primary: var(--brand);
+  --bs-primary-rgb: 11, 31, 51;
+  --bs-danger: var(--brand);
+  --bs-danger-rgb: 11, 31, 51;
+  --bs-link-color: var(--brand-3);
+  --bs-link-hover-color: var(--brand-accent);
+
+  /* Optional: unify focus ring */
+  --bs-focus-ring-color: rgba(11, 31, 51, 0.25);
+}
+
+/* Generic helpers */
+.brand-text { color: var(--brand) !important; }
+.brand-bg { background-color: var(--brand) !important; color: var(--brand-contrast) !important; }
+.brand-border { border-color: var(--brand) !important; }
+
+/* Buttons that were using danger as "brand" */
+.btn-danger,
+.btn-outline-danger {
+  --bs-btn-border-color: var(--brand) !important;
+}
+.btn-danger {
+  --bs-btn-bg: var(--brand) !important;
+  --bs-btn-hover-bg: var(--brand-2) !important;
+  --bs-btn-active-bg: var(--brand-2) !important;
+}
+.btn-outline-danger {
+  --bs-btn-color: var(--brand) !important;
+  --bs-btn-hover-bg: var(--brand) !important;
+  --bs-btn-hover-border-color: var(--brand) !important;
+  --bs-btn-active-bg: var(--brand-2) !important;
+  --bs-btn-active-border-color: var(--brand-2) !important;
+}
+
+/* Badges / pills */
+.badge.bg-danger { background-color: var(--brand) !important; }
+
+/* Header/footer inline styles rely on these custom vars too */
+.header-wrapper {
+  --primary-color: var(--brand);
+  --accent-color: var(--brand-accent);
+}
+
+/* Admin sidebar (common class names) */
+.admin-sidebar,
+.sidebar {
+  background-color: var(--brand) !important;
+}
+
+/* ──────────────────────────────────────────────
+   SweetAlert2 (system notifications/toasts)
+   Make all popups match navy theme
+   ────────────────────────────────────────────── */
+.swal2-popup {
+  border-radius: 14px;
+}
+
+.swal2-title {
+  color: #111827;
+  font-weight: 900;
+}
+
+.swal2-html-container {
+  color: #374151;
+}
+
+.swal2-styled.swal2-confirm {
+  background: var(--brand) !important;
+}
+
+.swal2-styled.swal2-confirm:hover {
+  background: var(--brand-2) !important;
+}
+
+.swal2-styled.swal2-cancel {
+  background: #6c757d !important;
+}
+
+.swal2-icon.swal2-warning {
+  border-color: rgba(11, 31, 51, 0.35) !important;
+  color: var(--brand) !important;
+}
+
+.swal2-icon.swal2-success [class^='swal2-success-line'],
+.swal2-icon.swal2-success .swal2-success-ring {
+  border-color: rgba(11, 31, 51, 0.35) !important;
+}
+
+.swal2-icon.swal2-success .swal2-success-ring {
+  color: var(--brand) !important;
+}
+
+/* Toast mode */
+.swal2-toast {
+  box-shadow: 0 10px 30px rgba(17, 24, 39, 0.15) !important;
+}

@@ -13,6 +13,10 @@
                 flex-direction: column;
                 min-height: 100vh;
             }
+            :root {
+                --cart-brand: var(--brand, #0b1f33);
+                --cart-brand-2: var(--brand-2, #102a43);
+            }
 
             .cart-container {
                 background: white;
@@ -48,7 +52,7 @@
                 align-items: center;
                 justify-content: flex-end;
                 font-weight: 700;
-                color: #C92127;
+                color: var(--cart-brand);
             }
 
             .col-action {
@@ -139,7 +143,7 @@
 
             .qty-btn:hover {
                 background: #e9ecef;
-                color: #C92127;
+                color: var(--cart-brand);
             }
 
             .qty-input {
@@ -161,7 +165,7 @@
             }
 
             .btn-delete:hover {
-                color: #C92127;
+                color: var(--cart-brand);
                 transform: scale(1.1);
             }
 
@@ -173,7 +177,7 @@
             }
 
             .btn-checkout {
-                background-color: #C92127;
+                background-color: var(--cart-brand);
                 color: white;
                 font-weight: 700;
                 width: 100%;
@@ -188,7 +192,7 @@
             }
 
             .btn-checkout:hover {
-                background-color: #a11b20;
+                background-color: var(--cart-brand-2);
                 color: white;
             }
 
@@ -213,7 +217,7 @@
             }
 
             .coupon-row:hover {
-                color: #C92127;
+                color: var(--cart-brand);
             }
 
             .coupon-label {
@@ -223,12 +227,12 @@
 
             .coupon-value {
                 font-weight: 700;
-                color: #C92127;
+                color: var(--cart-brand);
                 font-size: 0.9rem;
             }
 
             .coupon-card {
-                border: 1px dashed #C92127;
+                border: 1px dashed rgba(11, 31, 51, 0.45);
                 border-radius: 8px;
                 padding: 15px;
                 margin-bottom: 15px;
@@ -240,7 +244,7 @@
             }
 
             .coupon-card:hover {
-                background-color: #fff5f5;
+                background-color: #f6f8fb;
             }
 
             .coupon-info {
@@ -249,7 +253,7 @@
 
             .coupon-code {
                 font-weight: 700;
-                color: #C92127;
+                color: var(--cart-brand);
                 font-size: 1.1rem;
             }
 
@@ -266,8 +270,8 @@
 
             .btn-use-coupon {
                 background-color: white;
-                color: #C92127;
-                border: 1px solid #C92127;
+                color: var(--cart-brand);
+                border: 1px solid rgba(11, 31, 51, 0.28);
                 padding: 5px 15px;
                 border-radius: 20px;
                 font-size: 0.85rem;
@@ -276,7 +280,7 @@
             }
 
             .btn-use-coupon:hover {
-                background-color: #C92127;
+                background-color: var(--cart-brand);
                 color: white;
             }
 
@@ -296,7 +300,7 @@
             }
 
             .btn-shop-now {
-                background-color: #C92127;
+                background-color: var(--cart-brand);
                 color: white;
                 padding: 10px 30px;
                 border-radius: 25px;
@@ -308,7 +312,7 @@
             }
 
             .btn-shop-now:hover {
-                background-color: #a11b20;
+                background-color: var(--cart-brand-2);
                 color: white;
                 transform: translateY(-2px);
             }
@@ -339,7 +343,7 @@
                 <i class="fas fa-user-lock login-required-icon"></i>
                 <h4 class="text-muted mb-3">Bạn cần đăng nhập để thanh toán</h4>
                 <p class="text-secondary mb-4">Vui lòng đăng nhập để tiếp tục quá trình mua sắm.</p>
-                <button class="btn-shop-now border-0" onclick="openLoginModal()">
+                <button class="btn-shop-now border-0" onclick="openLoginModal('/cart')">
                     <i class="fas fa-sign-in-alt me-2"></i> Đăng nhập ngay
                 </button>
                 <div class="mt-3">
@@ -371,8 +375,8 @@
                                         </div>
                                         <div class="col-product">
                                             <div class="product-info-flex">
-                                                <img th:src="@{${item.imageUrl != null ? (item.imageUrl.startsWith('http') or item.imageUrl.startsWith('/uploads/') ? item.imageUrl : '/uploads/' + item.imageUrl) : '/uploads/default.jpg'}}"
-                                                    class="item-img" onerror="this.src='/uploads/default.jpg'">
+                                                <img th:src="@{${item.imageUrl != null ? (item.imageUrl.startsWith('http') or item.imageUrl.startsWith('/uploads/') ? item.imageUrl : '/uploads/' + item.imageUrl) : '/img/placeholder.svg'}}"
+                                                    class="item-img" onerror="this.src='/img/placeholder.svg'">
                                                 <div>
                                                     <div class="item-name" th:text="${item.name}"></div>
                                                     <div class="item-price-single"
@@ -473,29 +477,11 @@
                 document.getElementById('cartBlock').style.display = 'block';
                 document.getElementById('loginRequiredBlock').style.display = 'none';
             }
-            function openLoginModal() {
-                const currentUrl = window.location.pathname;
-                let loginForm = document.querySelector('#loginModal form');
-                if (!loginForm) {
-                    window.location.href = '/login?returnUrl=' + encodeURIComponent(currentUrl);
-                    return;
-                }
-
-                if (!loginForm.querySelector('input[name="returnUrl"]')) {
-                    const input = document.createElement('input');
-                    input.type = 'hidden';
-                    input.name = 'returnUrl';
-                    input.value = currentUrl;
-                    loginForm.appendChild(input);
-                } else {
-                    loginForm.querySelector('input[name="returnUrl"]').value = currentUrl;
-                }
-                const loginModal = new bootstrap.Modal(document.getElementById('loginModal'));
-                loginModal.show();
-            }
-
             let currentTotal = 0;
             let currentProductDiscount = 0;
+            let appliedCouponCode = null;
+            let couponRecheckTimer = null;
+            const COUPON_STORAGE_KEY = 'booktotal_coupon_code';
 
             function formatMoney(amount) {
                 return amount.toLocaleString('vi-VN') + ' đ';
@@ -513,7 +499,7 @@
                 const tempTotalElem = document.getElementById('tempTotal');
                 if (tempTotalElem) tempTotalElem.innerText = formatMoney(total);
 
-                resetCoupons();
+                revalidateCoupon(true);
                 calculateFinalTotal();
 
                 const btnCheckout = document.getElementById('btnCheckout');
@@ -535,7 +521,9 @@
                 if (finalTotalElem) finalTotalElem.innerText = formatMoney(final);
             }
 
-            function resetCoupons() {
+            function resetCoupons(silent) {
+                appliedCouponCode = null;
+                try { localStorage.removeItem(COUPON_STORAGE_KEY); } catch (e) { /* ignore */ }
                 currentProductDiscount = 0;
                 const discountText = document.getElementById('productDiscountText');
                 const discountAmount = document.getElementById('productDiscountAmount');
@@ -544,6 +532,55 @@
                 if (discountText) discountText.innerText = "Chọn mã >";
                 if (discountAmount) discountAmount.innerText = "-0 đ";
                 if (hiddenDiscount) hiddenDiscount.value = 0;
+                if (!silent) calculateFinalTotal();
+            }
+
+            function setCouponUi(code, discount) {
+                const d = Number(discount);
+                const safe = isNaN(d) ? 0 : Math.max(0, d);
+                currentProductDiscount = safe;
+                appliedCouponCode = code || null;
+                try {
+                    if (appliedCouponCode) localStorage.setItem(COUPON_STORAGE_KEY, appliedCouponCode);
+                    else localStorage.removeItem(COUPON_STORAGE_KEY);
+                } catch (e) { /* ignore */ }
+                const discountText = document.getElementById('productDiscountText');
+                const discountAmount = document.getElementById('productDiscountAmount');
+                const hiddenDiscount = document.getElementById('hiddenProductDiscount');
+                if (discountText) discountText.innerText = appliedCouponCode ? appliedCouponCode : "Chọn mã >";
+                if (discountAmount) discountAmount.innerText = safe > 0 ? ("-" + formatMoney(safe)) : "-0 đ";
+                if (hiddenDiscount) hiddenDiscount.value = String(safe);
+                calculateFinalTotal();
+            }
+
+            function revalidateCoupon(silent) {
+                if (!appliedCouponCode) {
+                    setCouponUi(null, 0);
+                    return;
+                }
+                if (couponRecheckTimer) clearTimeout(couponRecheckTimer);
+                couponRecheckTimer = setTimeout(function () {
+                    fetch('/api/coupon/check', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ code: appliedCouponCode, totalAmount: currentTotal })
+                    })
+                        .then(res => res.json())
+                        .then(data => {
+                            if (data && data.success) {
+                                setCouponUi(appliedCouponCode, data.discount);
+                            } else {
+                                resetCoupons(true);
+                                if (!silent) {
+                                    Swal.fire({ icon: 'warning', title: 'Mã giảm giá không còn hợp lệ', text: (data && (data.message || data.error)) ? (data.message || data.error) : 'Vui lòng chọn mã khác.' });
+                                }
+                            }
+                        })
+                        .catch(function () {
+                            // Network error: keep current UI, but avoid breaking totals
+                            calculateFinalTotal();
+                        });
+                }, 80);
             }
 
             function toggleAll(source) {
@@ -602,11 +639,7 @@
                         }
 
                         if (data.success) {
-                            currentProductDiscount = data.discount;
-                            document.getElementById('productDiscountText').innerText = code;
-                            document.getElementById('productDiscountAmount').innerText = `-${formatMoney(data.discount)}`;
-                            document.getElementById('hiddenProductDiscount').value = data.discount;
-                            calculateFinalTotal();
+                            setCouponUi(code, data.discount);
                         }
                     }).catch(err => console.error(err));
             }
@@ -647,12 +680,14 @@
             }
 
             function confirmRemove(productId) {
+                const rootStyle = getComputedStyle(document.documentElement);
+                const brand = (rootStyle.getPropertyValue('--brand') || '').trim() || '#0b1f33';
                 Swal.fire({
                     title: 'Xác nhận xóa?',
                     text: "Bạn có chắc chắn muốn xóa sản phẩm này khỏi giỏ hàng?",
                     icon: 'warning',
                     showCancelButton: true,
-                    confirmButtonColor: '#C92127',
+                    confirmButtonColor: brand,
                     cancelButtonColor: '#6c757d',
                     confirmButtonText: 'Đồng ý',
                     cancelButtonText: 'Hủy bỏ'
@@ -678,6 +713,10 @@
 
             document.addEventListener("DOMContentLoaded", function () {
                 if (document.getElementById('btnCheckout')) {
+                    try {
+                        const saved = localStorage.getItem(COUPON_STORAGE_KEY);
+                        if (saved && saved.trim()) appliedCouponCode = saved.trim();
+                    } catch (e) { /* ignore */ }
                     updateTotal();
                 }
             });

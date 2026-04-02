@@ -59,7 +59,7 @@ public class OrderRestController {
             for (Map<String, Object> item : items) {
                 OrderDetail detail = new OrderDetail();
                 Long productId = ((Number) item.get("productId")).longValue();
-                Product product = productService.getProductById(productId)
+                Product product = productService.getActiveProductById(productId)
                         .orElseThrow(() -> new RuntimeException("Product not found: " + productId));
                 
                 detail.setProduct(product);
