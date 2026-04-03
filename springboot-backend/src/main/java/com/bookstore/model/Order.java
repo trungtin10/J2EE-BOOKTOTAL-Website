@@ -15,7 +15,7 @@ public class Order {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(name = "user_id", nullable = true)
     private User user;
 
     @Column(name = "total_money", nullable = false)
@@ -50,6 +50,19 @@ public class Order {
 
     @Column(name = "payment_status")
     private String paymentStatus = "UNPAID";
+
+    // Gateway tracking (for VNPAY/MOMO audits)
+    @Column(name = "payment_txn_ref")
+    private String paymentTxnRef;
+
+    @Column(name = "payment_gateway_transaction_no")
+    private String paymentGatewayTransactionNo;
+
+    @Column(name = "payment_bank_code")
+    private String paymentBankCode;
+
+    @Column(name = "payment_paid_at")
+    private String paymentPaidAt; // store raw yyyyMMddHHmmss from gateways
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private List<OrderDetail> orderDetails = new ArrayList<>();
@@ -178,6 +191,18 @@ public class Order {
 
     public String getPaymentStatus() { return paymentStatus; }
     public void setPaymentStatus(String paymentStatus) { this.paymentStatus = paymentStatus; }
+
+    public String getPaymentTxnRef() { return paymentTxnRef; }
+    public void setPaymentTxnRef(String paymentTxnRef) { this.paymentTxnRef = paymentTxnRef; }
+
+    public String getPaymentGatewayTransactionNo() { return paymentGatewayTransactionNo; }
+    public void setPaymentGatewayTransactionNo(String paymentGatewayTransactionNo) { this.paymentGatewayTransactionNo = paymentGatewayTransactionNo; }
+
+    public String getPaymentBankCode() { return paymentBankCode; }
+    public void setPaymentBankCode(String paymentBankCode) { this.paymentBankCode = paymentBankCode; }
+
+    public String getPaymentPaidAt() { return paymentPaidAt; }
+    public void setPaymentPaidAt(String paymentPaidAt) { this.paymentPaidAt = paymentPaidAt; }
 
     public List<OrderDetail> getOrderDetails() { return orderDetails; }
     public void setOrderDetails(List<OrderDetail> orderDetails) { this.orderDetails = orderDetails; }

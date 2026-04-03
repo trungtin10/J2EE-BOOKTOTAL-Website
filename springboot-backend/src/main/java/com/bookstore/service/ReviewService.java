@@ -31,8 +31,16 @@ public class ReviewService {
     }
 
     public Review saveReview(Review review) {
-        review.setIsApproved(true);
+        review.setIsApproved(false);
         return reviewRepository.save(review);
+    }
+
+    @Transactional
+    public void approveReview(Long id) {
+        Review review = reviewRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Review not found with id: " + id));
+        review.setIsApproved(true);
+        reviewRepository.save(review);
     }
 
     @Transactional

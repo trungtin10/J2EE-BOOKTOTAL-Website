@@ -11,6 +11,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @Controller
 @RequestMapping("/notifications")
@@ -51,6 +52,17 @@ public class NotificationController {
         
         notificationService.markAllAsRead(userDetails.getUser().getId());
         return "redirect:/notifications";
+    }
+
+    /** Đánh dấu đã xem hết (AJAX) — dùng khi user click chuông thông báo ở header. */
+    @PostMapping("/clear-unread")
+    @ResponseBody
+    public ResponseEntity<Map<String, Long>> clearUnreadAjax(@AuthenticationPrincipal CustomUserDetails userDetails) {
+        if (userDetails == null) {
+            return ResponseEntity.status(401).build();
+        }
+        notificationService.markAllAsRead(userDetails.getUser().getId());
+        return ResponseEntity.ok(Map.of("unread", 0L));
     }
 
     @GetMapping("/unread-count")

@@ -34,11 +34,16 @@ public class Coupon {
     @Column(name = "expiration_date")
     private LocalDate expirationDate;
 
+    /** Tổng số lần mã được áp dụng trên toàn hệ thống (số lượt / “số lượng phát hành”); null = không giới hạn */
     @Column(name = "usage_limit")
-    private Integer usageLimit; // Tổng số lần mã có thể dùng
+    private Integer usageLimit;
 
     @Column(name = "user_usage_limit")
     private Integer userUsageLimit = 1; // Giới hạn mỗi khách hàng (mặc định 1)
+
+    /** Số lượng sản phẩm trong giỏ (cộng dồn) tối thiểu để áp dụng mã; null = không kiểm tra. Không phải “số lượng mã”. */
+    @Column(name = "min_item_quantity")
+    private Integer minItemQuantity;
 
     @Column(name = "used_count")
     private Integer usedCount = 0;
@@ -81,6 +86,9 @@ public class Coupon {
 
     public Integer getUserUsageLimit() { return userUsageLimit; }
     public void setUserUsageLimit(Integer userUsageLimit) { this.userUsageLimit = userUsageLimit; }
+
+    public Integer getMinItemQuantity() { return minItemQuantity; }
+    public void setMinItemQuantity(Integer minItemQuantity) { this.minItemQuantity = minItemQuantity; }
 
     public Integer getUsedCount() { return usedCount; }
     public void setUsedCount(Integer usedCount) { this.usedCount = usedCount; }

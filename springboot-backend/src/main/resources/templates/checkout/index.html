@@ -209,6 +209,7 @@
                             <div class="col-md-6">
                                 <label class="form-label">Số điện thoại <span class="text-danger">*</span></label>
                                 <input type="tel" class="form-control" name="phone" required
+                                    th:value="${user != null ? user.phone : ''}"
                                     placeholder="Ví dụ: 0912345678" pattern="[0-9]{10,11}">
                             </div>
                             <div class="col-md-6">
@@ -242,7 +243,8 @@
                         <div class="mb-3">
                             <label class="form-label">Số nhà, tên đường <span class="text-danger">*</span></label>
                             <textarea class="form-control" name="address" rows="2" required
-                                placeholder="Ví dụ: 123 Đường ABC..."></textarea>
+                                placeholder="Ví dụ: 123 Đường ABC..."
+                                th:text="${user != null ? user.address : ''}"></textarea>
                         </div>
 
                         <div class="mb-3">
@@ -308,18 +310,20 @@
                                 giá</label>
                             <div class="input-group">
                                 <input type="text" class="form-control" name="couponCode" id="couponCode"
+                                    th:value="${couponCode != null ? couponCode : ''}"
                                     placeholder="Nhập mã">
                                 <button class="btn btn-outline-secondary" type="button" id="btnApplyCoupon"
                                     style="background-color: white;">Áp dụng</button>
                             </div>
                             <div id="couponMessage" class="small mt-2"></div>
                             <input type="hidden" name="appliedCouponId" id="appliedCouponId" value="">
-                            <input type="hidden" id="couponDiscountValue" value="0">
+                            <input type="hidden" id="couponDiscountValue" th:value="${productDiscount != null ? productDiscount : 0}">
                         </div>
 
                         <!-- Calculations -->
-                        <div th:with="subtotal=${#aggregates.sum(session.cart.![price * quantity])}">
+                        <div th:with="subtotal=${#aggregates.sum(session.cart.![price * quantity])}, cartQty=${#aggregates.sum(session.cart.![quantity])}">
                             <input type="hidden" id="originSubtotal" th:value="${subtotal}">
+                            <input type="hidden" id="cartItemQuantity" th:value="${cartQty}">
                             <table class="summary-table mb-2">
                                 <tr>
                                     <td>Tạm tính:</td>
@@ -371,7 +375,6 @@
                 });
             });
 
-            const COUPON_STORAGE_KEY = 'booktotal_coupon_code';
             function formatMoney(amount) {
                 const n = Number(amount) || 0;
                 return Math.round(n).toLocaleString('vi-VN') + ' đ';
@@ -383,17 +386,33 @@
                 document.getElementById('couponDiscountValue').value = String(safe);
                 if (code && code.trim()) {
                     document.getElementById('couponCode').value = code.trim();
-                    try { localStorage.setItem(COUPON_STORAGE_KEY, code.trim()); } catch (e) { /* ignore */ }
                     if (msgDiv) msgDiv.innerHTML = '<span class="text-success"><i class="fas fa-check"></i> Đã áp dụng mã: <b>' + code.trim() + '</b></span>';
                     document.getElementById('discountRow').style.display = safe > 0 ? 'table-row' : 'none';
                     document.getElementById('discountDisplay').innerText = safe > 0 ? ('-' + formatMoney(safe)) : '-0 đ';
                 } else {
-                    try { localStorage.removeItem(COUPON_STORAGE_KEY); } catch (e) { /* ignore */ }
                     if (msgDiv) msgDiv.innerHTML = '';
                     document.getElementById('discountRow').style.display = 'none';
                     document.getElementById('discountDisplay').innerText = '-0 đ';
                 }
             }
+
+            // Đồng bộ UI khuyến mãi khi đi từ trang cart sang checkout
+            (function initCouponUiFromServer() {
+                try {
+                    var codeEl = document.getElementById('couponCode');
+                    var discEl = document.getElementById('couponDiscountValue');
+                    var initialCode = codeEl ? (codeEl.value || '').trim() : '';
+                    var initialDiscount = discEl ? parseInt(discEl.value || '0', 10) : 0;
+                    if (initialCode) {
+                        setCouponUi(initialCode, initialDiscount);
+                    } else if (initialDiscount > 0) {
+                        // Có giảm giá nhưng không có code: vẫn hiển thị số tiền giảm
+                        setCouponUi(null, initialDiscount);
+                    } else {
+                        setCouponUi(null, 0);
+                    }
+                } catch (e) { /* ignore */ }
+            })();
 
             function recalcTotal() {
                 const subtotal = parseInt(document.getElementById('originSubtotal').value || '0');
@@ -413,10 +432,12 @@
                     recalcTotal();
                     return;
                 }
+                const cartQtyEl = document.getElementById('cartItemQuantity');
+                const cartItemQuantity = cartQtyEl ? parseInt(cartQtyEl.value || '0', 10) : 0;
                 fetch('/api/coupon/check', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ code: code.trim(), totalAmount: subtotal })
+                    body: JSON.stringify({ code: code.trim(), totalAmount: subtotal, cartItemQuantity: cartItemQuantity })
                 })
                     .then(r => r.json())
                     .then(data => {
@@ -523,17 +544,7 @@
             if (shippingFeeDisplay) shippingFeeDisplay.innerText = '—';
             document.getElementById('shippingFeeInput').value = '0';
 
-            // Auto-apply coupon from cart (if any)
-            try {
-                const saved = localStorage.getItem(COUPON_STORAGE_KEY);
-                if (saved && saved.trim()) {
-                    validateCoupon(saved.trim());
-                } else {
-                    recalcTotal();
-                }
-            } catch (e) {
-                recalcTotal();
-            }
+            recalcTotal();
         });
     </script>
 </body>

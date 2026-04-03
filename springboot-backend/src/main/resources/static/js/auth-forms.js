@@ -149,12 +149,35 @@
     document.addEventListener('DOMContentLoaded', function () {
         wirePasswordToggles(document);
 
+        function setSubmittingState(form) {
+            if (!form) return;
+            var btn = form.querySelector('button[type="submit"]');
+            if (!btn || btn.disabled) return;
+            if (btn.dataset.submitting === '1') return;
+
+            btn.dataset.submitting = '1';
+            btn.disabled = true;
+            btn.classList.add('is-entering');
+
+            // Save original content for safety if user cancels via validation.
+            if (!btn.dataset.originalHtml) {
+                btn.dataset.originalHtml = btn.innerHTML;
+            }
+
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Đang đăng nhập...';
+        }
+
         var loginForm = document.getElementById('pageLoginForm');
         if (loginForm) {
             loginForm.setAttribute('novalidate', '');
             bindLiveClear(loginForm);
             loginForm.addEventListener('submit', function (e) {
-                if (!validateLoginForm(loginForm)) e.preventDefault();
+                var ok = validateLoginForm(loginForm);
+                if (!ok) {
+                    e.preventDefault();
+                } else {
+                    setSubmittingState(loginForm);
+                }
             });
         }
 
@@ -163,7 +186,10 @@
             regForm.setAttribute('novalidate', '');
             bindLiveClear(regForm);
             regForm.addEventListener('submit', function (e) {
-                if (!validateRegisterForm(regForm)) e.preventDefault();
+                var ok = validateRegisterForm(regForm);
+                if (!ok) {
+                    e.preventDefault();
+                }
             });
         }
 
@@ -172,7 +198,12 @@
             modalForm.setAttribute('novalidate', '');
             bindLiveClear(modalForm);
             modalForm.addEventListener('submit', function (e) {
-                if (!validateLoginForm(modalForm)) e.preventDefault();
+                var ok = validateLoginForm(modalForm);
+                if (!ok) {
+                    e.preventDefault();
+                    return;
+                }
+                setSubmittingState(modalForm);
             });
         }
 

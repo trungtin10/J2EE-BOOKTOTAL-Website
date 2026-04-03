@@ -7,6 +7,10 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
 
 @Configuration
 public class WebMvcConfig implements WebMvcConfigurer {
@@ -16,14 +20,25 @@ public class WebMvcConfig implements WebMvcConfigurer {
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        // Serve uploaded images from the external 'uploads/' directory
-        Path uploadPath = Paths.get(uploadDir).toAbsolutePath();
-        String uploadAbsolutePath = "file:" + uploadPath.toString() + "/";
+        // Nhiều vị trí: upload.dir (vd ../uploads/) + uploads cạnh working dir (vd springboot-backend/uploads/)
+        Set<Path> roots = new LinkedHashSet<>();
+        roots.add(Paths.get(uploadDir).toAbsolutePath().normalize());
+        String userDir = System.getProperty("user.dir", ".");
+        roots.add(Paths.get(userDir, "uploads").toAbsolutePath().normalize());
+        Path parent = Paths.get(userDir).toAbsolutePath().getParent();
+        if (parent != null) {
+            roots.add(parent.resolve("uploads").normalize());
+        }
+
+        List<String> locations = new ArrayList<>(roots.size());
+        for (Path p : roots) {
+            String uri = p.toUri().toString();
+            locations.add(uri.endsWith("/") ? uri : uri + "/");
+        }
 
         registry.addResourceHandler("/uploads/**")
-                .addResourceLocations(uploadAbsolutePath);
+                .addResourceLocations(locations.toArray(String[]::new));
 
-        // Keep default static resource handling
         registry.addResourceHandler("/static/**")
                 .addResourceLocations("classpath:/static/");
     }

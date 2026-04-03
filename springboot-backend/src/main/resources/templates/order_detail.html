@@ -104,7 +104,7 @@
                         <div class="card-footer bg-white text-end py-3">
                             <div class="mb-1">Tạm tính: <span th:text="${#numbers.formatDecimal(order.totalMoney, 0, 'COMMA', 0, 'POINT')} + ' đ'"></span></div>
                             <div class="mb-1">Giảm giá: <span th:text="'-' + ${#numbers.formatDecimal(order.discountAmount, 0, 'COMMA', 0, 'POINT')} + ' đ'"></span></div>
-                            <div class="mb-1">Phí vận chuyển: <span th:text="'+' + ${#numbers.formatDecimal(order.shippingFee, 0, 'COMMA', 0, 'POINT')} + ' đ'"></span></div>
+                            <div class="mb-1">Phí vận chuyển: <span th:text="${#numbers.formatDecimal(order.shippingFee, 0, 'COMMA', 0, 'POINT')} + ' đ'"></span></div>
                             <div class="h5 fw-bold text-danger mb-0">Tổng cộng: <span th:text="${#numbers.formatDecimal(order.finalTotal, 0, 'COMMA', 0, 'POINT')} + ' đ'"></span></div>
                         </div>
                     </div>

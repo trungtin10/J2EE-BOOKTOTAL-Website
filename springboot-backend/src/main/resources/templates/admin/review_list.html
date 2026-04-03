@@ -9,6 +9,9 @@
             .review-stars { color: #FFD700; }
             .admin-reply { background-color: #f0f8ff; border-left: 3px solid #0d6efd; padding: 10px; margin-top: 10px; border-radius: 4px; position: relative; }
             .btn-delete-reply { position: absolute; top: 5px; right: 5px; }
+            .status-badge { padding: 4px 10px; border-radius: 999px; font-size: 0.75rem; font-weight: 700; }
+            .status-pending { background-color: #fff3cd; color: #664d03; }
+            .status-approved { background-color: #d1e7dd; color: #0f5132; }
         </style>
     </th:block>
 </head>
@@ -37,6 +40,7 @@
                                 <th class="ps-4">Sản phẩm</th>
                                 <th>Người đánh giá</th>
                                 <th>Nội dung</th>
+                                <th class="text-center">Trạng thái</th>
                                 <th class="text-center">Hành động</th>
                             </tr>
                         </thead>
@@ -65,6 +69,15 @@
                                     </div>
                                 </td>
                                 <td class="text-center">
+                                    <span th:if="${review.isApproved == true}" class="status-badge status-approved">Đã duyệt</span>
+                                    <span th:unless="${review.isApproved == true}" class="status-badge status-pending">Chờ duyệt</span>
+                                </td>
+                                <td class="text-center">
+                                    <form th:unless="${review.isApproved == true}" th:action="@{'/admin/reviews/approve/' + ${review.id}}" method="POST" class="d-inline me-1" onsubmit="return confirm('Duyệt đánh giá này?');">
+                                        <button type="submit" class="btn btn-sm btn-success" title="Duyệt">
+                                            <i class="fas fa-check"></i> Duyệt
+                                        </button>
+                                    </form>
                                     <button class="btn btn-sm btn-outline-primary me-1" data-bs-toggle="modal"
                                             th:data-bs-target="'#replyModal-' + ${review.id}">
                                         <i class="fas fa-reply"></i> Phản hồi

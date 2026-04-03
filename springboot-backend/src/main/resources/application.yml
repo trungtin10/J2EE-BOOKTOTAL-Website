@@ -5,6 +5,10 @@ server:
 # URL gốc khi gửi link trong email (đặt APP_BASE_URL trên production)
 app:
   base-url: ${APP_BASE_URL:http://localhost:8081}
+  jwt:
+    # HS256: secret đủ dài. Đổi JWT_SECRET → token/cookie cũ không còn hợp lệ (xóa cookie jwt hoặc đăng nhập lại).
+    secret: ${JWT_SECRET:bookstore_secret_key_jwt_123_secure_v2}
+    expiration-ms: ${JWT_EXPIRATION_MS:86400000}
 
 spring:
   config:
@@ -24,7 +28,6 @@ spring:
     properties:
       hibernate:
         format_sql: true
-        dialect: org.hibernate.dialect.MySQLDialect
 
   thymeleaf:
     cache: false
@@ -60,6 +63,13 @@ spring:
             client-id: ${GOOGLE_CLIENT_ID:disabled-google-client-id}
             client-secret: ${GOOGLE_CLIENT_SECRET:disabled-google-client-secret}
             scope: profile, email
+            # Callback mặc định Spring: {baseUrl}/login/oauth2/code/google
+            # (vd: https://xxxx.ngrok-free.dev/login/oauth2/code/google)
+            # Trên Google Cloud Console → OAuth 2.0 Client → thêm đúng 2 mục (HTTPS, trùng host ngrok):
+            #   Authorized JavaScript origins: https://xxxx.ngrok-free.dev
+            #   Authorized redirect URIs:       https://xxxx.ngrok-free.dev/login/oauth2/code/google
+            # server.forward-headers-strategy=framework giúp {baseUrl} nhận đúng scheme/host qua ngrok/proxy.
+            # Đổi subdomain ngrok → cập nhật lại 2 URI trên.
 
 # Folder for image uploads
 upload:
@@ -80,3 +90,12 @@ momo:
   endpoint: ${MOMO_ENDPOINT:https://test-payment.momo.vn/v2/gateway/api/create}
   request-type: ${MOMO_REQUEST_TYPE:captureWallet}
   lang: ${MOMO_LANG:vi}
+
+# VNPAY — theo https://sandbox.vnpayment.vn/apis/docs/thanh-toan-pay/pay.html
+# Trên cổng sandbox khai báo (HTTPS, trùng APP_BASE_URL/ngrok):
+#   Return URL: .../payment/vnpay/return
+#   IPN URL:    .../payment/vnpay/ipn  (GET, JSON RspCode/Message)
+vnpay:
+  tmn-code: ${VNPAY_TMN_CODE:disabled-vnpay-tmn}
+  hash-secret: ${VNPAY_HASH_SECRET:disabled-vnpay-secret}
+  pay-url: ${VNPAY_PAY_URL:https://sandbox.vnpayment.vn/paymentv2/vpcpay.html}

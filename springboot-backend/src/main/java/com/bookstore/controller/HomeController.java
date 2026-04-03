@@ -21,21 +21,39 @@ public class HomeController {
     @GetMapping("/")
     public String index(Model model) {
         try {
-            // Lấy 12 sản phẩm đầu tiên để đảm bảo trang chủ luôn có dữ liệu
-            Page<Product> productsPage = productService.getAllProducts(PageRequest.of(0, 12));
-            List<Product> products = productsPage.getContent();
+            int stripNewSize = 10;
+            Page<Product> newPage = productService.searchShopPage(
+                    null, "", "newest", null, null, PageRequest.of(0, stripNewSize));
+            List<Product> newList = newPage.getContent();
+            List<Product> bests = productService.getHomeBestsellerProducts(5);
 
-            // home.html đang render theo biến "products"
-            model.addAttribute("products", products);
+            model.addAttribute("homeDeals", productService.getHomeDealProducts(5));
+            model.addAttribute("homeBestsellers", bests);
+            model.addAttribute("homeNewProducts", newList);
+            model.addAttribute("homeNewHasMore", newPage.hasNext());
+            model.addAttribute("homeNewPageSize", stripNewSize);
+            model.addAttribute("homeNewNextPage", 1);
 
-            // Sử dụng cùng một danh sách sản phẩm cho cả hai mục
-            model.addAttribute("bestSellers", products);
-            model.addAttribute("newArrivals", products);
+            model.addAttribute("products", newList);
+            model.addAttribute("homeProductsHasMore", newPage.hasNext());
+            model.addAttribute("homeProductsPageSize", stripNewSize);
+            model.addAttribute("homeProductsNextPage", 1);
+
+            model.addAttribute("bestSellers", bests);
+            model.addAttribute("newArrivals", newList);
         } catch (Exception e) {
-            // Nếu có lỗi DB, truyền vào list rỗng để trang không bị crash
+            model.addAttribute("homeDeals", new ArrayList<>());
+            model.addAttribute("homeBestsellers", new ArrayList<>());
+            model.addAttribute("homeNewProducts", new ArrayList<>());
+            model.addAttribute("homeNewHasMore", false);
+            model.addAttribute("homeNewPageSize", 10);
+            model.addAttribute("homeNewNextPage", 1);
             model.addAttribute("products", new ArrayList<>());
             model.addAttribute("bestSellers", new ArrayList<>());
             model.addAttribute("newArrivals", new ArrayList<>());
+            model.addAttribute("homeProductsHasMore", false);
+            model.addAttribute("homeProductsPageSize", 10);
+            model.addAttribute("homeProductsNextPage", 1);
             System.err.println("Lỗi khi tải sản phẩm cho trang chủ: " + e.getMessage());
         }
         return "home";

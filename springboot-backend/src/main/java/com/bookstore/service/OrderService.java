@@ -33,6 +33,9 @@ public class OrderService {
     private com.bookstore.repository.CouponRepository couponRepository;
 
     @Autowired
+    private CouponService couponService;
+
+    @Autowired
     private NotificationService notificationService;
 
     @Autowired
@@ -75,28 +78,22 @@ public class OrderService {
         }
 
         // Cập nhật số lượng sử dụng cho mã giảm giá
-        if (order.getCouponCode() != null) {
-            final String code = order.getCouponCode();
-            couponRepository.findByCodeAndIsActiveTrue(code).ifPresent(c -> {
-                c.setUsedCount(c.getUsedCount() + 1);
-                couponRepository.save(c);
-            });
-        }
-        if (order.getShippingCouponCode() != null) {
-            final String code = order.getShippingCouponCode();
-            couponRepository.findByCodeAndIsActiveTrue(code).ifPresent(c -> {
-                c.setUsedCount(c.getUsedCount() + 1);
-                couponRepository.save(c);
-            });
+        if (savedOrder.getUser() != null) {
+            Long uid = savedOrder.getUser().getId();
+            if (savedOrder.getCouponCode() != null) {
+                couponService.recordUsage(savedOrder.getCouponCode(), uid);
+            }
+            if (savedOrder.getShippingCouponCode() != null) {
+                couponService.recordUsage(savedOrder.getShippingCouponCode(), uid);
+            }
         }
 
-        // Trigger notification
         if (savedOrder.getUser() != null) {
             notificationService.createNotification(
-                savedOrder.getUser().getId(),
-                "Đặt hàng thành công",
-                "Đơn hàng #" + savedOrder.getId() + " của bạn đã được tiếp nhận thành công."
-            );
+                    savedOrder.getUser().getId(),
+                    "Đặt hàng thành công",
+                    "Đơn hàng #" + savedOrder.getId() + " đã được tạo",
+                    "success");
         }
 
         return savedOrder;
@@ -121,11 +118,26 @@ public class OrderService {
 
         order.setStatus(status);
 
-        if (("DELIVERING".equals(status) || "SHIPPED".equals(status) || "SHIPPING".equals(status))
-                && (order.getTrackingCode() == null || order.getTrackingCode().isEmpty())) {
-            long randomNum = (long) (Math.random() * 90000000L + 10000000L);
-            order.setTrackingCode("GHN-" + randomNum);
-            order.setExpectedDeliveryDate(LocalDateTime.now().plusDays(3));
+        if ("DELIVERING".equals(status) || "SHIPPED".equals(status) || "SHIPPING".equals(status)) {
+            // Nếu thiếu tracking hoặc dự kiến giao thì tự điền để UI không bị '---'
+            if (order.getTrackingCode() == null || order.getTrackingCode().isEmpty()) {
+                long randomNum = (long) (Math.random() * 90000000L + 10000000L);
+                order.setTrackingCode("GHN-" + randomNum);
+            }
+            if (order.getExpectedDeliveryDate() == null) {
+                order.setExpectedDeliveryDate(LocalDateTime.now().plusDays(3));
+            }
+        }
+
+        // Trường hợp admin set thẳng sang COMPLETED mà chưa đi qua DELIVERING/SHIPPING:
+        // đảm bảo vẫn có dữ liệu mã vận đơn + dự kiến giao để hiển thị đúng trên admin/customer.
+        if ("COMPLETED".equals(status)) {
+            boolean hasTracking = order.getTrackingCode() != null && !order.getTrackingCode().isEmpty();
+            if (!hasTracking) {
+                long randomNum = (long) (Math.random() * 90000000L + 10000000L);
+                order.setTrackingCode("GHN-" + randomNum);
+            }
+            if (order.getExpectedDeliveryDate() == null) order.setExpectedDeliveryDate(LocalDateTime.now());
         }
 
         if ("CONFIRMED".equals(status) && !Boolean.TRUE.equals(order.getStockDeducted())) {
@@ -135,53 +147,14 @@ public class OrderService {
 
         orderRepository.save(order);
 
-        String title = "Cập nhật đơn hàng";
-        String message = "Đơn hàng #" + order.getId() + " đã chuyển sang: " + Order.labelVietnamese(status) + ".";
-        String type = "info";
-
-        switch (status) {
-            case "PENDING":
-                title = "Đơn hàng chờ duyệt";
-                message = "Đơn hàng #" + order.getId() + " đang ở trạng thái chờ duyệt.";
-                type = "warning";
-                break;
-            case "CONFIRMED":
-                title = "Đơn hàng đã được duyệt";
-                message = "Đơn hàng #" + order.getId() + " đã được duyệt và sẽ được chuẩn bị giao.";
-                break;
-            case "PROCESSING":
-                title = "Đơn hàng đang được chuẩn bị";
-                message = "Đơn hàng #" + order.getId() + " đang được chuẩn bị.";
-                break;
-            case "SHIPPED":
-                title = "Đơn hàng đang giao";
-                message = "Đơn hàng #" + order.getId() + " đã có mã vận đơn: " + order.getTrackingCode() + ".";
-                type = "warning";
-                break;
-            case "DELIVERING":
-            case "SHIPPING":
-                title = "Đơn hàng đang được giao";
-                message = "Đơn hàng #" + order.getId() + " đang trên đường giao đến bạn."
-                        + (order.getTrackingCode() != null && !order.getTrackingCode().isEmpty()
-                        ? " Mã vận đơn: " + order.getTrackingCode() + "." : "");
-                type = "warning";
-                break;
-            case "COMPLETED":
-                title = "Đơn hàng đã giao";
-                message = "Đơn hàng #" + order.getId() + " đã giao thành công. Cảm ơn bạn đã mua sắm!";
-                type = "success";
-                break;
-            case "CANCELLED":
-                title = "Đơn hàng đã hủy";
-                message = "Đơn hàng #" + order.getId() + " đã bị hủy.";
-                type = "danger";
-                break;
-            default:
-                break;
-        }
-
         if (order.getUser() != null) {
-            notificationService.createNotification(order.getUser().getId(), title, message, type);
+            if ("DELIVERING".equals(status) || "SHIPPING".equals(status) || "SHIPPED".equals(status)) {
+                notificationService.createNotification(
+                        order.getUser().getId(),
+                        "Đang giao hàng",
+                        "Đơn hàng #" + order.getId() + " đang được giao",
+                        "info");
+            }
             String email = order.getUser().getEmail();
             if (email != null && !email.isBlank()) {
                 String recipientName = resolveRecipientName(order);
@@ -245,8 +218,12 @@ public class OrderService {
         if (order.isCustomerOrderCancelled()) {
             throw new RuntimeException("Đơn hàng đã hủy, không thể cập nhật thanh toán.");
         }
+        String previous = order.getPaymentStatus();
         order.setPaymentStatus(paymentStatus);
         orderRepository.save(order);
+        if ("PAID".equalsIgnoreCase(paymentStatus)) {
+            sendPaymentSuccessNotificationIfFirstTime(order, previous);
+        }
     }
 
     @Transactional
@@ -274,6 +251,24 @@ public class OrderService {
 
     public Order save(Order order) {
         return orderRepository.save(order);
+    }
+
+    /** Gửi thông báo khi đơn chuyển sang thanh toán thành công (tránh trùng khi đã PAID). */
+    public void sendPaymentSuccessNotificationIfFirstTime(Order order, String previousPaymentStatus) {
+        if (order.getUser() == null) {
+            return;
+        }
+        if (previousPaymentStatus != null && "PAID".equalsIgnoreCase(previousPaymentStatus)) {
+            return;
+        }
+        if (!"PAID".equalsIgnoreCase(order.getPaymentStatus())) {
+            return;
+        }
+        notificationService.createNotification(
+                order.getUser().getId(),
+                "Thanh toán thành công",
+                "Đơn hàng #" + order.getId() + " đã được thanh toán.",
+                "success");
     }
 
     @Transactional

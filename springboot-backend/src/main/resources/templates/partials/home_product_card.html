@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+    <th:block th:fragment="pcard (item, stockHint)">
+        <div class="col home-product-col">
+            <a th:href="@{'/product/' + ${item.id}}" class="product-link">
+                <div class="card book-card shadow-sm h-100 home-pcard">
+                    <div class="home-card-img-wrap">
+                        <img th:src="${item.resolveImageSrc()}" class="card-img-top" th:alt="${item.name}"
+                            onerror="this.onerror=null;this.src='/img/placeholder.svg'">
+                        <span th:if="${stockHint and item.quantity != null and item.quantity > 0 and item.quantity lt 8}"
+                            class="home-pcard-chip home-pcard-chip--stock">Gần hết hàng</span>
+                    </div>
+                    <div class="card-body">
+                        <h5 class="card-title home-pcard-title" th:title="${item.name}" th:text="${item.name}"></h5>
+                        <div class="home-pcard-author text-truncate"
+                            th:text="${item.authorName != null and !#strings.isEmpty(item.authorName)} ? ${item.authorName} : 'Đang cập nhật'">
+                        </div>
+                        <div class="home-pcard-price-block mt-2">
+                            <div class="home-pcard-price-row" th:if="${item.discountPercent != null}">
+                                <span class="home-pcard-old"
+                                    th:text="${#numbers.formatDecimal(item.originalPrice, 0, 'COMMA', 0, 'POINT')} + ' đ'"></span>
+                                <span class="home-pcard-badge" th:text="'-' + ${item.discountPercent} + '%'"></span>
+                            </div>
+                            <div class="home-pcard-price"
+                                th:text="${#numbers.formatDecimal(item.price, 0, 'COMMA', 0, 'POINT')} + ' đ'"></div>
+                        </div>
+                        <div class="rating-sold home-pcard-stars">
+                            <div class="stars stars-muted" aria-hidden="true">
+                                <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i
+                                    class="fas fa-star"></i><i class="fas fa-star"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </th:block>
+</body>
+</html>

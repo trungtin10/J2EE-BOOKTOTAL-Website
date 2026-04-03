@@ -76,10 +76,29 @@
     }
   };
 
+  function handlePostLogoutQuery() {
+    try {
+      var params = new URLSearchParams(window.location.search);
+      if (params.get('btLogout') !== '1') {
+        return;
+      }
+      localStorage.removeItem(STORAGE_KEY);
+      setHeaderBadge(0);
+      params.delete('btLogout');
+      var qs = params.toString();
+      var clean = window.location.pathname + (qs ? '?' + qs : '') + window.location.hash;
+      if (window.history && window.history.replaceState) {
+        window.history.replaceState({}, '', clean);
+      }
+      if (typeof refreshCartDropdownHeader === 'function') {
+        refreshCartDropdownHeader();
+      }
+    } catch (e) { /* ignore */ }
+  }
+
   document.addEventListener('DOMContentLoaded', function () {
-    // show badge immediately
+    handlePostLogoutQuery();
     window.booktotalCart.bootHeaderFromLocal();
-    // then ensure server/session not empty after F5
     window.booktotalCart.syncIfServerEmpty().catch(function () { /* ignore */ });
   });
 })();

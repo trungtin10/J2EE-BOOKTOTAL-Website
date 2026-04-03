@@ -27,8 +27,9 @@ public class Review {
     @Column(name = "admin_reply", columnDefinition = "TEXT")
     private String adminReply;
 
+    /** false = chờ admin duyệt mới hiện trên trang sản phẩm */
     @Column(name = "is_approved")
-    private Boolean isApproved = true;
+    private Boolean isApproved = false;
 
     @Column(name = "created_at")
     private LocalDateTime createdAt = LocalDateTime.now();

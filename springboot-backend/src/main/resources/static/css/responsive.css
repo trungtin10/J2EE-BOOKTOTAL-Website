@@ -1,0 +1,112 @@
+/* ─── Global: tránh tràn ngang, ảnh/media co theo màn hình ─── */
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  overflow-x: hidden;
+}
+
+main img,
+main video,
+main svg,
+.card img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Bảng trong nội dung: cuộn ngang trên mobile */
+.table-responsive,
+.admin-table-wrap {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Các trang quên bọc .table — áp dụng an toàn cho .table trong main */
+main .table {
+  margin-bottom: 0;
+}
+
+@media (max-width: 767.98px) {
+  main .table {
+    font-size: 0.875rem;
+  }
+}
+
+/* Container: padding cạnh an toàn trên điện thoại */
+@media (max-width: 575.98px) {
+  .container,
+  .container-fluid {
+    padding-left: max(12px, env(safe-area-inset-left));
+    padding-right: max(12px, env(safe-area-inset-right));
+  }
+}
+
+/* Form controls không vượt quá viewport */
+.form-control,
+.form-select {
+  max-width: 100%;
+}
+
+/* Modals full-width gần mép màn hình nhỏ */
+@media (max-width: 575.98px) {
+  .modal-dialog {
+    margin: 0.5rem;
+    max-width: calc(100% - 1rem);
+  }
+}
+
+/* SweetAlert2: không tràn */
+@media (max-width: 480px) {
+  .swal2-popup {
+    width: calc(100% - 1.5rem) !important;
+    margin: 0.75rem !important;
+  }
+}
+
+/* PLP toolbar: xếp dọc gọn trên mobile (file product.html có class riêng) */
+@media (max-width: 991.98px) {
+  .shop-plp-toolbar .ms-lg-auto {
+    margin-left: 0 !important;
+    width: 100%;
+  }
+
+  .shop-plp-toolbar .d-flex.flex-wrap.align-items-center.gap-3 {
+    justify-content: flex-start !important;
+  }
+
+  .shop-sort-select {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+/* Trang chủ: hero carousel */
+@media (max-width: 575.98px) {
+  .home-hero .carousel-item {
+    min-height: 200px;
+  }
+}
+
+main {
+  min-width: 0;
+}
+
+.admin-layout {
+  min-width: 0;
+}
+
+/* Phân trang trên PLP: không tràn trên mobile nhỏ */
+#shopPaginationTop .btn-group {
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+@media (max-width: 575.98px) {
+  #shopPaginationTop .btn {
+    font-size: 0.8rem;
+    padding: 0.25rem 0.45rem;
+  }
+}
+

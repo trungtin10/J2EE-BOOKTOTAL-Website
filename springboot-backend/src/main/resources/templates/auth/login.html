@@ -27,7 +27,8 @@
                         <div class="mb-3">
                             <label class="form-label" for="loginUsername">Tên đăng nhập hoặc email</label>
                             <input type="text" class="form-control" id="loginUsername" name="username" required
-                                autocomplete="username" placeholder="Nhập tên đăng nhập hoặc email">
+                                   autocomplete="username" placeholder="Nhập tên đăng nhập hoặc email"
+                                   th:value="${session.SPRING_SECURITY_LAST_USERNAME}">
                             <div class="invalid-feedback"></div>
                         </div>
                         <div class="mb-4">

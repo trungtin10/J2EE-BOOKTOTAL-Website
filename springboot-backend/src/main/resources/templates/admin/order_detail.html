@@ -214,6 +214,23 @@
                                   th:text="${order.paymentStatus == 'PAID' ? 'Đã thanh toán' : 'Chưa thanh toán'}"></span>
                         </div>
 
+                        <div th:if="${order.paymentMethod != null and order.paymentMethod.equalsIgnoreCase('VNPAY')}" class="mb-3">
+                            <div class="order-info-label">Mã tra cứu:</div>
+                            <span class="fw-bold" th:text="${order.paymentTxnRef != null ? order.paymentTxnRef : '—'}"></span>
+                        </div>
+                        <div th:if="${order.paymentMethod != null and order.paymentMethod.equalsIgnoreCase('VNPAY')}" class="mb-3">
+                            <div class="order-info-label">Mã GD VNPAY:</div>
+                            <span class="fw-bold" th:text="${order.paymentGatewayTransactionNo != null ? order.paymentGatewayTransactionNo : '—'}"></span>
+                        </div>
+                        <div th:if="${order.paymentMethod != null and order.paymentMethod.equalsIgnoreCase('VNPAY')}" class="mb-3">
+                            <div class="order-info-label">Ngân hàng:</div>
+                            <span class="fw-bold" th:text="${order.paymentBankCode != null ? order.paymentBankCode : '—'}"></span>
+                        </div>
+                        <div th:if="${order.paymentMethod != null and order.paymentMethod.equalsIgnoreCase('VNPAY')}" class="mb-3">
+                            <div class="order-info-label">Thời gian:</div>
+                            <span class="fw-bold" th:text="${order.paymentPaidAt != null ? order.paymentPaidAt : '—'}"></span>
+                        </div>
+
                         <form th:action="@{'/admin/orders/update-payment/' + ${order.id}}" method="POST" class="no-print">
                             <div class="input-group input-group-sm">
                                 <select name="paymentStatus" class="form-select">

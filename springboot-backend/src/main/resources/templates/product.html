@@ -3,28 +3,174 @@
     layout:decorate="~{layout}">
 
 <head>
-    <title>Sản Phẩm</title>
+    <title>Tất cả sản phẩm</title>
     <th:block layout:fragment="css">
         <style>
-            .product-card { transition: transform 0.3s; }
-            .product-card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important; }
-            .text-truncate-2 { display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-            .shop-filter-card .list-group-item.active { border-color: transparent; }
-            .price-dual-slider { position: relative; height: 2.5rem; }
-            .price-dual-slider input[type="range"] {
-                position: absolute; left: 0; right: 0; width: 100%; pointer-events: none; height: 0; top: 50%;
-                accent-color: var(--brand, #0b1f33);
+            .shop-plp-page {
+                background: #f0f2f5;
             }
-            .price-dual-slider input[type="range"]::-webkit-slider-thumb { pointer-events: auto; }
-            .price-dual-slider input[type="range"]::-moz-range-thumb { pointer-events: auto; }
-            #priceMinRange { z-index: 2; }
-            #priceMaxRange { z-index: 3; }
-            #productGridLoading { position: absolute; inset: 0; background: rgba(255,255,255,0.65); z-index: 4; display: flex; align-items: center; justify-content: center; border-radius: 0.5rem; }
-            .product-grid-inner { position: relative; min-height: 200px; }
-            #productGrid { min-height: 80px; }
-            .product-sale-badge { z-index: 2; }
-            .filter-title { font-weight: 900; letter-spacing: 0.2px; }
-            .filter-label { font-size: 0.85rem; font-weight: 800; color: #52606d; }
+
+            .shop-plp-page .shop-filter-card {
+                border: 1px solid #e8eaed !important;
+                box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06) !important;
+            }
+
+            .shop-plp-page .shop-filter-card .card-header {
+                border-bottom: 1px solid #eef0f3;
+            }
+
+            .shop-plp-main {
+                background: #fff;
+                border: 1px solid #e8eaed;
+                border-radius: 12px;
+                box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+            }
+
+            .shop-plp-toolbar {
+                border-color: #e8eaed !important;
+            }
+
+            .shop-plp-count {
+                font-size: 1.05rem;
+            }
+
+            .shop-sort-select {
+                min-width: 11rem;
+                border-radius: 8px;
+            }
+
+            .product-card {
+                transition: transform 0.25s ease, box-shadow 0.25s ease;
+                border-radius: 10px !important;
+                overflow: hidden;
+                border: 1px solid #e8eaed !important;
+                box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06) !important;
+            }
+
+            .product-card:hover {
+                transform: translateY(-4px);
+                box-shadow: 0 12px 28px rgba(0, 0, 0, 0.1) !important;
+            }
+
+            .shop-plp-card-img {
+                background: linear-gradient(180deg, #fafbfc 0%, #f0f2f5 100%);
+                height: 220px;
+                flex-shrink: 0;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 12px 14px;
+            }
+
+            .shop-plp-card-img img {
+                width: 100%;
+                height: 100%;
+                max-height: 100%;
+                object-fit: contain;
+                object-position: center;
+            }
+
+            .product-sale-badge {
+                z-index: 2;
+                font-size: 0.75rem;
+                font-weight: 700;
+                border-radius: 4px !important;
+            }
+
+            .text-truncate-2 {
+                display: -webkit-box;
+                -webkit-line-clamp: 2;
+                line-clamp: 2;
+                -webkit-box-orient: vertical;
+                overflow: hidden;
+                min-height: 2.75rem;
+                line-height: 1.35;
+            }
+
+            .price-dual-slider {
+                position: relative;
+                height: 2.5rem;
+            }
+
+            .price-dual-slider input[type="range"] {
+                position: absolute;
+                left: 0;
+                right: 0;
+                width: 100%;
+                pointer-events: none;
+                height: 0;
+                top: 50%;
+                accent-color: #2563eb;
+            }
+
+            .price-dual-slider input[type="range"]::-webkit-slider-thumb {
+                pointer-events: auto;
+                width: 18px;
+                height: 18px;
+                border-radius: 50%;
+                background: #2563eb;
+                border: 2px solid #fff;
+                box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+            }
+
+            .price-dual-slider input[type="range"]::-moz-range-thumb {
+                pointer-events: auto;
+                width: 18px;
+                height: 18px;
+                border-radius: 50%;
+                background: #2563eb;
+                border: 2px solid #fff;
+                box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+            }
+
+            #priceMinRange {
+                z-index: 2;
+            }
+
+            #priceMaxRange {
+                z-index: 3;
+            }
+
+            #productGridLoading {
+                position: absolute;
+                inset: 0;
+                background: rgba(255, 255, 255, 0.72);
+                z-index: 4;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                border-radius: 0.5rem;
+            }
+
+            .product-grid-inner {
+                position: relative;
+                min-height: 200px;
+            }
+
+            #productGrid {
+                min-height: 80px;
+            }
+
+            .filter-title {
+                font-weight: 800;
+                letter-spacing: 0.2px;
+                font-size: 1.05rem;
+            }
+
+            .filter-label {
+                font-size: 0.82rem;
+                font-weight: 700;
+                color: #4a5568;
+            }
+
+            .shop-plp-price {
+                font-weight: 700;
+                color: #111;
+            }
+
+            .shop-plp-price-sale {
+                color: #c92127;
+            }
         </style>
     </th:block>
 </head>
@@ -32,7 +178,7 @@
 <body>
     <div layout:fragment="content">
         <div id="shopCatalogBootstrap" class="d-none"
-             th:attr="data-max-price=${maxShopPrice},
+            th:attr="data-max-price=${maxShopPrice},
                       data-category-id=${filterCategoryId != null ? filterCategoryId : ''},
                       data-search=${filterSearch},
                       data-filter-min=${filterMinPrice != null ? filterMinPrice : ''},
@@ -41,125 +187,140 @@
                       data-api-page=${currentPage != null ? currentPage - 1 : 0},
                       data-filter-sort=${filterSort != null ? filterSort : 'newest'}"></div>
 
-        <div class="container mt-3 mt-md-4 mb-5">
-            <div class="row g-4">
-                <!-- Bộ lọc: responsive — cột đầy trên mobile -->
-                <div class="col-12 col-lg-3">
-                    <div class="card shadow-sm border-0 rounded-3 mb-3 shop-filter-card">
-                        <div class="card-header bg-white border-0 py-3">
-                            <div class="d-flex align-items-center gap-2">
-                                <i class="fas fa-filter text-danger"></i>
-                                <h5 class="filter-title mb-0">Bộ lọc</h5>
+        <div class="shop-plp-page py-3 py-md-4 mb-5">
+            <div class="container">
+                <h1 class="h4 fw-bold text-dark mb-3 mb-md-4">Tất cả sản phẩm</h1>
+
+                <div class="row g-4">
+                    <div class="col-12 col-lg-3">
+                        <div class="card shadow-sm rounded-3 mb-3 shop-filter-card">
+                            <div class="card-header bg-white py-3 px-3">
+                                <div class="d-flex align-items-center gap-2">
+                                    <i class="fas fa-filter text-danger" aria-hidden="true"></i>
+                                    <div class="filter-title mb-0">Bộ lọc</div>
+                                </div>
                             </div>
-                        </div>
-                        <div class="card-body">
-                            <div class="mb-3">
-                                <div class="filter-label mb-1">Danh mục</div>
-                                <select class="form-select form-select-sm" id="shopCategorySelect">
-                                    <option value="">Tất cả danh mục</option>
-                                    <option th:each="category : ${categories}"
-                                            th:value="${category.id}"
+                            <div class="card-body pt-2">
+                                <div class="mb-3">
+                                    <div class="filter-label mb-2">Danh mục</div>
+                                    <select class="form-select form-select-sm rounded-2" id="shopCategorySelect"
+                                        aria-label="Chọn danh mục">
+                                        <option value="">Tất cả danh mục</option>
+                                        <option th:each="category : ${categories}" th:value="${category.id}"
                                             th:selected="${filterCategoryId != null and filterCategoryId == category.id}"
                                             th:text="${category.name}"></option>
-                                </select>
-                            </div>
+                                    </select>
+                                </div>
 
-                            <div class="mb-2">
-                                <div class="filter-label mb-1">Khoảng giá (VNĐ)</div>
-                                <div class="row g-2">
-                                    <div class="col-6">
-                                        <input type="number" class="form-control form-control-sm" id="priceMinInput" min="0" value="0">
+                                <div class="mb-2">
+                                    <div class="filter-label mb-2">Khoảng giá (VNĐ)</div>
+                                    <div class="row g-2">
+                                        <div class="col-6">
+                                            <input type="number" class="form-control form-control-sm rounded-2"
+                                                id="priceMinInput" min="0" value="0" aria-label="Giá tối thiểu">
+                                        </div>
+                                        <div class="col-6">
+                                            <input type="number" class="form-control form-control-sm rounded-2"
+                                                id="priceMaxInput" min="0" aria-label="Giá tối đa">
+                                        </div>
                                     </div>
-                                    <div class="col-6">
-                                        <input type="number" class="form-control form-control-sm" id="priceMaxInput" min="0">
+                                    <div class="small text-muted mt-2">
+                                        Trong cửa hàng:
+                                        <span id="shopPriceRangeLabel">0 – 0 đ</span>
                                     </div>
                                 </div>
-                                <div class="small text-muted mt-2">
-                                    Trong cửa hàng:
-                                    <span id="shopPriceRangeLabel">0 - 0</span>
+
+                                <div class="price-dual-slider mb-3">
+                                    <input type="range" id="priceMinRange" min="0" step="10000" value="0"
+                                        aria-label="Thanh giá tối thiểu">
+                                    <input type="range" id="priceMaxRange" min="0" step="10000" value="1000000"
+                                        aria-label="Thanh giá tối đa">
                                 </div>
-                            </div>
-
-                            <div class="price-dual-slider mb-3">
-                                <input type="range" id="priceMinRange" min="0" step="10000" value="0">
-                                <input type="range" id="priceMaxRange" min="0" step="10000" value="1000000">
-                            </div>
-                            <button type="button" class="btn btn-outline-secondary btn-sm w-100" id="priceResetBtn">
-                                Đặt lại khoảng giá
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-12 col-lg-9">
-                    <div class="d-flex flex-column gap-2 mb-3">
-                        <div class="d-flex justify-content-between align-items-end flex-wrap gap-2">
-                            <div>
-                                <h4 class="fw-bold mb-1">Sách Mới Phát Hành</h4>
-                                <div class="small text-muted"><span th:text="${totalElements}">0</span> sản phẩm</div>
-                            </div>
-                            <div class="d-flex align-items-center gap-2">
-                                <label class="small text-muted text-nowrap mb-0" for="shopSort">Sắp xếp</label>
-                                <select class="form-select form-select-sm" id="shopSort" style="max-width: 220px;">
-                                    <option value="newest" th:selected="${filterSort == null or filterSort == 'newest'}">Mặc định</option>
-                                    <option value="priceAsc" th:selected="${filterSort == 'priceAsc'}">Giá tăng dần</option>
-                                    <option value="priceDesc" th:selected="${filterSort == 'priceDesc'}">Giá giảm dần</option>
-                                    <option value="soldDesc" th:selected="${filterSort == 'soldDesc'}">Bán chạy</option>
-                                </select>
-                                <div id="shopPaginationTop" class="ms-2" hidden></div>
+                                <button type="button" class="btn btn-outline-secondary btn-sm w-100 rounded-2"
+                                    id="priceResetBtn">
+                                    Đặt lại khoảng giá
+                                </button>
                             </div>
                         </div>
                     </div>
 
-                    <div class="product-grid-wrap">
-                        <div id="productGridEmpty" class="text-center py-5 text-muted border rounded-3 bg-light mb-3"
-                             th:hidden="${not #lists.isEmpty(products)}">
-                            <span th:if="${filterSearch != null and !filterSearch.isEmpty()}"
-                                  th:text="|Không tìm thấy kết quả cho từ khóa: “${filterSearch}”|"></span>
-                            <span th:unless="${filterSearch != null and !filterSearch.isEmpty()}">
-                                Không có sản phẩm phù hợp bộ lọc.
-                            </span>
-                        </div>
-                        <div class="product-grid-inner">
-                            <div id="productGridLoading" hidden>
-                                <div class="spinner-border text-danger" role="status"><span class="visually-hidden">Đang tải…</span></div>
+                    <div class="col-12 col-lg-9">
+                        <div class="shop-plp-main p-3 p-md-4">
+                            <div
+                                class="shop-plp-toolbar d-flex flex-wrap align-items-center justify-content-between gap-3 mb-3 pb-3 border-bottom">
+                                <div class="shop-plp-count">
+                                    <span id="shopProductCount" th:text="${totalElements}">0</span> sản phẩm
+                                </div>
+                                <div class="d-flex flex-wrap align-items-center gap-3 ms-lg-auto">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <label class="small text-muted mb-0 text-nowrap" for="shopSort">Sắp xếp</label>
+                                        <select class="form-select form-select-sm shop-sort-select" id="shopSort">
+                                            <option value="newest"
+                                                th:selected="${filterSort == null or filterSort == 'newest'}">Mặc định
+                                            </option>
+                                            <option value="priceAsc" th:selected="${filterSort == 'priceAsc'}">Giá tăng dần
+                                            </option>
+                                            <option value="priceDesc" th:selected="${filterSort == 'priceDesc'}">Giá giảm
+                                                dần</option>
+                                            <option value="soldDesc" th:selected="${filterSort == 'soldDesc'}">Bán chạy
+                                            </option>
+                                        </select>
+                                    </div>
+                                    <div id="shopPaginationTop" class="flex-shrink-0" hidden></div>
+                                </div>
                             </div>
-                            <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-4" id="productGrid">
-                            <div class="col" th:each="product : ${products}">
-                                <div class="card h-100 border-0 shadow-sm rounded-3 product-card">
-                                    <a th:href="@{'/product/' + ${product.id}}" class="text-decoration-none">
-                                        <div class="position-relative overflow-hidden">
-                                            <span th:if="${product.discountPercent != null}"
-                                                  class="position-absolute top-0 end-0 m-2 badge bg-danger product-sale-badge"
-                                                  th:text="'-' + ${product.discountPercent} + '%'">-10%</span>
-                                            <img th:src="@{${product.imageUrl != null ? (product.imageUrl.startsWith('http') or product.imageUrl.startsWith('/uploads/') ? product.imageUrl : '/uploads/' + product.imageUrl) : '/img/placeholder.svg'}}"
-                                                 class="card-img-top p-3 rounded-4" th:alt="${product.name}"
-                                                 style="height: 250px; object-fit: contain;"
-                                                 onerror="this.src='/img/placeholder.svg'">
-                                        </div>
-                                        <div class="card-body">
-                                            <h6 class="card-title text-dark fw-bold mb-2 text-truncate-2" th:text="${product.name}" style="height: 48px;"></h6>
-                                            <div class="mt-3" th:if="${product.discountPercent != null}">
-                                                <span class="text-muted text-decoration-line-through small d-block"
-                                                      th:text="${#numbers.formatDecimal(product.originalPrice, 0, 'COMMA', 0, 'POINT')} + ' đ'"></span>
-                                                <span class="text-danger fw-bold fs-5" th:text="${#numbers.formatDecimal(product.price, 0, 'COMMA', 0, 'POINT')} + ' đ'"></span>
+
+                            <div class="product-grid-wrap">
+                                <div id="productGridEmpty"
+                                    class="text-center py-5 text-muted border rounded-3 bg-light mb-0"
+                                    th:hidden="${not #lists.isEmpty(products)}">
+                                    <span th:if="${filterSearch != null and !filterSearch.isEmpty()}"
+                                        th:text="|Không tìm thấy kết quả cho từ khóa: “${filterSearch}”|"></span>
+                                    <span th:unless="${filterSearch != null and !filterSearch.isEmpty()}">
+                                        Không có sản phẩm phù hợp bộ lọc.
+                                    </span>
+                                </div>
+                                <div class="product-grid-inner">
+                                    <div id="productGridLoading" hidden>
+                                        <div class="spinner-border text-danger" role="status"><span
+                                                class="visually-hidden">Đang tải…</span></div>
+                                    </div>
+                                    <div class="row row-cols-2 row-cols-lg-4 g-3" id="productGrid">
+                                        <div class="col" th:each="product : ${products}">
+                                            <div class="card h-100 border-0 shadow-sm product-card">
+                                                <a th:href="@{'/product/' + ${product.id}}" class="text-decoration-none text-dark">
+                                                    <div class="position-relative">
+                                                        <span th:if="${product.discountPercent != null}"
+                                                            class="position-absolute top-0 start-0 m-2 badge bg-danger product-sale-badge"
+                                                            th:text="'-' + ${product.discountPercent} + '%'">-10%</span>
+                                                        <div class="shop-plp-card-img rounded-top">
+                                                            <img th:src="${product.resolveImageSrc()}"
+                                                                th:alt="${product.name}"
+                                                                onerror="this.src='/img/placeholder.svg'">
+                                                        </div>
+                                                    </div>
+                                                    <div class="card-body pt-3 pb-3 px-3">
+                                                        <div class="card-title h6 fw-bold mb-2 text-truncate-2"
+                                                            th:text="${product.name}">Tên sách</div>
+                                                        <div th:if="${product.discountPercent != null}">
+                                                            <span
+                                                                class="text-muted text-decoration-line-through small d-block mb-1"
+                                                                th:text="${#numbers.formatDecimal(product.originalPrice, 0, 'COMMA', 0, 'POINT')} + ' đ'"></span>
+                                                            <span class="shop-plp-price shop-plp-price-sale fs-6"
+                                                                th:text="${#numbers.formatDecimal(product.price, 0, 'COMMA', 0, 'POINT')} + ' đ'"></span>
+                                                        </div>
+                                                        <div th:unless="${product.discountPercent != null}">
+                                                            <span class="shop-plp-price fs-6"
+                                                                th:text="${#numbers.formatDecimal(product.price, 0, 'COMMA', 0, 'POINT')} + ' đ'"></span>
+                                                        </div>
+                                                    </div>
+                                                </a>
                                             </div>
-                                            <div class="d-flex justify-content-between align-items-center mt-3" th:unless="${product.discountPercent != null}">
-                                                <span class="text-danger fw-bold fs-5" th:text="${#numbers.formatDecimal(product.price, 0, 'COMMA', 0, 'POINT')} + ' đ'"></span>
-                                            </div>
                                         </div>
-                                    </a>
-                                    <div class="card-footer bg-white border-0 pb-3 d-grid">
-                                        <button type="button" class="btn btn-outline-danger btn-sm rounded-pill fw-bold"
-                                                th:onclick="'addToCart(' + ${product.id} + ')'">
-                                            THÊM VÀO GIỎ
-                                        </button>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        </div>
-                        <nav id="shopPagination" class="mt-4" aria-label="Phân trang sản phẩm" hidden></nav>
                     </div>
                 </div>
             </div>
@@ -168,41 +329,6 @@
 
     <th:block layout:fragment="script">
         <script th:src="@{/js/products-catalog.js}"></script>
-        <script>
-            function addToCart(productId) {
-                const params = new URLSearchParams();
-                params.append('productId', productId);
-                params.append('quantity', 1);
-
-                fetch('/cart/add', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                    body: params
-                })
-                .then(res => res.json())
-                .then(data => {
-                    if (data.success) {
-                        if (typeof refreshCartDropdownHeader === 'function') refreshCartDropdownHeader();
-                        if (window.booktotalCart && typeof window.booktotalCart.persistFromServer === 'function') {
-                            window.booktotalCart.persistFromServer().catch(function () { /* ignore */ });
-                        }
-                        const Toast = Swal.mixin({
-                            toast: true,
-                            position: 'top-end',
-                            showConfirmButton: false,
-                            timer: 3000,
-                            timerProgressBar: true
-                        });
-                        Toast.fire({ icon: 'success', title: 'Đã thêm vào giỏ hàng' });
-                    } else {
-                        Swal.fire({ icon: 'error', title: 'Lỗi', text: data.message });
-                    }
-                })
-                .catch(() => {
-                    Swal.fire({ icon: 'error', title: 'Lỗi kết nối', text: 'Vui lòng thử lại sau.' });
-                });
-            }
-        </script>
     </th:block>
 </body>
 

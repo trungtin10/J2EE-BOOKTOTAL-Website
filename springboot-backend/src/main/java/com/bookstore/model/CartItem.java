@@ -32,4 +32,9 @@ public class CartItem {
 
     public String getImageUrl() { return imageUrl; }
     public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
+
+    /** @see Product#normalizeImageSrc(String) */
+    public String resolveImageSrc() {
+        return Product.normalizeImageSrc(imageUrl);
+    }
 }

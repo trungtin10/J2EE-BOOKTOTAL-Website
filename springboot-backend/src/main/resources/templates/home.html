@@ -7,12 +7,164 @@
     <th:block layout:fragment="css">
         <style>
             body {
-                background-color: #f8f9fa;
+                background-color: #e8ecf2;
                 font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             }
 
+            /* --- BookTotal home: nhiều dải (inspired layout, nhận diện riêng) --- */
+            .home-hub {
+                display: flex;
+                flex-direction: column;
+                gap: 1.35rem;
+            }
+
+            .home-hub-panel {
+                background: #fff;
+                border-radius: 16px;
+                box-shadow: 0 4px 24px rgba(11, 31, 51, 0.07);
+                border: 1px solid rgba(11, 31, 51, 0.06);
+                padding: 1.35rem 1.25rem 1.5rem;
+            }
+
+            @media (min-width: 768px) {
+                .home-hub-panel {
+                    padding: 1.5rem 1.5rem 1.65rem;
+                }
+            }
+
+            .home-strip-head {
+                display: flex;
+                flex-wrap: wrap;
+                align-items: flex-end;
+                justify-content: space-between;
+                gap: 12px;
+                margin-bottom: 1.15rem;
+            }
+
+            .home-strip-eyebrow {
+                font-size: 0.7rem;
+                font-weight: 800;
+                letter-spacing: 0.14em;
+                text-transform: uppercase;
+                color: var(--brand-accent, #1f4b7a);
+                margin-bottom: 4px;
+            }
+
+            .home-strip-title {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                font-size: 1.2rem;
+                font-weight: 800;
+                color: #0f172a;
+                margin: 0;
+                letter-spacing: -0.02em;
+            }
+
+            .home-strip-accent-bar {
+                width: 5px;
+                height: 1.35em;
+                border-radius: 6px;
+                background: linear-gradient(180deg, var(--brand, #0b1f33) 0%, var(--brand-3, #163a5f) 100%);
+                flex-shrink: 0;
+            }
+
+            .home-strip-more {
+                font-size: 0.88rem;
+                font-weight: 700;
+                color: var(--brand, #0b1f33);
+                text-decoration: none;
+                display: inline-flex;
+                align-items: center;
+                gap: 6px;
+                transition: gap 0.2s, color 0.2s;
+            }
+
+            .home-strip-more:hover {
+                color: var(--brand-accent, #1f4b7a);
+                gap: 10px;
+            }
+
+            .home-strip-more i {
+                font-size: 0.72rem;
+                opacity: 0.85;
+            }
+
+            .home-pcard .home-card-img-wrap {
+                position: relative;
+            }
+
+            .home-pcard-chip {
+                position: absolute;
+                left: 10px;
+                bottom: 10px;
+                font-size: 10px;
+                font-weight: 800;
+                text-transform: uppercase;
+                letter-spacing: 0.04em;
+                padding: 4px 8px;
+                border-radius: 6px;
+                background: rgba(11, 31, 51, 0.88);
+                color: #fff;
+                z-index: 2;
+            }
+
+            .home-pcard-title {
+                color: #0f172a !important;
+            }
+
+            .home-pcard-title:hover {
+                color: var(--brand-accent, #1f4b7a) !important;
+            }
+
+            .home-pcard-author {
+                font-size: 0.78rem;
+                color: #64748b;
+                margin-top: 4px;
+                min-height: 1.2em;
+            }
+
+            .home-pcard-price-row {
+                display: flex;
+                flex-wrap: wrap;
+                align-items: center;
+                gap: 6px 8px;
+                margin-bottom: 2px;
+            }
+
+            .home-pcard-old {
+                font-size: 0.78rem;
+                color: #94a3b8;
+                text-decoration: line-through;
+            }
+
+            .home-pcard-badge {
+                font-size: 0.68rem;
+                font-weight: 800;
+                padding: 2px 7px;
+                border-radius: 5px;
+                background: linear-gradient(135deg, #e3b32c 0%, #c9a227 100%);
+                color: #1a1508;
+            }
+
+            .home-pcard-price {
+                font-size: 1.02rem;
+                font-weight: 800;
+                color: var(--brand, #0b1f33) !important;
+                letter-spacing: -0.02em;
+            }
+
+            .stars-muted {
+                color: #cbd5e1 !important;
+                font-size: 0.72rem;
+            }
+
+            .home-pcard .rating-sold {
+                padding-top: 8px;
+            }
+
             .book-card {
-                transition: transform 0.3s, box-shadow 0.3s;
+                transition: transform 0.25s, box-shadow 0.25s;
                 border: none;
                 border-radius: 8px;
                 overflow: hidden;
@@ -22,39 +174,26 @@
             }
 
             .book-card:hover {
-                transform: translateY(-5px);
-                box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08) !important;
-            }
-
-            .card-img-top {
-                height: 260px;
-                object-fit: cover;
-                transition: transform 0.5s;
-            }
-
-            .book-card:hover .card-img-top {
-                transform: scale(1.03);
+                transform: translateY(-4px);
+                box-shadow: 0 12px 24px rgba(0, 0, 0, 0.08) !important;
             }
 
             .card-body {
                 padding: 12px;
                 text-align: left;
-                display: flex;
-                flex-direction: column;
-                justify-content: space-between;
             }
 
             .card-title {
                 font-size: 0.95rem;
                 font-weight: 600;
                 color: #333;
-                margin-bottom: 5px;
+                margin-bottom: 0;
                 display: -webkit-box;
                 -webkit-line-clamp: 2;
                 -webkit-box-orient: vertical;
                 overflow: hidden;
-                height: 42px;
-                line-height: 1.4;
+                line-height: 1.35;
+                min-height: 2.7em;
             }
 
             .card-title:hover {
@@ -66,7 +205,7 @@
                 color: #C92127;
                 font-weight: 700;
                 display: block;
-                margin-top: 5px;
+                margin-top: 8px;
             }
 
             .rating-sold {
@@ -74,12 +213,110 @@
                 align-items: center;
                 font-size: 0.8rem;
                 color: #777;
-                margin-top: 8px;
+                margin-top: 0;
             }
 
             .stars {
                 color: #FFD700;
                 margin-right: 5px;
+                letter-spacing: 1px;
+            }
+
+            /* Lưới card — dùng chung mọi dải */
+            .home-hub-panel .home-product-col {
+                display: flex;
+            }
+
+            .home-hub-panel .product-link {
+                display: flex;
+                flex-direction: column;
+                flex: 1 1 auto;
+                min-width: 0;
+            }
+
+            .home-hub-panel .book-card {
+                display: flex;
+                flex-direction: column;
+                flex: 1 1 auto;
+                min-height: 100%;
+                border: 1px solid #e8eaed;
+                border-radius: 12px;
+                box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
+            }
+
+            .home-hub-panel .home-card-img-wrap {
+                flex: 0 0 auto;
+                height: 200px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 12px 14px;
+                background: linear-gradient(180deg, #fafbfc 0%, #f0f2f5 100%);
+                overflow: hidden;
+            }
+
+            .home-hub-panel .home-card-img-wrap .card-img-top {
+                width: 100%;
+                height: 100%;
+                max-height: 100%;
+                object-fit: contain;
+                object-position: center;
+                margin: 0;
+                border-radius: 4px;
+                transition: transform 0.35s ease;
+            }
+
+            .home-hub-panel .book-card:hover .home-card-img-wrap .card-img-top {
+                transform: scale(1.04);
+            }
+
+            .home-hub-panel .book-card .card-body {
+                flex: 1 1 auto;
+                display: flex;
+                flex-direction: column;
+                padding: 12px 12px 14px;
+                min-height: 0;
+            }
+
+            .home-hub-panel .book-card .rating-sold {
+                margin-top: auto;
+            }
+
+            @media (min-width: 576px) {
+                .home-hub-panel .home-card-img-wrap {
+                    height: 218px;
+                }
+            }
+
+            @media (min-width: 992px) {
+                .home-hub-panel .home-card-img-wrap {
+                    height: 228px;
+                }
+            }
+
+            .home-load-more-wrap {
+                margin-top: 1.35rem;
+                padding-bottom: 0.15rem;
+            }
+
+            .home-load-more-btn {
+                background: var(--brand, #0b1f33);
+                border: none;
+                color: #fff;
+                padding: 10px 28px;
+                border-radius: 10px;
+                font-weight: 700;
+                font-size: 0.9rem;
+                transition: filter 0.2s, transform 0.15s;
+            }
+
+            .home-load-more-btn:hover:not(:disabled) {
+                filter: brightness(1.08);
+                color: #fff;
+            }
+
+            .home-load-more-btn:disabled {
+                opacity: 0.75;
             }
 
             a.product-link {
@@ -111,16 +348,106 @@
 
             .empty-category {
                 text-align: center;
-                padding: 60px 20px;
-                background: white;
+                padding: 48px 20px;
+                background: #f8fafc;
                 border-radius: 12px;
-                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+                border: 1px dashed #cbd5e1;
             }
 
             .empty-icon {
                 font-size: 4rem;
                 color: #ddd;
                 margin-bottom: 20px;
+            }
+
+            /* Home hero carousel */
+            .home-hero {
+                border-radius: 16px;
+                overflow: hidden;
+                box-shadow: 0 14px 40px rgba(17, 24, 39, 0.18);
+            }
+
+            .home-hero .carousel-item {
+                min-height: 260px;
+            }
+
+            .home-hero .hero-slide {
+                position: relative;
+                min-height: 260px;
+                display: flex;
+                align-items: center;
+                color: #fff;
+            }
+
+            .home-hero .hero-bg {
+                position: absolute;
+                inset: 0;
+                background-size: cover;
+                background-position: center;
+                transform: scale(1.04);
+                filter: saturate(1.05);
+            }
+
+            .home-hero .hero-overlay {
+                position: absolute;
+                inset: 0;
+                background: linear-gradient(90deg, rgba(11,31,51,0.92) 0%, rgba(11,31,51,0.72) 45%, rgba(11,31,51,0.25) 100%);
+            }
+
+            .home-hero .hero-content {
+                position: relative;
+                padding: 48px 44px;
+                max-width: 720px;
+            }
+
+            .home-hero .hero-title {
+                font-weight: 900;
+                font-size: clamp(1.65rem, 2.7vw, 2.75rem);
+                letter-spacing: 0.2px;
+                margin-bottom: 10px;
+            }
+
+            .home-hero .hero-subtitle {
+                font-size: 1.05rem;
+                color: rgba(255,255,255,0.85);
+                margin-bottom: 18px;
+                line-height: 1.55;
+            }
+
+            .home-hero .hero-cta {
+                background: #f4b400;
+                border: none;
+                color: #111827;
+                font-weight: 800;
+                border-radius: 10px;
+                padding: 10px 16px;
+                box-shadow: 0 10px 22px rgba(244, 180, 0, 0.25);
+            }
+
+            .home-hero .hero-cta:hover {
+                filter: brightness(0.98);
+                color: #111827;
+            }
+
+            .home-hero .carousel-indicators [data-bs-target] {
+                width: 10px;
+                height: 10px;
+                border-radius: 50%;
+            }
+
+            .home-hero .carousel-control-prev,
+            .home-hero .carousel-control-next {
+                width: 52px;
+            }
+
+            .home-hero .carousel-control-prev-icon,
+            .home-hero .carousel-control-next-icon {
+                filter: drop-shadow(0 6px 18px rgba(0,0,0,0.25));
+            }
+
+            @media (max-width: 576px) {
+                .home-hero .hero-content { padding: 34px 22px; }
+                .home-hero .hero-subtitle { font-size: 0.98rem; }
             }
         </style>
     </th:block>
@@ -129,13 +456,55 @@
 <body>
     <div layout:fragment="content">
         <div th:if="${keyword == null and searchError == null and categoryName == null}" class="container mb-5 mt-4">
-            <div class="p-5 mb-4 bg-dark rounded-3 text-white"
-                style="background: linear-gradient(45deg, #1a1a2e, #16213e);">
-                <div class="container-fluid py-3">
-                    <h1 class="display-5 fw-bold">Chào mừng đến với Bookstore</h1>
-                    <p class="col-md-8 fs-4">Khám phá thế giới tri thức qua hàng ngàn đầu sách hấp dẫn.</p>
-                    <button class="btn btn-warning btn-lg" type="button">Xem ngay</button>
+            <div id="homeHeroCarousel" class="carousel slide home-hero" data-bs-ride="carousel" data-bs-interval="4500">
+                <div class="carousel-indicators">
+                    <button type="button" data-bs-target="#homeHeroCarousel" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>
+                    <button type="button" data-bs-target="#homeHeroCarousel" data-bs-slide-to="1" aria-label="Slide 2"></button>
+                    <button type="button" data-bs-target="#homeHeroCarousel" data-bs-slide-to="2" aria-label="Slide 3"></button>
                 </div>
+
+                <div class="carousel-inner">
+                    <div class="carousel-item active">
+                        <div class="hero-slide">
+                            <div class="hero-bg" style="background-image:url('https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?auto=format&fit=crop&w=1600&q=60');"></div>
+                            <div class="hero-overlay"></div>
+                            <div class="hero-content">
+                                <div class="hero-title">Chào mừng đến với BookTotal</div>
+                                <div class="hero-subtitle">Khám phá thế giới tri thức qua hàng ngàn đầu sách hấp dẫn.</div>
+                                <a class="btn hero-cta" th:href="@{/products}">Xem ngay</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="carousel-item">
+                        <div class="hero-slide">
+                            <div class="hero-bg" style="background-image:url('https://images.unsplash.com/photo-1519682337058-a94d519337bc?auto=format&fit=crop&w=1600&q=60');"></div>
+                            <div class="hero-overlay"></div>
+                            <div class="hero-content">
+                                <div class="hero-title">Sách mới phát hành</div>
+                                <div class="hero-subtitle">Cập nhật liên tục những tựa sách hot, đa dạng thể loại.</div>
+                                <a class="btn hero-cta" th:href="@{/products}">Khám phá</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="carousel-item">
+                        <div class="hero-slide">
+                            <div class="hero-bg" style="background-image:url('https://images.unsplash.com/photo-1524578271613-b1f8a9f5e839?auto=format&fit=crop&w=1600&q=60');"></div>
+                            <div class="hero-overlay"></div>
+                            <div class="hero-content">
+                                <div class="hero-title">Ưu đãi mỗi ngày</div>
+                                <div class="hero-subtitle">Săn deal tốt, mua sắm tiện lợi – giao hàng nhanh chóng.</div>
+                                <a class="btn hero-cta" th:href="@{/products}">Mua sắm</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="carousel-control-prev" type="button" data-bs-target="#homeHeroCarousel" data-bs-slide="prev" aria-label="Previous">
+                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                </button>
+                <button class="carousel-control-next" type="button" data-bs-target="#homeHeroCarousel" data-bs-slide="next" aria-label="Next">
+                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                </button>
             </div>
         </div>
 
@@ -144,48 +513,108 @@
                 <i class="fas fa-exclamation-triangle me-2"></i> <span th:text="${searchError}"></span>
             </div>
 
-            <h3 th:if="${keyword}" class="section-title">Kết quả tìm kiếm cho: "<span class="text-danger"
-                    th:text="${keyword}"></span>"</h3>
-            <h3 th:if="${categoryName}" class="section-title">Danh mục: <span class="text-primary"
-                    th:text="${categoryName}"></span></h3>
-            <h3 th:if="${keyword == null and categoryName == null}" class="section-title">Sách Mới Phát Hành</h3>
-
-            <div th:if="${products != null and not products.empty}"
-                class="row row-cols-2 row-cols-md-4 row-cols-lg-5 g-3">
-                <div class="col" th:each="item : ${products}">
-                    <a th:href="@{'/product/' + ${item.id}}" class="product-link">
-                        <div class="card book-card shadow-sm">
-                            <div style="overflow: hidden;">
-                                <img th:src="@{${item.imageUrl != null ? (item.imageUrl.startsWith('http') or item.imageUrl.startsWith('/uploads/') ? item.imageUrl : '/uploads/' + item.imageUrl) : '/img/placeholder.svg'}}"
-                                    class="card-img-top" th:alt="${item.name}"
-                                    th:onerror="'this.src=\'/img/placeholder.svg\''">
+            <div class="home-hub" th:if="${keyword == null and categoryName == null}">
+                <!-- Dải 1: ưu đãi -->
+                <section class="home-hub-strip" aria-labelledby="home-deals-title">
+                    <div class="home-hub-panel">
+                        <div class="home-strip-head">
+                            <div>
+                                <div class="home-strip-eyebrow">BookTotal picks</div>
+                                <h2 id="home-deals-title" class="home-strip-title">
+                                    <span class="home-strip-accent-bar" aria-hidden="true"></span>
+                                    <span>Ưu đãi nổi bật</span>
+                                </h2>
                             </div>
-
-                            <div class="card-body">
-                                <h5 class="card-title" th:title="${item.name}" th:text="${item.name}"></h5>
-                                <span class="price-tag"
-                                    th:text="${#numbers.formatDecimal(item.price, 0, 'COMMA', 0, 'POINT')} + ' đ'"></span>
-                                <div class="rating-sold">
-                                    <div class="stars">
-                                        <i class="fas fa-star"></i><i class="fas fa-star"></i><i
-                                            class="fas fa-star"></i><i class="fas fa-star"></i><i
-                                            class="fas fa-star-half-alt"></i>
-                                    </div>
-                                </div>
-                            </div>
+                            <a th:href="@{/products}" class="home-strip-more">Xem tất cả <i class="fas fa-chevron-right" aria-hidden="true"></i></a>
                         </div>
-                    </a>
-                </div>
+                        <div th:if="${homeDeals != null and not homeDeals.empty}" class="row row-cols-2 row-cols-sm-3 row-cols-lg-5 g-3">
+                            <th:block th:each="item : ${homeDeals}">
+                                <th:block th:insert="~{partials/home_product_card :: pcard(item=${item}, stockHint=false)}"></th:block>
+                            </th:block>
+                        </div>
+                        <p th:if="${homeDeals == null or homeDeals.empty}" class="text-muted small mb-0 py-2">Đang cập nhật ưu đãi — mời bạn xem toàn bộ cửa hàng.</p>
+                    </div>
+                </section>
+
+                <!-- Dải 2: bán chạy -->
+                <section class="home-hub-strip" aria-labelledby="home-best-title">
+                    <div class="home-hub-panel">
+                        <div class="home-strip-head">
+                            <div>
+                                <div class="home-strip-eyebrow">Cộng đồng đọc</div>
+                                <h2 id="home-best-title" class="home-strip-title">
+                                    <span class="home-strip-accent-bar" aria-hidden="true"></span>
+                                    <span>Người đọc chọn nhiều</span>
+                                </h2>
+                            </div>
+                            <a th:href="@{/products(sort=soldDesc)}" class="home-strip-more">Xem tất cả <i class="fas fa-chevron-right" aria-hidden="true"></i></a>
+                        </div>
+                        <div th:if="${homeBestsellers != null and not homeBestsellers.empty}" class="row row-cols-2 row-cols-sm-3 row-cols-lg-5 g-3">
+                            <th:block th:each="item : ${homeBestsellers}">
+                                <th:block th:insert="~{partials/home_product_card :: pcard(item=${item}, stockHint=false)}"></th:block>
+                            </th:block>
+                        </div>
+                        <p th:if="${homeBestsellers == null or homeBestsellers.empty}" class="text-muted small mb-0 py-2">Chưa có dữ liệu bán chạy.</p>
+                    </div>
+                </section>
+
+                <!-- Dải 3: mới + xem thêm -->
+                <section class="home-hub-strip" aria-labelledby="home-new-title">
+                    <div class="home-hub-panel">
+                        <div class="home-strip-head">
+                            <div>
+                                <div class="home-strip-eyebrow">Lên kệ liên tục</div>
+                                <h2 id="home-new-title" class="home-strip-title">
+                                    <span class="home-strip-accent-bar" aria-hidden="true"></span>
+                                    <span>Mới cập nhật &amp; lên kệ</span>
+                                </h2>
+                            </div>
+                            <a th:href="@{/products}" class="home-strip-more">Xem tất cả <i class="fas fa-chevron-right" aria-hidden="true"></i></a>
+                        </div>
+                        <div th:if="${homeNewProducts != null and not homeNewProducts.empty}"
+                            id="homeProductGrid"
+                            class="row row-cols-2 row-cols-sm-3 row-cols-lg-5 g-3">
+                            <th:block th:each="item : ${homeNewProducts}">
+                                <th:block th:insert="~{partials/home_product_card :: pcard(item=${item}, stockHint=true)}"></th:block>
+                            </th:block>
+                        </div>
+                        <div th:if="${homeNewProducts != null and not homeNewProducts.empty and homeNewHasMore}"
+                            class="home-load-more-wrap text-center">
+                            <button type="button" id="homeLoadMoreBtn" class="btn home-load-more-btn"
+                                th:attr="data-next-page=${homeNewNextPage},data-page-size=${homeNewPageSize},data-sort='newest'">
+                                <i class="fas fa-arrow-down me-2" aria-hidden="true"></i>
+                                <span class="home-load-more-label">Xem thêm</span>
+                            </button>
+                        </div>
+                        <div th:if="${homeNewProducts == null or homeNewProducts.empty}" class="empty-category">
+                            <i class="fas fa-box-open empty-icon"></i>
+                            <h4 class="text-muted mb-2">Chưa có sản phẩm</h4>
+                            <p class="text-secondary small mb-0">Vui lòng quay lại sau hoặc vào cửa hàng.</p>
+                            <a th:href="@{/products}" class="btn btn-sm btn-outline-primary mt-3">Vào cửa hàng</a>
+                        </div>
+                    </div>
+                </section>
             </div>
 
-            <div th:if="${products == null or products.empty}" class="empty-category">
-                <i class="fas fa-box-open empty-icon"></i>
-                <h4 class="text-muted mb-3">Chưa có sản phẩm nào</h4>
-                <p class="text-secondary">Rất tiếc, chúng tôi chưa cập nhật sản phẩm cho danh mục này.</p>
-                <a th:href="@{/}" class="btn btn-outline-primary mt-3">Xem tất cả sách</a>
+            <!-- Fallback nếu sau này có tìm kiếm/danh mục trên home -->
+            <div class="home-hub-panel" th:if="${keyword != null or categoryName != null}">
+                <h3 th:if="${keyword}" class="h5 fw-bold mb-3">Kết quả: "<span class="text-danger" th:text="${keyword}"></span>"</h3>
+                <h3 th:if="${categoryName}" class="h5 fw-bold mb-3">Danh mục: <span class="text-primary" th:text="${categoryName}"></span></h3>
+                <div th:if="${products != null and not products.empty}" class="row row-cols-2 row-cols-sm-3 row-cols-lg-5 g-3">
+                    <th:block th:each="item : ${products}">
+                        <th:block th:insert="~{partials/home_product_card :: pcard(item=${item}, stockHint=true)}"></th:block>
+                    </th:block>
+                </div>
+                <div th:if="${products == null or products.empty}" class="empty-category">
+                    <p class="text-muted mb-0">Không có sản phẩm.</p>
+                </div>
             </div>
         </div>
     </div>
+
+    <th:block layout:fragment="script">
+        <script th:src="@{/js/home-products.js}"></script>
+    </th:block>
 </body>
 
 </html>

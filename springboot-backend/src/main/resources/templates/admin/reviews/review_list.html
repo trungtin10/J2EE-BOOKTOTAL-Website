@@ -74,14 +74,14 @@
                                         </td>
                                         <td th:text="${#temporals.format(r.createdAt, 'dd/MM/yyyy HH:mm')}"></td>
                                         <td>
-                                            <span th:if="${r.status == 'APPROVED'}"
+                                            <span th:if="${r.isApproved == true}"
                                                 class="status-badge status-approved">Đã duyệt</span>
-                                            <span th:if="${r.status != 'APPROVED'}"
+                                            <span th:unless="${r.isApproved == true}"
                                                 class="status-badge status-pending">Chờ duyệt</span>
                                         </td>
                                         <td class="pe-3">
                                             <div class="btn-group">
-                                                <form th:if="${r.status != 'APPROVED'}"
+                                                <form th:unless="${r.isApproved == true}"
                                                     th:action="@{'/admin/reviews/approve/' + ${r.id}}" method="post"
                                                     class="d-inline-block">
                                                     <button type="submit" class="btn btn-sm btn-success" title="Duyệt">
@@ -89,13 +89,16 @@
                                                     </button>
                                                 </form>
 
-                                                <button class="btn btn-sm btn-primary" title="Trả lời"
-                                                    th:onclick="'openReplyModal(\'' + ${r.id} + '\', \'' + (${r.user != null ? r.user.username : ''}) + '\', \'' + (${r.adminReply != null ? r.adminReply : ''}) + '\')'">
+                                                <button type="button" class="btn btn-sm btn-primary reply-modal-trigger" title="Trả lời"
+                                                    data-bs-toggle="modal" data-bs-target="#replyModal"
+                                                    th:data-review-id="${r.id}"
+                                                    th:data-username="${r.user != null ? r.user.username : ''}"
+                                                    th:data-admin-reply="${r.adminReply != null ? r.adminReply : ''}">
                                                     <i class="fas fa-reply"></i>
                                                 </button>
 
                                                 <form th:if="${r.adminReply != null and !r.adminReply.isEmpty()}"
-                                                    th:action="@{'/admin/reviews/reply/delete/' + ${r.id}}"
+                                                    th:action="@{'/admin/reviews/delete-reply/' + ${r.id}}"
                                                     method="post" class="d-inline-block">
                                                     <button type="submit" class="btn btn-sm btn-secondary"
                                                         title="Xóa trả lời"
@@ -129,12 +132,12 @@
                             class="fw-bold text-primary"></span></h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <form th:action="@{/admin/reviews/reply}" method="POST">
+                <form id="replyForm" method="POST">
                     <div class="modal-body">
-                        <input type="hidden" name="reviewId" id="replyReviewId">
+                        <input type="hidden" id="replyReviewId">
                         <div class="mb-3">
                             <label class="form-label">Nội dung trả lời:</label>
-                            <textarea name="replyContent" id="replyContent" class="form-control" rows="4" required
+                            <textarea name="reply" id="replyContent" class="form-control" rows="4" required
                                 placeholder="Nhập câu trả lời của Admin..."></textarea>
                         </div>
                     </div>
@@ -149,13 +152,17 @@
 
     <th:block layout:fragment="script">
         <script>
-            function openReplyModal(id, username, currentReply) {
+            document.getElementById('replyModal').addEventListener('show.bs.modal', function (event) {
+                var btn = event.relatedTarget;
+                if (!btn || !btn.classList.contains('reply-modal-trigger')) return;
+                var id = btn.getAttribute('data-review-id');
+                var username = btn.getAttribute('data-username') || '';
+                var reply = btn.getAttribute('data-admin-reply') || '';
                 document.getElementById('replyReviewId').value = id;
+                document.getElementById('replyForm').action = '/admin/reviews/reply/' + id;
                 document.getElementById('replyUsername').innerText = username;
-                document.getElementById('replyContent').value = currentReply;
-                const modal = new bootstrap.Modal(document.getElementById('replyModal'));
-                modal.show();
-            }
+                document.getElementById('replyContent').value = reply;
+            });
         </script>
     </th:block>
 </div>

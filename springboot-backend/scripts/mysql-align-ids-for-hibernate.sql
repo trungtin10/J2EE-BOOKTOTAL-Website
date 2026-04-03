@@ -1,0 +1,39 @@
+-- Align MySQL PK/FK integer columns with JPA (Long -> signed BIGINT).
+-- Run only after BACKUP. Hibernate ddl-auto=update cannot ALTER while FK types differ
+-- ("Referencing column ... and referenced column ... are incompatible").
+--
+-- Steps:
+-- 1) Inspect actual types and constraint names (yours may differ):
+--    SHOW CREATE TABLE users\G
+--    SELECT CONSTRAINT_NAME, TABLE_NAME, COLUMN_NAME, REFERENCED_TABLE_NAME, REFERENCED_COLUMN_NAME
+--    FROM information_schema.KEY_COLUMN_USAGE
+--    WHERE TABLE_SCHEMA = DATABASE() AND REFERENCED_TABLE_NAME IS NOT NULL;
+--
+-- 2) Drop foreign keys that touch columns you will change (children before parents if needed).
+--    Example names from typical MySQL dumps (adjust to match step 1):
+--
+-- ALTER TABLE categories DROP FOREIGN KEY categories_parent_fk;
+-- ALTER TABLE inventory_logs DROP FOREIGN KEY inventory_logs_ibfk_1;
+-- ALTER TABLE notifications DROP FOREIGN KEY notifications_ibfk_1;
+-- ALTER TABLE order_details DROP FOREIGN KEY order_details_ibfk_1;
+-- ALTER TABLE order_details DROP FOREIGN KEY order_details_ibfk_2;
+-- ALTER TABLE orders DROP FOREIGN KEY orders_ibfk_1;
+-- ALTER TABLE product_categories DROP FOREIGN KEY product_categories_ibfk_1;
+-- ALTER TABLE products DROP FOREIGN KEY products_ibfk_1;
+-- ALTER TABLE reviews DROP FOREIGN KEY reviews_ibfk_1;
+-- ALTER TABLE reviews DROP FOREIGN KEY reviews_ibfk_2;
+-- (coupon_usages, etc.: drop any FK on user_id / order_id / coupon_id as needed)
+--
+-- 3) Modify columns to the same signed BIGINT definition on both sides of each FK.
+--    If your DB used INT or BIGINT UNSIGNED, convert to BIGINT (signed) to match Hibernate defaults.
+--
+-- Example pattern (repeat for every id / *_id column that participates in FKs):
+-- ALTER TABLE users MODIFY COLUMN id BIGINT NOT NULL AUTO_INCREMENT;
+-- ALTER TABLE orders MODIFY COLUMN user_id BIGINT NULL;
+-- ALTER TABLE orders MODIFY COLUMN id BIGINT NOT NULL AUTO_INCREMENT;
+--
+-- 4) Re-add foreign keys with the desired ON DELETE / ON UPDATE rules.
+--
+-- 5) Optionally set DDL_AUTO=none or validate in production so Hibernate stops issuing ALTERs.
+
+SET NAMES utf8mb4;

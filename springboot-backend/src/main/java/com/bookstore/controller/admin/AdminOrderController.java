@@ -71,13 +71,40 @@ public class AdminOrderController {
     // Endpoint trả về JSON cho Modal chi tiết đơn hàng (giữ lại để tương thích hoặc dùng cho quick view)
     @GetMapping("/detail/{id}")
     @ResponseBody
-    @Transactional(readOnly = true)
+    @Transactional(readOnly = false)
     public ResponseEntity<?> getOrderDetailJson(@PathVariable(name = "id") Long id) {
         try {
             Optional<Order> orderOpt = orderRepository.findById(id);
             if (orderOpt.isEmpty()) return ResponseEntity.status(404).body(Map.of("success", false, "message", "Không tìm thấy đơn hàng: " + id));
             
             Order order = orderOpt.get();
+
+            // Đảm bảo hiển thị đúng trên /admin/stats:
+            // Nếu admin set trạng thái thẳng (hoặc dữ liệu thiếu cũ) khiến trackingCode/expectedDeliveryDate null,
+            // thì tự điền theo logic tương tự updateOrderStatus để UI không hiện '---'.
+            String st = order.getStatus();
+            boolean shippingPhase = st != null && (
+                    "DELIVERING".equalsIgnoreCase(st) ||
+                    "SHIPPED".equalsIgnoreCase(st) ||
+                    "SHIPPING".equalsIgnoreCase(st) ||
+                    "COMPLETED".equalsIgnoreCase(st)
+            );
+            if (shippingPhase) {
+                if (order.getTrackingCode() == null || order.getTrackingCode().isEmpty()) {
+                    long randomNum = (long) (Math.random() * 90000000L + 10000000L);
+                    order.setTrackingCode("GHN-" + randomNum);
+                }
+                if (order.getExpectedDeliveryDate() == null) {
+                    // COMPLETED: coi như đã giao -> dự kiến = hiện tại; các phase giao khác -> +3 ngày
+                    if ("COMPLETED".equalsIgnoreCase(st)) {
+                        order.setExpectedDeliveryDate(java.time.LocalDateTime.now());
+                    } else {
+                        order.setExpectedDeliveryDate(java.time.LocalDateTime.now().plusDays(3));
+                    }
+                }
+                orderRepository.save(order);
+            }
+
             Map<String, Object> response = new HashMap<>();
             response.put("id", order.getId());
             response.put("status", order.getStatus());

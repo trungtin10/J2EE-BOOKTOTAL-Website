@@ -45,6 +45,7 @@
     var priceResetBtn = document.getElementById('priceResetBtn');
     var topPaginationWrap = document.getElementById('shopPaginationTop');
     var priceRangeLabel = document.getElementById('shopPriceRangeLabel');
+    var productCountEl = document.getElementById('shopProductCount');
 
     function esc(s) {
         if (s == null || s === '') return '';
@@ -54,9 +55,26 @@
     }
 
     function imageUrl(p) {
-        if (!p.imageUrl) return '/img/placeholder.svg';
-        var u = p.imageUrl;
-        if (u.indexOf('http') === 0 || u.indexOf('/uploads/') === 0) return u;
+        var raw = p && (p.imageUrl != null ? p.imageUrl : p.image_url);
+        if (typeof resolveStorefrontImageSrc === 'function') {
+            return resolveStorefrontImageSrc(raw);
+        }
+        if (raw == null || raw === '') return '/img/placeholder.svg';
+        var u = String(raw).trim().replace(/\\/g, '/');
+        if (!u) return '/img/placeholder.svg';
+        var low = u.toLowerCase();
+        if (low.indexOf('http://') === 0 || low.indexOf('https://') === 0) return u;
+        if (u.indexOf('//') === 0) return u;
+        var up = low.lastIndexOf('/uploads/');
+        if (up >= 0) return u.substring(up);
+        if (u.indexOf('/uploads/') === 0 || u.indexOf('/img/') === 0 || u.indexOf('/images/') === 0) return u;
+        if (/^[a-z]:\//i.test(u)) {
+            var slash = u.lastIndexOf('/');
+            var fname = slash >= 0 ? u.slice(slash + 1) : u;
+            if (fname && fname.indexOf(':') < 0) return '/uploads/' + fname;
+        }
+        if (u.indexOf('uploads/') === 0) return '/' + u;
+        if (u.charAt(0) === '/') return '/uploads' + u;
         return '/uploads/' + u;
     }
 
@@ -131,8 +149,9 @@
         if (!priceRangeLabel) return;
         priceRangeLabel.textContent =
             Math.round(0).toLocaleString('vi-VN') +
-            ' - ' +
-            Math.round(maxPriceCeil).toLocaleString('vi-VN');
+            ' – ' +
+            Math.round(maxPriceCeil).toLocaleString('vi-VN') +
+            ' đ';
     }
 
     function buildQuery() {
@@ -196,15 +215,27 @@
         }
     }
 
+    function updateProductCount(n) {
+        if (!productCountEl) return;
+        var v = typeof n === 'number' && !isNaN(n) ? n : 0;
+        productCountEl.textContent = String(Math.max(0, Math.floor(v)));
+    }
+
     function parsePagedResponse(data) {
-        if (data == null) return { list: [], totalPages: 0 };
+        if (data == null) return { list: [], totalPages: 0, totalElements: 0 };
         if (Array.isArray(data)) {
-            return { list: data, totalPages: data.length ? 1 : 0 };
+            return {
+                list: data,
+                totalPages: data.length ? 1 : 0,
+                totalElements: data.length
+            };
         }
         var list = data.content || [];
         var tp = data.totalPages;
         if (typeof tp !== 'number' || isNaN(tp)) tp = list.length ? 1 : 0;
-        return { list: list, totalPages: tp };
+        var te = data.totalElements;
+        if (typeof te !== 'number' || isNaN(te)) te = list.length;
+        return { list: list, totalPages: tp, totalElements: te };
     }
 
     var fetchTimer = null;
@@ -221,6 +252,7 @@
             .then(function (data) {
                 var parsed = parsePagedResponse(data);
                 totalPages = Math.max(0, parsed.totalPages);
+                updateProductCount(parsed.totalElements);
                 if (totalPages > 0 && currentPage >= totalPages) {
                     currentPage = totalPages - 1;
                     fetchProducts();
@@ -232,6 +264,7 @@
             })
             .catch(function () {
                 totalPages = 0;
+                updateProductCount(0);
                 render([]);
                 renderPagination();
             })
@@ -265,36 +298,32 @@
             var price = formatPrice(p.price);
             var pct = discountPercentOf(p);
             var badge = pct != null
-                ? '<span class="position-absolute top-0 end-0 m-2 badge bg-danger product-sale-badge">-' + esc(String(pct)) + '%</span>'
+                ? '<span class="position-absolute top-0 start-0 m-2 badge bg-danger product-sale-badge">-' + esc(String(pct)) + '%</span>'
                 : '';
             var priceBlock;
             if (pct != null && p.originalPrice != null) {
                 priceBlock =
-                    '<div class="mt-3">' +
-                    '<span class="text-muted text-decoration-line-through small d-block">' + formatPrice(p.originalPrice) + '</span>' +
-                    '<span class="text-danger fw-bold fs-5">' + price + '</span>' +
+                    '<div class="mt-1">' +
+                    '<span class="text-muted text-decoration-line-through small d-block mb-1">' + formatPrice(p.originalPrice) + '</span>' +
+                    '<span class="shop-plp-price shop-plp-price-sale fs-6">' + price + '</span>' +
                     '</div>';
             } else {
-                priceBlock =
-                    '<div class="d-flex justify-content-between align-items-center mt-3">' +
-                    '<span class="text-danger fw-bold fs-5">' + price + '</span>' +
-                    '</div>';
+                priceBlock = '<div class="mt-1"><span class="shop-plp-price fs-6">' + price + '</span></div>';
             }
             return (
                 '<div class="col">' +
-                '<div class="card h-100 border-0 shadow-sm rounded-3 product-card">' +
-                '<a href="/product/' + id + '" class="text-decoration-none">' +
-                '<div class="position-relative overflow-hidden">' +
+                '<div class="card h-100 border-0 shadow-sm product-card">' +
+                '<a href="/product/' + id + '" class="text-decoration-none text-dark">' +
+                '<div class="position-relative">' +
                 badge +
-                '<img src="' + img + '" class="card-img-top p-3 rounded-4" alt="' + name + '" style="height:250px;object-fit:contain;" onerror="this.src=\'/img/placeholder.svg\'">' +
-                '</div>' +
-                '<div class="card-body">' +
-                '<h6 class="card-title text-dark fw-bold mb-2 text-truncate-2" style="height:48px;">' + name + '</h6>' +
+                '<div class="shop-plp-card-img rounded-top">' +
+                '<img src="' + img + '" alt="' + name + '" onerror="this.src=\'/img/placeholder.svg\'">' +
+                '</div></div>' +
+                '<div class="card-body pt-3 pb-3 px-3">' +
+                '<div class="card-title h6 fw-bold mb-2 text-truncate-2">' + name + '</div>' +
                 priceBlock +
                 '</div></a>' +
-                '<div class="card-footer bg-white border-0 pb-3 d-grid">' +
-                '<button type="button" class="btn btn-outline-danger btn-sm rounded-pill fw-bold" onclick="addToCart(' + id + ')">THÊM VÀO GIỎ</button>' +
-                '</div></div></div>'
+                '</div></div>'
             );
         }).join('');
         grid.innerHTML = html;

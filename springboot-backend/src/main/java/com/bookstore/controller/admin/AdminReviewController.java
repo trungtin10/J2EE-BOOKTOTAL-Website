@@ -18,7 +18,14 @@ public class AdminReviewController {
     @GetMapping
     public String listReviews(Model model) {
         model.addAttribute("reviews", reviewService.getAllReviews());
-        return "admin/review_list";
+        return "admin/reviews/review_list";
+    }
+
+    @PostMapping("/approve/{id}")
+    public String approveReview(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+        reviewService.approveReview(id);
+        redirectAttributes.addFlashAttribute("successMessage", "Đã duyệt đánh giá.");
+        return "redirect:/admin/reviews";
     }
 
     @PostMapping("/reply/{id}")

@@ -339,9 +339,13 @@
                 </form>
     <th:block layout:fragment="script">
         <script>
+        /** Chuẩn hóa từ server (vd. 119350.0): parseFloat + round — tránh gộp thành 1193500. */
         function formatVndDots(raw) {
-            const digits = (raw || '').toString().replace(/\D/g, '');
-            if (!digits) return '';
+            const s = (raw == null ? '' : String(raw)).trim().replace(/\s/g, '');
+            if (!s) return '';
+            const n = parseFloat(s.replace(',', '.'));
+            if (!Number.isFinite(n) || n < 0) return '';
+            const digits = String(Math.round(n));
             return digits.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
         }
 

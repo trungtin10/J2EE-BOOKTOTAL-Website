@@ -42,7 +42,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 }
             }
         } catch (Exception ex) {
-            logger.error("Could not set user authentication in security context", ex);
+            // JWT hợp lệ nhưng load user lỗi — đáng log; token sai/hết hạn đã được validateToken nuốt, không tới đây.
+            logger.warn("Could not set user authentication in security context: " + ex.getMessage());
         }
 
         filterChain.doFilter(request, response);

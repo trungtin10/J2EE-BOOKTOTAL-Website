@@ -41,34 +41,43 @@
                             <table class="table table-hover align-middle mb-0">
                                 <thead class="table-light">
                                     <tr>
-                                        <th class="ps-3">Mã</th>
-                                        <th>Nội dung</th>
-                                        <th>Giá trị</th>
-                                        <th>Ngày hết hạn</th>
-                                        <th>Đã dùng/Tổng</th>
-                                        <th>Lượt/Người</th>
-                                        <th>Trạng thái</th>
+                                        <th class="ps-3">ID</th>
+                                        <th>Mã</th>
+                                        <th>Loại</th>
+                                        <th>Giảm</th>
+                                        <th>Đơn tối thiểu</th>
+                                        <th>Đã dùng</th>
+                                        <th>Tổng lượt mã</th>
+                                        <th>Lượt / KH</th>
+                                        <th>Hết hạn</th>
+                                        <th>Hiệu lực</th>
                                         <th class="pe-3 text-center">Thao tác</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <tr th:each="c : ${coupons}">
-                                        <td class="ps-3"><span class="coupon-code text-primary" th:text="${c.code}"></span></td>
-                                        <td th:text="${c.description != null ? c.description : '---'}" style="max-width: 150px;" class="text-truncate"></td>
-                                        <td class="fw-bold">
-                                            <span th:text="${c.discountType == 'PERCENT' ? c.discountValue + '%' : #numbers.formatDecimal(c.discountValue, 0, 'COMMA', 0, 'POINT') + 'đ'}"></span>
+                                        <td class="ps-3 text-muted" th:text="${'#' + c.id}"></td>
+                                        <td><span class="coupon-code text-primary" th:text="${c.code}"></span></td>
+                                        <td>
+                                            <span class="badge bg-info text-dark" th:if="${c.type != null and c.type.equalsIgnoreCase('SHIPPING')}">Vận chuyển</span>
+                                            <span class="badge bg-secondary" th:unless="${c.type != null and c.type.equalsIgnoreCase('SHIPPING')}">Sản phẩm</span>
                                         </td>
+                                        <td class="fw-bold">
+                                            <span th:text="${c.discountType == 'PERCENT' ? c.discountValue + '%' : #numbers.formatDecimal(c.discountValue, 0, 'COMMA', 0, 'POINT') + ' đ'}"></span>
+                                        </td>
+                                        <td th:text="${c.minOrderValue != null ? (#numbers.formatDecimal(c.minOrderValue, 0, 'COMMA', 0, 'POINT') + ' đ') : '0 đ'}"></td>
+                                        <td th:text="${c.usedCount != null ? c.usedCount : 0}"></td>
+                                        <td th:text="${c.usageLimit != null ? c.usageLimit : 'Không giới hạn'}"></td>
+                                        <td class="text-center fw-bold text-secondary" th:text="${c.userUsageLimit != null ? c.userUsageLimit : 1}"></td>
                                         <td>
                                             <span th:if="${c.expirationDate != null}"
                                                   th:text="${#temporals.format(c.expirationDate, 'dd/MM/yyyy')}"
                                                   th:classappend="${c.expirationDate.isBefore(T(java.time.LocalDate).now()) ? 'text-danger fw-bold' : ''}"></span>
-                                            <span th:unless="${c.expirationDate != null}">Vô thời hạn</span>
+                                            <span th:unless="${c.expirationDate != null}">Không giới hạn</span>
                                         </td>
-                                        <td th:text="${c.usedCount + '/' + (c.usageLimit != null ? c.usageLimit : '∞')}"></td>
-                                        <td class="text-center fw-bold text-secondary" th:text="${c.userUsageLimit}"></td>
                                         <td>
-                                            <span th:if="${c.isActive}" class="badge bg-success">Hoạt động</span>
-                                            <span th:unless="${c.isActive}" class="badge bg-danger">Đã tắt</span>
+                                            <span th:if="${c.isActive}" class="badge bg-success">Bật</span>
+                                            <span th:unless="${c.isActive}" class="badge bg-danger">Tắt</span>
                                         </td>
                                         <td class="pe-3 text-center">
                                             <div class="btn-group">

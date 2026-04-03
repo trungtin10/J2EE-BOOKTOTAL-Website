@@ -278,10 +278,10 @@
                                     <span id="summaryShipping"
                                         th:text="'—'"></span>
                                 </div>
-                                <div class="summary-row" th:classappend="${productDiscount > 0} ? ' text-success' : ' text-muted'">
+                                <div class="summary-row text-success" th:if="${productDiscount != null and productDiscount > 0}">
                                     <span>Số tiền giảm giá</span>
                                     <span id="summaryDiscount"
-                                        th:text="${productDiscount > 0 ? '-' + #numbers.formatDecimal(productDiscount, 0, 'COMMA', 0, 'POINT') + ' đ' : '0 đ'}"></span>
+                                        th:text="${'-' + #numbers.formatDecimal(productDiscount, 0, 'COMMA', 0, 'POINT') + ' đ'}"></span>
                                 </div>
 
                                 <div class="summary-row summary-total">

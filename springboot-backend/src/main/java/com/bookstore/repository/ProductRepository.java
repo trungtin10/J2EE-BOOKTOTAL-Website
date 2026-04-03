@@ -51,11 +51,15 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     @Query(value = "SELECT * FROM products WHERE (deleted IS NULL OR deleted = 0) AND (is_hidden IS NULL OR is_hidden = 0) ORDER BY RAND() LIMIT :limit", nativeQuery = true)
     List<Product> findRandomProducts(@Param("limit") int limit);
 
-    @Query(value = "SELECT p.* FROM products p " +
-                   "WHERE p.id != :productId AND p.category_id = :categoryId " +
-                   "AND (p.deleted IS NULL OR p.deleted = 0) AND (p.is_hidden IS NULL OR p.is_hidden = 0) " +
-                   "ORDER BY RAND() LIMIT :limit", nativeQuery = true)
-    List<Product> findRandomRelatedProducts(@Param("productId") Long productId, @Param("categoryId") Long categoryId, @Param("limit") int limit);
+    @Query("SELECT p FROM Product p WHERE p.id <> :productId AND p.category.id = :categoryId " +
+           "AND COALESCE(p.deleted, false) = false AND COALESCE(p.isHidden, false) = false")
+    List<Product> findVisibleSameCategoryExcluding(@Param("productId") Long productId,
+                                                   @Param("categoryId") Long categoryId,
+                                                   Pageable pageable);
+
+    @Query("SELECT p FROM Product p WHERE p.id <> :productId " +
+           "AND COALESCE(p.deleted, false) = false AND COALESCE(p.isHidden, false) = false")
+    List<Product> findVisibleExcluding(@Param("productId") Long productId, Pageable pageable);
 
     @Query("SELECT p FROM Product p WHERE " +
            "COALESCE(p.deleted, false) = false AND " +
@@ -87,4 +91,14 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     Page<Product> searchAdminProducts(@Param("keyword") String keyword, @Param("categoryId") Long categoryId, @Param("status") String status, Pageable pageable);
 
     Optional<Product> findByIdAndDeletedIsFalse(Long id);
+
+    @Query(value = "SELECT * FROM products WHERE (deleted IS NULL OR deleted = 0) AND (is_hidden IS NULL OR is_hidden = 0) " +
+           "AND original_price IS NOT NULL AND price < original_price " +
+           "ORDER BY (original_price - price) DESC",
+           nativeQuery = true)
+    List<Product> findVisibleOnSaleBySavings(Pageable pageable);
+
+    @Query("SELECT p FROM Product p WHERE COALESCE(p.deleted, false) = false AND COALESCE(p.isHidden, false) = false " +
+           "ORDER BY COALESCE(p.soldCount, 0) DESC, p.id DESC")
+    List<Product> findVisibleBySoldCountDesc(Pageable pageable);
 }

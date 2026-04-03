@@ -47,7 +47,8 @@ public class ReviewController {
         
         reviewService.saveReview(review);
 
-        redirectAttributes.addFlashAttribute("successMessage", "Cảm ơn bạn đã gửi đánh giá!");
+        redirectAttributes.addFlashAttribute("successMessage",
+                "Bạn đã gửi đánh giá. Nội dung sẽ hiển thị sau khi được duyệt.");
         return "redirect:/product/" + productId;
     }
 }

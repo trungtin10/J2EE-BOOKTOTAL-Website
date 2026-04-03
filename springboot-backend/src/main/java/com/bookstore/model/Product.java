@@ -38,7 +38,7 @@ public class Product {
     @Column(name = "original_price")
     private Double originalPrice;
 
-    @Column(columnDefinition = "TEXT")
+    @Column(columnDefinition = "LONGTEXT")
     private String description;
 
     @Column(name = "image_url")
@@ -85,7 +85,7 @@ public class Product {
     private String color;
 
     /** Thêm ảnh phụ: mỗi dòng hoặc phân tách bằng dấu phẩy (đường dẫn uploads/ hoặc URL đầy đủ). */
-    @Column(name = "gallery_images", columnDefinition = "TEXT")
+    @Column(name = "gallery_images", columnDefinition = "LONGTEXT")
     private String galleryImages;
 
     @Column(name = "publisher_id")
@@ -100,6 +100,22 @@ public class Product {
 
     @Column(name = "created_at", insertable = false, updatable = false)
     private LocalDateTime createdAt;
+
+    /** Thời điểm sửa lần cuối — dùng sắp xếp “mới nhất” trên trang chủ / cửa hàng. */
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
+
+    @PrePersist
+    public void prePersistProduct() {
+        if (updatedAt == null) {
+            updatedAt = LocalDateTime.now();
+        }
+    }
+
+    @PreUpdate
+    public void preUpdateProduct() {
+        updatedAt = LocalDateTime.now();
+    }
 
     public Product() {}
 
@@ -204,7 +220,11 @@ public class Product {
                 }
             }
         }
-        return new ArrayList<>(uniq);
+        List<String> out = new ArrayList<>();
+        for (String raw : uniq) {
+            out.add(normalizeImageSrc(raw));
+        }
+        return out;
     }
 
     /** Chỉ ảnh phụ (gallery) — KHÔNG bao gồm ảnh gốc {@link #imageUrl}. Dùng cho trang quản trị. */
@@ -222,16 +242,55 @@ public class Product {
         return new ArrayList<>(uniq);
     }
 
-    /** Chuẩn hóa đường dẫn ảnh cho thẻ &lt;img src&gt; */
-    public String resolveImageSrc(String path) {
+    /**
+     * Chuẩn hóa đường dẫn ảnh cho thẻ &lt;img src&gt; và API.
+     * Hỗ trợ: URL tuyệt đối, {@code /uploads/...}, {@code uploads/...}, chỉ tên file, {@code /ten-file.jpg} (file trong uploads).
+     */
+    public static String normalizeImageSrc(String path) {
         if (path == null || path.isBlank()) {
             return "/img/placeholder.svg";
         }
-        String p = path.trim();
-        if (p.startsWith("http://") || p.startsWith("https://") || p.startsWith("/uploads/")) {
+        String p = path.trim().replace('\\', '/');
+        String lower = p.toLowerCase(Locale.ROOT);
+        if (lower.startsWith("http://") || lower.startsWith("https://")) {
             return p;
         }
+        if (p.startsWith("//")) {
+            return p;
+        }
+        // Đường dẫn đầy đủ trên ổ đĩa / import: .../uploads/ten-file → /uploads/ten-file
+        int uploadsSeg = lower.lastIndexOf("/uploads/");
+        if (uploadsSeg >= 0) {
+            return p.substring(uploadsSeg);
+        }
+        if (p.startsWith("/uploads/") || p.startsWith("/img/") || p.startsWith("/images/")) {
+            return p;
+        }
+        // Windows: D:/.../file.jpg (không có segment uploads) → thử chỉ tên file trong uploads
+        if (p.length() >= 3 && Character.isLetter(p.charAt(0)) && p.charAt(1) == ':' && p.charAt(2) == '/') {
+            int slash = p.lastIndexOf('/');
+            String fname = slash >= 0 ? p.substring(slash + 1) : p;
+            if (!fname.isBlank() && fname.indexOf(':') < 0) {
+                return "/uploads/" + fname;
+            }
+        }
+        if (p.startsWith("uploads/")) {
+            return "/" + p;
+        }
+        if (p.startsWith("/")) {
+            return "/uploads" + p;
+        }
         return "/uploads/" + p;
+    }
+
+    /** @see #normalizeImageSrc(String) */
+    public String resolveImageSrc(String path) {
+        return normalizeImageSrc(path);
+    }
+
+    /** Normalized {@code img} src for this product's main image (callable from Thymeleaf without static {@code T()}). */
+    public String resolveImageSrc() {
+        return normalizeImageSrc(imageUrl);
     }
 
     public Long getPublisherId() { return publisherId; }
@@ -244,4 +303,7 @@ public class Product {
     public void setCategory(Category category) { this.category = category; }
 
     public LocalDateTime getCreatedAt() { return createdAt; }
+
+    public LocalDateTime getUpdatedAt() { return updatedAt; }
+    public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
 }

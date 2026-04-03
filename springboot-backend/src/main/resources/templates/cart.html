@@ -375,7 +375,7 @@
                                         </div>
                                         <div class="col-product">
                                             <div class="product-info-flex">
-                                                <img th:src="@{${item.imageUrl != null ? (item.imageUrl.startsWith('http') or item.imageUrl.startsWith('/uploads/') ? item.imageUrl : '/uploads/' + item.imageUrl) : '/img/placeholder.svg'}}"
+                                                <img th:src="${item.resolveImageSrc()}"
                                                     class="item-img" onerror="this.src='/img/placeholder.svg'">
                                                 <div>
                                                     <div class="item-name" th:text="${item.name}"></div>
@@ -415,14 +415,17 @@
                                     </div>
                                     <div class="d-flex justify-content-between mb-2"><span class="text-muted">Tạm
                                             tính:</span><span class="fw-bold" id="tempTotal">0 đ</span></div>
-                                    <div class="d-flex justify-content-between mb-3"><span class="text-muted">Giảm
-                                            giá:</span><span class="text-success" id="productDiscountAmount">-0 đ</span>
+                                    <div id="productDiscountRow" class="d-flex justify-content-between mb-3 d-none"
+                                        aria-hidden="true">
+                                        <span class="text-muted">Giảm giá:</span>
+                                        <span class="text-success" id="productDiscountAmount">0 đ</span>
                                     </div>
                                     <hr>
                                     <div class="d-flex justify-content-between mb-4"><span class="fw-bold fs-5">Tổng
                                             cộng:</span><span class="fw-bold fs-4 text-danger" id="finalTotal">0
                                             đ</span></div>
                                     <input type="hidden" name="discount" id="hiddenProductDiscount" value="0">
+                                    <input type="hidden" name="couponCode" id="hiddenCouponCode" value="">
                                     <button type="submit" class="btn btn-checkout" id="btnCheckout">TIẾN HÀNH THANH TOÁN</button>
                                 </div>
                             </div>
@@ -481,10 +484,27 @@
             let currentProductDiscount = 0;
             let appliedCouponCode = null;
             let couponRecheckTimer = null;
-            const COUPON_STORAGE_KEY = 'booktotal_coupon_code';
 
             function formatMoney(amount) {
                 return amount.toLocaleString('vi-VN') + ' đ';
+            }
+
+            /** Tổng số lượng (qty) các dòng sản phẩm đang được chọn — dùng cho điều kiện mã giảm giá */
+            function getSelectedCartQuantity() {
+                let n = 0;
+                document.querySelectorAll('.product-checkbox:checked').forEach(function (cb) {
+                    const q = parseInt(cb.getAttribute('data-qty'), 10);
+                    n += isNaN(q) ? 0 : q;
+                });
+                return n;
+            }
+
+            function syncDiscountRowVisibility() {
+                const row = document.getElementById('productDiscountRow');
+                if (!row) return;
+                const on = Boolean(appliedCouponCode);
+                row.classList.toggle('d-none', !on);
+                row.setAttribute('aria-hidden', on ? 'false' : 'true');
             }
 
             function updateTotal() {
@@ -523,15 +543,17 @@
 
             function resetCoupons(silent) {
                 appliedCouponCode = null;
-                try { localStorage.removeItem(COUPON_STORAGE_KEY); } catch (e) { /* ignore */ }
                 currentProductDiscount = 0;
                 const discountText = document.getElementById('productDiscountText');
                 const discountAmount = document.getElementById('productDiscountAmount');
                 const hiddenDiscount = document.getElementById('hiddenProductDiscount');
+                const hiddenCouponCode = document.getElementById('hiddenCouponCode');
 
                 if (discountText) discountText.innerText = "Chọn mã >";
-                if (discountAmount) discountAmount.innerText = "-0 đ";
+                if (discountAmount) discountAmount.innerText = "0 đ";
                 if (hiddenDiscount) hiddenDiscount.value = 0;
+                if (hiddenCouponCode) hiddenCouponCode.value = '';
+                syncDiscountRowVisibility();
                 if (!silent) calculateFinalTotal();
             }
 
@@ -540,16 +562,15 @@
                 const safe = isNaN(d) ? 0 : Math.max(0, d);
                 currentProductDiscount = safe;
                 appliedCouponCode = code || null;
-                try {
-                    if (appliedCouponCode) localStorage.setItem(COUPON_STORAGE_KEY, appliedCouponCode);
-                    else localStorage.removeItem(COUPON_STORAGE_KEY);
-                } catch (e) { /* ignore */ }
                 const discountText = document.getElementById('productDiscountText');
                 const discountAmount = document.getElementById('productDiscountAmount');
                 const hiddenDiscount = document.getElementById('hiddenProductDiscount');
+                const hiddenCouponCode = document.getElementById('hiddenCouponCode');
                 if (discountText) discountText.innerText = appliedCouponCode ? appliedCouponCode : "Chọn mã >";
-                if (discountAmount) discountAmount.innerText = safe > 0 ? ("-" + formatMoney(safe)) : "-0 đ";
+                if (discountAmount) discountAmount.innerText = safe > 0 ? ("-" + formatMoney(safe)) : "0 đ";
                 if (hiddenDiscount) hiddenDiscount.value = String(safe);
+                if (hiddenCouponCode) hiddenCouponCode.value = appliedCouponCode ? appliedCouponCode : '';
+                syncDiscountRowVisibility();
                 calculateFinalTotal();
             }
 
@@ -563,7 +584,11 @@
                     fetch('/api/coupon/check', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ code: appliedCouponCode, totalAmount: currentTotal })
+                        body: JSON.stringify({
+                            code: appliedCouponCode,
+                            totalAmount: currentTotal,
+                            cartItemQuantity: getSelectedCartQuantity()
+                        })
                     })
                         .then(res => res.json())
                         .then(data => {
@@ -607,7 +632,11 @@
                                     if (maxDiscount > 0) desc += ` (Tối đa ${maxDiscount.toLocaleString('vi-VN')}đ)`;
 
                                     const minOrder = c.min_order_value || c.minOrderValue;
-                                    let condition = minOrder > 0 ? `Đơn tối thiểu ${minOrder.toLocaleString('vi-VN')}đ` : 'Không giới hạn';
+                                    const minItems = c.min_item_quantity != null ? c.min_item_quantity : c.minItemQuantity;
+                                    let condition = minOrder > 0 ? `Đơn tối thiểu ${minOrder.toLocaleString('vi-VN')}đ` : 'Không giới hạn đơn';
+                                    if (minItems > 0) {
+                                        condition += ` · Tối thiểu ${minItems} SP trong giỏ`;
+                                    }
                                     html += `<div class="coupon-card"><div class="coupon-info"><div class="coupon-code">${c.code}</div><div class="coupon-desc">${desc}</div><div class="coupon-expiry text-muted small">${condition}</div></div><button class="btn-use-coupon" onclick="applyCoupon('${c.code}')" data-bs-dismiss="modal">Dùng ngay</button></div>`;
                                 });
                                 list.innerHTML = html;
@@ -623,7 +652,11 @@
                 fetch('/api/coupon/check', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ code: code, totalAmount: currentTotal })
+                    body: JSON.stringify({
+                        code: code,
+                        totalAmount: currentTotal,
+                        cartItemQuantity: getSelectedCartQuantity()
+                    })
                 })
                     .then(res => res.json())
                     .then(data => {
@@ -713,10 +746,6 @@
 
             document.addEventListener("DOMContentLoaded", function () {
                 if (document.getElementById('btnCheckout')) {
-                    try {
-                        const saved = localStorage.getItem(COUPON_STORAGE_KEY);
-                        if (saved && saved.trim()) appliedCouponCode = saved.trim();
-                    } catch (e) { /* ignore */ }
                     updateTotal();
                 }
             });

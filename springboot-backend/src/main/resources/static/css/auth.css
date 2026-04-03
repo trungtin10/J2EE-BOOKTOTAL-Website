@@ -185,16 +185,22 @@
 
 #loginModal .login-modal-password .login-modal-input,
 #registerModal .login-modal-password .login-modal-input {
-    padding-right: 3.25rem;
+    padding-right: 3.15rem;
 }
 
-#loginModal .login-modal-eye,
-#registerModal .login-modal-eye {
+/* Ghi đè .btn-toggle-password (top/transform) để khớp chiều cao ô nhập, icon căn giữa */
+#loginModal .login-modal-password .login-modal-eye,
+#registerModal .login-modal-password .login-modal-eye {
     position: absolute;
     right: 0;
     top: 0;
     bottom: 0;
-    width: 3.15rem;
+    width: 3rem;
+    min-width: unset;
+    min-height: unset;
+    margin: 0;
+    transform: none;
+    border: none;
     border-left: 1px solid #e5e7eb;
     border-radius: 0 10px 10px 0;
     background: #fff;
@@ -204,17 +210,18 @@
     justify-content: center;
     padding: 0;
     line-height: 1;
+    box-sizing: border-box;
 }
 
-#loginModal .login-modal-eye i,
-#registerModal .login-modal-eye i {
+#loginModal .login-modal-password .login-modal-eye i,
+#registerModal .login-modal-password .login-modal-eye i {
     line-height: 1;
     font-size: 1.05rem;
     display: block;
 }
 
-#loginModal .login-modal-eye:hover,
-#registerModal .login-modal-eye:hover {
+#loginModal .login-modal-password .login-modal-eye:hover,
+#registerModal .login-modal-password .login-modal-eye:hover {
     background: #f9fafb;
     color: #111827;
 }
@@ -247,6 +254,27 @@
     font-size: 1.05rem;
     background: linear-gradient(180deg, #111827, #0b1020);
     color: #fff;
+    transition: transform 0.15s ease, filter 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+}
+
+#loginModal .login-modal-submit:active,
+#registerModal .login-modal-submit:active {
+    transform: scale(0.98);
+    filter: brightness(0.98);
+}
+
+#loginModal .login-modal-submit.is-entering,
+#registerModal .login-modal-submit.is-entering {
+    opacity: 0.95;
+    transform: scale(0.99);
+    filter: saturate(1.05);
+    box-shadow: 0 8px 28px rgba(17, 24, 39, 0.18);
+}
+
+#loginModal .login-modal-submit:focus-visible,
+#registerModal .login-modal-submit:focus-visible {
+    outline: 2px solid rgba(201, 33, 39, 0.45);
+    outline-offset: 2px;
 }
 
 #loginModal .login-modal-submit:hover,

@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -63,17 +64,25 @@ public class ProductService {
         return productRepository.searchProductsForShopPage(kw, categoryId, min, max, pg);
     }
 
-    private static org.springframework.data.domain.Sort resolveShopSort(String sort) {
+    private static Sort resolveShopSort(String sort) {
         switch (sort != null ? sort : "newest") {
             case "priceAsc":
-                return org.springframework.data.domain.Sort.by("price").ascending();
+                return Sort.by("price").ascending();
             case "priceDesc":
-                return org.springframework.data.domain.Sort.by("price").descending();
+                return Sort.by("price").descending();
             case "soldDesc":
-                return org.springframework.data.domain.Sort.by("soldCount").descending();
+                return Sort.by("soldCount").descending();
             default:
-                return org.springframework.data.domain.Sort.by("id").descending();
+                // Mới / vừa cập nhật lên đầu; bản ghi cũ chưa có updated_at xếp theo createdAt rồi id
+                return Sort.by(
+                        new Sort.Order(Sort.Direction.DESC, "updatedAt", Sort.NullHandling.NULLS_LAST),
+                        new Sort.Order(Sort.Direction.DESC, "createdAt", Sort.NullHandling.NULLS_LAST),
+                        new Sort.Order(Sort.Direction.DESC, "id"));
         }
+    }
+
+    private static Pageable relatedProductsPageable() {
+        return PageRequest.of(0, 5, resolveShopSort("newest"));
     }
 
     public double getMaxVisibleProductPrice() {
@@ -85,7 +94,7 @@ public class ProductService {
     }
 
     public List<Product> getNewArrivals(int limit) {
-        return productRepository.findByDeletedIsFalseOrderByIdDesc(PageRequest.of(0, limit));
+        return searchShopPage(null, "", "newest", null, null, PageRequest.of(0, limit)).getContent();
     }
 
     public List<Product> getBestSellers() {
@@ -93,7 +102,7 @@ public class ProductService {
     }
 
     public List<Product> getNewArrivals() {
-        return productRepository.findByDeletedIsFalseOrderByIdDesc(PageRequest.of(0, 10));
+        return getNewArrivals(10);
     }
 
     public List<Product> getOnSaleProducts() {
@@ -101,10 +110,44 @@ public class ProductService {
         return productRepository.findRandomProducts(10);
     }
 
+    /** Trang chủ: sản phẩm đang giảm giá (ưu tiên mức giảm cao). */
+    public List<Product> getHomeDealProducts(int limit) {
+        List<Product> deals = productRepository.findVisibleOnSaleBySavings(PageRequest.of(0, limit));
+        if (deals.size() >= limit) {
+            return deals;
+        }
+        List<Product> fill = searchShopPage(null, "", "newest", null, null, PageRequest.of(0, limit)).getContent();
+        java.util.LinkedHashSet<Long> seen = new java.util.LinkedHashSet<>();
+        java.util.ArrayList<Product> out = new java.util.ArrayList<>(deals);
+        for (Product p : deals) {
+            seen.add(p.getId());
+        }
+        for (Product p : fill) {
+            if (out.size() >= limit) break;
+            if (seen.add(p.getId())) {
+                out.add(p);
+            }
+        }
+        return out;
+    }
+
+    /** Trang chủ: bán chạy (đã lọc ẩn/xóa mềm). */
+    public List<Product> getHomeBestsellerProducts(int limit) {
+        return productRepository.findVisibleBySoldCountDesc(PageRequest.of(0, limit));
+    }
+
+    /**
+     * Gợi ý tối đa 5 SP: ưu tiên cùng danh mục (trừ SP hiện tại); nếu không có thì lấy SP khác đang hiển thị trên shop.
+     */
     public List<Product> getRelatedProducts(Long productId, Long categoryId) {
-        if (categoryId == null) return java.util.Collections.emptyList();
-        // Match Node.js behavior: Randomized selection of 5 related products
-        return productRepository.findRandomRelatedProducts(productId, categoryId, 5);
+        Pageable pg = relatedProductsPageable();
+        if (categoryId != null) {
+            List<Product> sameCategory = productRepository.findVisibleSameCategoryExcluding(productId, categoryId, pg);
+            if (!sameCategory.isEmpty()) {
+                return sameCategory;
+            }
+        }
+        return productRepository.findVisibleExcluding(productId, pg);
     }
 
     /** Admin / khôi phục: bao gồm cả sản phẩm đã xóa mềm. */

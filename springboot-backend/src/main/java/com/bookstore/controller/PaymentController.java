@@ -2,9 +2,9 @@ package com.bookstore.controller;
 
 import com.bookstore.model.Order;
 import com.bookstore.security.CustomUserDetails;
-import com.bookstore.service.NotificationService;
 import com.bookstore.service.MomoPaymentService;
 import com.bookstore.service.OrderService;
+import com.bookstore.service.VnpayPaymentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.http.MediaType;
 
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.Optional;
@@ -29,10 +30,10 @@ public class PaymentController {
     private OrderService orderService;
 
     @Autowired
-    private NotificationService notificationService;
+    private MomoPaymentService momoPaymentService;
 
     @Autowired
-    private MomoPaymentService momoPaymentService;
+    private VnpayPaymentService vnpayPaymentService;
 
     /**
      * Show mock payment gateway page (MOMO/VNPAY).
@@ -64,6 +65,18 @@ public class PaymentController {
                 model.addAttribute("momoError", momo.message() != null ? momo.message() : "Không tạo được giao dịch MoMo");
             } catch (Exception e) {
                 model.addAttribute("momoError", e.getMessage());
+            }
+        }
+
+        // For VNPAY: create a real payment and redirect to VNPAY
+        if ("VNPAY".equalsIgnoreCase(method)) {
+            try {
+                long amt = Math.max(0, Math.round(amount));
+                String baseUrl = resolveBaseUrl(request);
+                String url = vnpayPaymentService.createPaymentUrl(orderId, amt, baseUrl, request);
+                return "redirect:" + url;
+            } catch (Exception e) {
+                model.addAttribute("vnpayError", e.getMessage());
             }
         }
         return "payment_gateway";
@@ -109,30 +122,19 @@ public class PaymentController {
             if (!sigOk) ok = false;
         }
 
-        Long userId = userDetails.getUser().getId();
         Optional<Order> orderOpt = orderService.getOrderById(orderId);
         if (orderOpt.isPresent()) {
             Order o = orderOpt.get();
             if (ok) {
+                String previousPaymentStatus = o.getPaymentStatus();
                 o.setPaymentStatus("PAID");
                 orderService.save(o);
-                notificationService.createNotification(
-                        userId,
-                        "Thanh toán MoMo thành công!",
-                        "Đơn hàng #" + orderId + " đã được thanh toán.",
-                        "success"
-                );
+                orderService.sendPaymentSuccessNotificationIfFirstTime(o, previousPaymentStatus);
                 return "redirect:/order/success/" + orderId;
             } else {
                 o.setPaymentStatus("FAILED");
                 // không auto-cancel đơn để khách có thể thử lại / admin xử lý
                 orderService.save(o);
-                notificationService.createNotification(
-                        userId,
-                        "Thanh toán MoMo thất bại!",
-                        "Đơn hàng #" + orderId + " thanh toán không thành công. Bạn có thể thử lại.",
-                        "danger"
-                );
             }
         }
         return "redirect:/cart?paymentFailed=true";
@@ -162,9 +164,11 @@ public class PaymentController {
             }
 
             orderService.getOrderById(orderId).ifPresent(o -> {
+                String previousPaymentStatus = o.getPaymentStatus();
                 if (ok) o.setPaymentStatus("PAID");
                 else o.setPaymentStatus("FAILED");
                 orderService.save(o);
+                if (ok) orderService.sendPaymentSuccessNotificationIfFirstTime(o, previousPaymentStatus);
             });
 
             res.put("resultCode", 0);
@@ -178,6 +182,137 @@ public class PaymentController {
     }
 
     /**
+     * VNPAY return URL (user browser redirect).
+     * Example: /payment/vnpay/return?vnp_Amount=...&vnp_ResponseCode=00&vnp_TransactionStatus=00&vnp_SecureHash=...
+     */
+    @GetMapping("/vnpay/return")
+    public String vnpayReturn(@RequestParam Map<String, String> params,
+                              @AuthenticationPrincipal CustomUserDetails userDetails) {
+        Map<String, String> vnpParams = filterVnpParams(params);
+        boolean sigOk = vnpayPaymentService.verifyReturn(vnpParams);
+        Long orderId = VnpayPaymentService.extractOrderId(vnpParams);
+
+        String responseCode = vnpParams.getOrDefault("vnp_ResponseCode", "");
+        String txnStatus = vnpParams.getOrDefault("vnp_TransactionStatus", "");
+        boolean ok = sigOk && "00".equals(responseCode) && "00".equals(txnStatus);
+
+        if (orderId != null) {
+            Optional<Order> orderOpt = orderService.getOrderById(orderId);
+            orderOpt.ifPresent(o -> {
+                String previousPaymentStatus = o.getPaymentStatus();
+                o.setPaymentMethod("VNPAY");
+                o.setPaymentTxnRef(vnpParams.get("vnp_TxnRef"));
+                o.setPaymentGatewayTransactionNo(vnpParams.get("vnp_TransactionNo"));
+                o.setPaymentBankCode(vnpParams.get("vnp_BankCode"));
+                o.setPaymentPaidAt(vnpParams.get("vnp_PayDate"));
+                if (ok) {
+                    o.setPaymentStatus("PAID");
+                } else {
+                    o.setPaymentStatus("FAILED");
+                }
+                orderService.save(o);
+                if (ok) orderService.sendPaymentSuccessNotificationIfFirstTime(o, previousPaymentStatus);
+            });
+
+            if (userDetails != null && ok) {
+                return "redirect:/order/success/" + orderId;
+            }
+        }
+
+        // If user not logged in or order not found -> send them back to cart
+        return "redirect:/cart?paymentFailed=true";
+    }
+
+    /**
+     * VNPAY IPN (server-to-server callback). Must return JSON with RspCode/Message.
+     */
+    @GetMapping(value = "/vnpay/ipn", produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseBody
+    public Map<String, String> vnpayIpn(@RequestParam Map<String, String> params) {
+        Map<String, String> vnpParams = filterVnpParams(params);
+        String rspCode = "99";
+        String message = "Unknown error";
+        try {
+            boolean sigOk = vnpayPaymentService.verifyReturn(vnpParams);
+            if (!sigOk) {
+                rspCode = "97";
+                message = "Invalid signature";
+                return Map.of("RspCode", rspCode, "Message", message);
+            }
+
+            Long orderId = VnpayPaymentService.extractOrderId(vnpParams);
+            if (orderId == null) {
+                rspCode = "01";
+                message = "Order not found";
+                return Map.of("RspCode", rspCode, "Message", message);
+            }
+
+            String responseCode = vnpParams.getOrDefault("vnp_ResponseCode", "");
+            String txnStatus = vnpParams.getOrDefault("vnp_TransactionStatus", "");
+            boolean ok = "00".equals(responseCode) && "00".equals(txnStatus);
+
+            Optional<Order> orderOpt = orderService.getOrderById(orderId);
+            if (orderOpt.isEmpty()) {
+                rspCode = "01";
+                message = "Order not found";
+                return Map.of("RspCode", rspCode, "Message", message);
+            }
+
+            Order o = orderOpt.get();
+            long vnpAmountMinor = VnpayPaymentService.parseAmountMinorUnits(vnpParams);
+            if (vnpAmountMinor < 0) {
+                rspCode = "04";
+                message = "Invalid amount";
+                return Map.of("RspCode", rspCode, "Message", message);
+            }
+            double finalTotalVnd = o.getFinalTotal() != null ? o.getFinalTotal() : 0d;
+            long expectedMinor = Math.round(finalTotalVnd * 100.0);
+            if (vnpAmountMinor != expectedMinor) {
+                rspCode = "04";
+                message = "Invalid amount";
+                return Map.of("RspCode", rspCode, "Message", message);
+            }
+
+            // Only update once if already PAID
+            if ("PAID".equalsIgnoreCase(o.getPaymentStatus())) {
+                rspCode = "02";
+                message = "Order already confirmed";
+                return Map.of("RspCode", rspCode, "Message", message);
+            }
+
+            String previousPaymentStatus = o.getPaymentStatus();
+            o.setPaymentMethod("VNPAY");
+            o.setPaymentTxnRef(vnpParams.get("vnp_TxnRef"));
+            o.setPaymentGatewayTransactionNo(vnpParams.get("vnp_TransactionNo"));
+            o.setPaymentBankCode(vnpParams.get("vnp_BankCode"));
+            o.setPaymentPaidAt(vnpParams.get("vnp_PayDate"));
+            o.setPaymentStatus(ok ? "PAID" : "FAILED");
+            orderService.save(o);
+            if (ok) orderService.sendPaymentSuccessNotificationIfFirstTime(o, previousPaymentStatus);
+
+            rspCode = "00";
+            message = "Confirm Success";
+            return Map.of("RspCode", rspCode, "Message", message);
+        } catch (Exception e) {
+            return Map.of("RspCode", rspCode, "Message", message);
+        }
+    }
+
+    private static Map<String, String> filterVnpParams(Map<String, String> params) {
+        if (params == null || params.isEmpty()) return Map.of();
+        Map<String, String> out = new HashMap<>();
+        for (Map.Entry<String, String> e : params.entrySet()) {
+            if (e.getKey() != null && e.getKey().startsWith("vnp_")) {
+                out.put(e.getKey(), e.getValue());
+            }
+        }
+        // Keep secure hash too (it starts with vnp_)
+        if (params.containsKey("vnp_SecureHash")) out.put("vnp_SecureHash", params.get("vnp_SecureHash"));
+        if (params.containsKey("vnp_SecureHashType")) out.put("vnp_SecureHashType", params.get("vnp_SecureHashType"));
+        return out;
+    }
+
+    /**
      * Handle payment gateway confirmation (SUCCESS or FAILED).
      */
     @PostMapping("/confirm")
@@ -188,21 +323,14 @@ public class PaymentController {
 
         if (userDetails == null) return "redirect:/login";
 
-        Long userId = userDetails.getUser().getId();
-
         if ("SUCCESS".equals(status)) {
             Optional<Order> orderOpt = orderService.getOrderById(orderId);
             orderOpt.ifPresent(o -> {
+                String previousPaymentStatus = o.getPaymentStatus();
                 o.setPaymentStatus("PAID");
                 orderService.save(o);
+                orderService.sendPaymentSuccessNotificationIfFirstTime(o, previousPaymentStatus);
             });
-
-            notificationService.createNotification(
-                    userId,
-                    "Thanh toán thành công!",
-                    "Đơn hàng #" + orderId + " đã được thanh toán. Chúng tôi sẽ sớm xử lý đơn hàng của bạn.",
-                    "success"
-            );
             return "redirect:/order/success/" + orderId;
 
         } else {
@@ -212,13 +340,6 @@ public class PaymentController {
                 o.setPaymentStatus("FAILED");
                 orderService.save(o);
             });
-
-            notificationService.createNotification(
-                    userId,
-                    "Thanh toán thất bại!",
-                    "Đơn hàng #" + orderId + " đã bị hủy do thanh toán không thành công. Vui lòng đặt lại.",
-                    "danger"
-            );
             return "redirect:/cart?paymentFailed=true";
         }
     }

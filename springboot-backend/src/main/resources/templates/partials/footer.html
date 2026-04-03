@@ -6,222 +6,442 @@
 </head>
 
 <body>
-    <footer th:fragment="footer" class="footer">
+    <footer th:fragment="footer" class="site-footer">
         <style>
-            .footer {
-                background-color: #fff;
-                border-top: 2px solid #eef2f6;
-                padding-top: 44px;
-                margin-top: 44px;
+            .site-footer {
+                --footer-brand: var(--brand, #0b1f33);
+                --footer-brand-2: var(--brand-2, #102a43);
+                margin-top: 3rem;
                 color: #333;
                 font-size: 14px;
             }
 
-            .footer-title {
-                font-size: 13px;
-                font-weight: 900;
-                text-transform: uppercase;
-                margin-bottom: 20px;
-                color: #333;
-                position: relative;
-                letter-spacing: 0.6px;
+            .site-footer .footer-wave-bar {
+                line-height: 0;
+                display: block;
+                width: 100%;
             }
 
-            .footer-list {
+            .site-footer .footer-wave-svg {
+                width: 100%;
+                height: clamp(40px, 6vw, 56px);
+                display: block;
+            }
+
+            .site-footer .footer-wave-svg path {
+                fill: var(--footer-brand);
+            }
+
+            .site-footer .footer-main {
+                background: #fff;
+                padding: 2.25rem 0 1.5rem;
+                border-bottom: 1px solid #eef2f6;
+            }
+
+            .site-footer .footer-col-title {
+                font-size: 0.82rem;
+                font-weight: 800;
+                text-transform: uppercase;
+                letter-spacing: 0.06em;
+                color: var(--footer-brand);
+                margin: 0 0 1rem;
+                padding-bottom: 0.5rem;
+                border-bottom: 2px solid var(--footer-brand);
+                display: inline-block;
+                min-width: 0;
+            }
+
+            .site-footer .footer-logo {
+                font-size: 1.35rem;
+                font-weight: 800;
+                color: var(--footer-brand);
+                text-decoration: none;
+                letter-spacing: -0.02em;
+            }
+
+            .site-footer .footer-logo:hover {
+                color: var(--brand-3, #163a5f);
+            }
+
+            .site-footer .footer-intro {
+                line-height: 1.65;
+                color: #5c6b7a;
+                font-size: 13px;
+                margin: 0.75rem 0 0;
+            }
+
+            .site-footer .footer-subhead {
+                font-size: 0.75rem;
+                font-weight: 800;
+                text-transform: uppercase;
+                letter-spacing: 0.05em;
+                color: #334155;
+                margin: 1.25rem 0 0.65rem;
+            }
+
+            .site-footer .footer-contact-lines {
+                font-size: 12.5px;
+                color: #52606d;
+                line-height: 1.55;
+            }
+
+            .site-footer .footer-contact-lines .row-line {
+                display: flex;
+                gap: 10px;
+                align-items: flex-start;
+                margin-bottom: 8px;
+            }
+
+            .site-footer .footer-contact-lines i {
+                width: 18px;
+                color: var(--footer-brand);
+                margin-top: 3px;
+                flex-shrink: 0;
+            }
+
+            .site-footer .footer-list {
                 list-style: none;
                 padding: 0;
                 margin: 0;
             }
 
-            .footer-list li {
-                margin-bottom: 10px;
+            .site-footer .footer-list li {
+                margin-bottom: 8px;
             }
 
-            .footer-list a {
-                color: #555;
+            .site-footer .footer-list a {
+                color: #4a5568;
                 text-decoration: none;
-                transition: 0.2s;
+                font-size: 13px;
+                transition: color 0.2s, padding-left 0.2s;
+                display: inline-block;
             }
 
-            .footer-list a:hover {
-                color: var(--brand, #0b1f33);
-                padding-left: 5px;
+            .site-footer .footer-list a:hover {
+                color: var(--footer-brand);
+                padding-left: 4px;
             }
 
-            .footer-about {
-                line-height: 1.65;
-                color: #6b7c93;
+            .site-footer .footer-social-title,
+            .site-footer .footer-pay-title {
+                font-size: 0.72rem;
+                font-weight: 800;
+                text-transform: uppercase;
+                letter-spacing: 0.06em;
+                color: #475569;
+                margin: 1.25rem 0 0.6rem;
             }
 
-            .footer-contact {
-                margin-top: 14px;
-                color: #52606d;
-            }
-
-            .footer-contact .line {
-                display: flex;
-                gap: 10px;
-                align-items: flex-start;
-                margin-bottom: 10px;
-            }
-
-            .footer-contact i {
-                width: 20px;
-                color: var(--brand, #0b1f33);
-                margin-top: 2px;
-            }
-
-            .social-icons a {
+            .site-footer .social-icons a {
                 display: inline-flex;
                 align-items: center;
                 justify-content: center;
-                width: 35px;
-                height: 35px;
+                width: 38px;
+                height: 38px;
                 border-radius: 50%;
-                background-color: #f3f6f9;
-                color: #555;
-                margin-right: 10px;
-                transition: 0.3s;
+                background: #f1f5f9;
+                color: var(--footer-brand);
+                margin: 0 8px 8px 0;
+                transition: background 0.25s, color 0.25s, transform 0.2s;
                 text-decoration: none;
             }
 
-            .social-icons a:hover {
-                background-color: var(--brand, #0b1f33);
-                color: white;
-                transform: translateY(-3px);
+            .site-footer .social-icons a:hover {
+                background: var(--footer-brand);
+                color: #fff;
+                transform: translateY(-2px);
             }
 
-            .payment-methods img {
-                height: 25px;
-                margin-right: 10px;
-                margin-bottom: 10px;
-                filter: grayscale(100%);
-                transition: 0.3s;
-                opacity: 0.7;
+            .site-footer .pay-badges {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 8px;
             }
 
-            .payment-methods img:hover {
-                filter: grayscale(0%);
-                opacity: 1;
+            .site-footer .pay-badge {
+                font-size: 11px;
+                font-weight: 700;
+                padding: 6px 10px;
+                border-radius: 6px;
+                border: 1px solid #e2e8f0;
+                color: var(--footer-brand);
+                background: #f8fafc;
             }
 
-            .newsletter-form .form-control {
+            .site-footer .footer-store-card {
+                margin-top: 0.5rem;
+                padding: 1rem;
+                border-radius: 12px;
+                background: linear-gradient(145deg, #f8fafc 0%, #f1f5f9 100%);
+                border: 1px solid #e8edf3;
+                text-align: center;
+            }
+
+            .site-footer .footer-store-card .store-icon {
+                font-size: 2rem;
+                color: var(--footer-brand);
+                margin-bottom: 0.35rem;
+            }
+
+            .site-footer .btn-footer-store {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                margin-top: 0.75rem;
+                padding: 0.45rem 1.1rem;
+                font-size: 12.5px;
+                font-weight: 700;
+                border-radius: 999px;
+                border: 2px solid var(--footer-brand);
+                color: var(--footer-brand);
+                background: transparent;
+                text-decoration: none;
+                transition: background 0.2s, color 0.2s;
+            }
+
+            .site-footer .btn-footer-store:hover {
+                background: var(--footer-brand);
+                color: #fff;
+            }
+
+            .site-footer .newsletter-form .form-control {
                 border-radius: 8px 0 0 8px;
                 border: 1px solid #dfe7ef;
                 font-size: 13px;
             }
 
-            .newsletter-form .btn {
+            .site-footer .newsletter-form .btn {
                 border-radius: 0 8px 8px 0;
-                background-color: var(--brand, #0b1f33);
-                color: white;
+                background-color: var(--footer-brand);
+                color: #fff;
                 font-weight: 600;
                 font-size: 13px;
+                border: none;
             }
 
-            .copyright {
-                background-color: #fff;
-                padding: 18px 0;
-                margin-top: 28px;
-                border-top: 1px solid #eef2f6;
+            .site-footer .newsletter-form .btn:hover {
+                background-color: var(--footer-brand-2);
+                color: #fff;
+            }
+
+            .site-footer .copyright {
+                background: #fafbfc;
+                padding: 16px 0;
                 text-align: center;
-                color: #777;
-                font-size: 13px;
+                color: #64748b;
+                font-size: 12.5px;
             }
 
-            .footer-cert {
+            .site-footer .footer-cert {
                 font-size: 11px;
-                color: #9aa5b1;
+                color: #94a3b8;
                 margin-top: 6px;
                 line-height: 1.5;
             }
+
+            /* Nút nổi — đồng bộ xanh đen */
+            .footer-fab-stack {
+                position: fixed;
+                right: 16px;
+                bottom: 20px;
+                z-index: 1035;
+                display: flex;
+                flex-direction: column;
+                align-items: flex-end;
+                gap: 10px;
+            }
+
+            .footer-fab {
+                width: 46px;
+                height: 46px;
+                border-radius: 50%;
+                border: none;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                background: var(--footer-brand);
+                color: #fff;
+                box-shadow: 0 4px 14px rgba(11, 31, 51, 0.35);
+                text-decoration: none;
+                cursor: pointer;
+                transition: background 0.2s, transform 0.2s;
+            }
+
+            .footer-fab:hover {
+                background: var(--footer-brand-2);
+                color: #fff;
+                transform: scale(1.05);
+            }
+
+            @media (max-width: 991.98px) {
+                .site-footer .footer-main {
+                    padding-top: 1.75rem;
+                }
+
+                .site-footer .footer-col-title {
+                    margin-top: 0.5rem;
+                }
+            }
+
+            @media (max-width: 575.98px) {
+                .site-footer .newsletter-form {
+                    flex-direction: column;
+                    align-items: stretch;
+                }
+
+                .site-footer .newsletter-form .form-control {
+                    border-radius: 8px;
+                }
+
+                .site-footer .newsletter-form .btn {
+                    border-radius: 8px;
+                    margin-top: 8px;
+                    width: 100%;
+                }
+
+                .footer-fab-stack {
+                    right: 12px;
+                    bottom: 12px;
+                }
+
+                .footer-fab {
+                    width: 42px;
+                    height: 42px;
+                }
+            }
         </style>
-        <div class="container">
-            <div class="row">
-                <!-- Cột 1: Giới thiệu -->
-                <div class="col-lg-4 col-md-6 mb-4">
-                    <div class="mb-3">
-                        <a th:href="@{/}" class="text-decoration-none">
-                            <span style="font-size: 24px; font-weight: 800; color: var(--brand, #0b1f33);">BOOKTOTAL</span>
-                        </a>
-                    </div>
-                    <p class="footer-about mb-3">
-                        BookTotal là nền tảng thương mại điện tử chuyên cung cấp sách chính hãng, văn phòng phẩm và quà tặng. 
-                        Chúng tôi cam kết mang tri thức đến mọi nhà.
-                    </p>
-                    <div class="footer-contact">
-                        <div class="line">
-                            <i class="fas fa-map-marker-alt"></i>
-                            <div>Trường Đại học Công Nghệ TP - Hồ Chí Minh</div>
-                        </div>
-                        <div class="line">
-                            <i class="fas fa-envelope"></i>
-                            <div>booktotal01@gmail.com</div>
-                        </div>
-                        <div class="line">
-                            <i class="fas fa-phone"></i>
-                            <div>1900 636 467</div>
-                        </div>
-                    </div>
-                </div>
 
-                <!-- Cột 2: Chính sách -->
-                <div class="col-lg-2 col-md-6 mb-4">
-                    <h4 class="footer-title">DỊCH VỤ</h4>
-                    <ul class="footer-list">
-                        <li><a th:href="@{/page/terms}">Điều khoản sử dụng</a></li>
-                        <li><a th:href="@{/page/privacy}">Chính sách bảo mật</a></li>
-                        <li><a th:href="@{/page/shipping-policy}">Chính sách vận chuyển</a></li>
-                        <li><a th:href="@{/page/return-policy}">Chính sách đổi trả</a></li>
-                    </ul>
-                </div>
+        <!-- Sóng viền trên — màu brand (xanh đen) -->
+        <div class="footer-wave-bar" aria-hidden="true">
+            <svg class="footer-wave-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 56" preserveAspectRatio="none">
+                <path d="M0,28 C240,8 480,48 720,28 C960,8 1200,48 1440,28 L1440,56 L0,56 Z"/>
+            </svg>
+        </div>
 
-                <!-- Cột 3: Hỗ trợ -->
-                <div class="col-lg-2 col-md-6 mb-4">
-                    <h4 class="footer-title">HỖ TRỢ</h4>
-                    <ul class="footer-list">
-                        <li><a th:href="@{/page/faq}">Câu hỏi thường gặp</a></li>
-                        <li><a th:href="@{/page/about}">Giới thiệu BookTotal</a></li>
-                        <li><a href="#">Liên hệ chúng tôi</a></li>
-                    </ul>
-                </div>
-
-                <!-- Cột 4: Liên hệ -->
-                <div class="col-lg-4 col-md-6 mb-4">
-                    <h4 class="footer-title">KẾT NỐI VỚI CHÚNG TÔI</h4>
-                    <div class="social-icons mb-3">
-                        <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
-                        <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
-                        <a href="#" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
-                        <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
-                        <a href="#" aria-label="Pinterest"><i class="fab fa-pinterest-p"></i></a>
-                    </div>
-
-                    <div class="mb-3">
-                        <div class="fw-bold mb-2">ĐĂNG KÝ NHẬN TIN SÁCH MỚI NHẤT</div>
-                        <div class="input-group newsletter-form">
-                            <input type="email" class="form-control form-control-sm" placeholder="Nhập email của bạn...">
-                            <button class="btn btn-sm" type="button">GỬI</button>
+        <div class="footer-main">
+            <div class="container">
+                <div class="row g-4 g-lg-5">
+                    <!-- Cột 1: Giới thiệu & liên hệ -->
+                    <div class="col-lg-3 col-md-6">
+                        <h2 class="footer-col-title">Giới thiệu</h2>
+                        <a th:href="@{/}" class="footer-logo d-inline-block">BOOKTOTAL</a>
+                        <p class="footer-intro">
+                            Nền tảng thương mại điện tử chuyên sách chính hãng, văn phòng phẩm và quà tặng — mang tri thức đến mọi nhà.
+                        </p>
+                        <div class="footer-subhead">Thông tin liên hệ</div>
+                        <div class="footer-contact-lines">
+                            <div class="row-line">
+                                <i class="fas fa-map-marker-alt" aria-hidden="true"></i>
+                                <span>Trường Đại học Công Nghệ TP. Hồ Chí Minh (HUTECH)</span>
+                            </div>
+                            <div class="row-line">
+                                <i class="fas fa-envelope" aria-hidden="true"></i>
+                                <span><a href="mailto:booktotal01@gmail.com" class="text-decoration-none text-reset">booktotal01@gmail.com</a></span>
+                            </div>
+                            <div class="row-line">
+                                <i class="fas fa-phone-alt" aria-hidden="true"></i>
+                                <span><a href="tel:1900636467" class="text-decoration-none text-reset">1900 636 467</a> <span class="text-muted">(8:00–21:00)</span></span>
+                            </div>
+                            <div class="small text-muted mt-2">Giấy chứng nhận ĐKKD số 0304132047 do Sở KH&amp;ĐT TP.HCM cấp.</div>
                         </div>
                     </div>
 
-                    <div class="payment-methods mt-3">
-                        <img src="https://frontend.tikicdn.com/_desktop-frontend/static/img/footer/visa.svg" alt="Visa">
-                        <img src="https://frontend.tikicdn.com/_desktop-frontend/static/img/footer/mastercard.svg" alt="Mastercard">
-                        <img src="https://frontend.tikicdn.com/_desktop-frontend/static/img/footer/jcb.svg" alt="JCB">
-                        <img src="https://frontend.tikicdn.com/_desktop-frontend/static/img/footer/cash.svg" alt="Cash">
+                    <!-- Cột 2: Chính sách -->
+                    <div class="col-lg-3 col-md-6">
+                        <h2 class="footer-col-title">Chính sách</h2>
+                        <ul class="footer-list">
+                            <li><a th:href="@{/page/privacy}">Chính sách bảo mật</a></li>
+                            <li><a th:href="@{/page/shipping-policy}">Chính sách vận chuyển</a></li>
+                            <li><a th:href="@{/page/return-policy}">Chính sách đổi trả</a></li>
+                            <li><a th:href="@{/page/terms}">Điều khoản sử dụng</a></li>
+                            <li><a th:href="@{/page/payment-privacy}">Bảo mật thanh toán</a></li>
+                        </ul>
+                    </div>
+
+                    <!-- Cột 3: Hướng dẫn + kết nối + thanh toán -->
+                    <div class="col-lg-3 col-md-6">
+                        <h2 class="footer-col-title">Hướng dẫn</h2>
+                        <ul class="footer-list">
+                            <li><a th:href="@{/products}">Cách mua hàng</a></li>
+                            <li><a th:href="@{/page/return-policy}">Hướng dẫn đổi trả</a></li>
+                            <li><a th:href="@{/orders}">Tra cứu đơn hàng</a></li>
+                            <li><a th:href="@{/page/payment-methods}">Phương thức thanh toán</a></li>
+                            <li><a th:href="@{/page/faq}">Câu hỏi thường gặp</a></li>
+                        </ul>
+                        <div class="footer-social-title">Kết nối với chúng tôi</div>
+                        <div class="social-icons">
+                            <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+                            <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                            <a href="#" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+                            <a href="#" aria-label="TikTok"><i class="fab fa-tiktok"></i></a>
+                        </div>
+                        <div class="footer-pay-title">Phương thức thanh toán</div>
+                        <div class="pay-badges" aria-label="Cổng thanh toán">
+                            <span class="pay-badge">COD</span>
+                            <span class="pay-badge">VNPAY</span>
+                            <span class="pay-badge">MoMo</span>
+                            <span class="pay-badge">Thẻ QT</span>
+                        </div>
+                        <div class="mt-3">
+                            <div class="fw-bold small text-uppercase mb-2" style="letter-spacing:0.04em;color:#475569;">Đăng ký nhận tin</div>
+                            <div class="input-group newsletter-form">
+                                <input type="email" class="form-control form-control-sm" placeholder="Email của bạn" autocomplete="email">
+                                <button class="btn btn-sm" type="button">Gửi</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Cột 4: Hỗ trợ -->
+                    <div class="col-lg-3 col-md-6">
+                        <h2 class="footer-col-title">Hỗ trợ khách hàng</h2>
+                        <ul class="footer-list">
+                            <li><a th:href="@{/page/about}">Giới thiệu BookTotal</a></li>
+                            <li><a href="mailto:booktotal01@gmail.com">Gửi yêu cầu hỗ trợ</a></li>
+                            <li><a th:href="@{/page/shipping-policy}">Hình thức giao hàng</a></li>
+                            <li><a th:href="@{/page/faq}">Trung tâm trợ giúp</a></li>
+                            <li><a th:href="@{/page/store-system}">Hệ thống cửa hàng</a></li>
+                        </ul>
+                        <div class="footer-store-card">
+                            <div class="store-icon" aria-hidden="true"><i class="fas fa-store"></i></div>
+                            <div class="small text-muted">Mua tại cửa hàng &amp; điểm nhận hàng</div>
+                            <a th:href="@{/page/store-system}" class="btn-footer-store">Hệ thống cửa hàng</a>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
+
         <div class="copyright">
             <div class="container">
-                <p class="mb-0">&copy; 2026 <b>BookTotal Corporation</b>. All rights reserved.</p>
+                <p class="mb-0">&copy; 2026 <strong>BookTotal Corporation</strong>. Bảo lưu mọi quyền.</p>
                 <div class="footer-cert">
-                    Giấy chứng nhận ĐKKD số 0304132047 do Sở Kế hoạch và Đầu tư TP.HCM cấp ngày 20/12/2025
+                    Sản phẩm dự án học tập — thông tin liên hệ và chính sách áp dụng theo nội dung hiển thị trên website.
                 </div>
             </div>
         </div>
+
+        <div class="footer-fab-stack" aria-label="Thao tác nhanh">
+            <button type="button" class="footer-fab" id="footerBackToTop" title="Lên đầu trang" aria-label="Lên đầu trang">
+                <i class="fas fa-arrow-up"></i>
+            </button>
+            <a href="tel:1900636467" class="footer-fab" title="Gọi hotline" aria-label="Gọi hotline 1900 636 467">
+                <i class="fas fa-phone-alt"></i>
+            </a>
+            <a href="mailto:booktotal01@gmail.com" class="footer-fab" title="Gửi email" aria-label="Email BookTotal">
+                <i class="fas fa-envelope"></i>
+            </a>
+        </div>
+
+        <script>
+            (function () {
+                var btn = document.getElementById('footerBackToTop');
+                if (btn) {
+                    btn.addEventListener('click', function () {
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                    });
+                }
+            })();
+        </script>
     </footer>
 </body>
 

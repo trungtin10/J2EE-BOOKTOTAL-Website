@@ -13,10 +13,12 @@ import java.util.Date;
 @Component
 public class JwtTokenProvider {
 
-    // Using the secret from Node.js project for consistency
-    private final String jwtSecret = "bookstore_secret_key_jwt_123_secure_v2";
+    /** Đặt JWT_SECRET trong env nếu deploy nhiều instance / đổi secret (cookie cũ sẽ invalid). */
+    @Value("${app.jwt.secret}")
+    private String jwtSecret;
 
-    private final long jwtExpirationInMs = 86400000; // 24 hours
+    @Value("${app.jwt.expiration-ms}")
+    private long jwtExpirationInMs;
 
     private SecretKey getSigningKey() {
         return Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
@@ -51,20 +53,15 @@ public class JwtTokenProvider {
     }
 
     public boolean validateToken(String authToken) {
+        if (authToken == null || authToken.isBlank()) {
+            return false;
+        }
         try {
             Jwts.parserBuilder().setSigningKey(getSigningKey()).build().parseClaimsJws(authToken);
             return true;
-        } catch (SecurityException ex) {
-            // Invalid JWT signature
-        } catch (MalformedJwtException ex) {
-            // Invalid JWT token
-        } catch (ExpiredJwtException ex) {
-            // Expired JWT token
-        } catch (UnsupportedJwtException ex) {
-            // Unsupported JWT token
-        } catch (IllegalArgumentException ex) {
-            // JWT claims string is empty.
+        } catch (JwtException | IllegalArgumentException ex) {
+            // Sai chữ ký, hết hạn, sai format, v.v. (jjwt 0.11: SignatureException không extends java.lang.SecurityException)
+            return false;
         }
-        return false;
     }
 }

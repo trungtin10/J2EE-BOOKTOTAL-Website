@@ -565,6 +565,7 @@
         </div>
 
         <div class="container mt-4 mb-5">
+            <!-- Thông báo sau gửi đánh giá: popup SweetAlert2 (script ở layout:fragment script) -->
             <!-- Breadcrumb -->
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb bg-white shadow-sm p-3 rounded">
@@ -669,8 +670,6 @@
                             <div class="meta-item"><span class="meta-label">Hình thức bìa:</span><span
                                     class="meta-value"
                                     th:text="${product.coverType != null ? product.coverType : '---'}"></span></div>
-                            <div class="meta-item"><span class="meta-label">Màu sắc:</span><span class="meta-value"
-                                    th:text="${product.color != null and !product.color.isEmpty() ? product.color : '---'}"></span></div>
                             <div class="meta-item"><span class="meta-label">Kích thước:</span><span class="meta-value"
                                     th:text="${product.dimensions != null and !product.dimensions.isEmpty() ? product.dimensions : '---'}"></span></div>
                             <div class="meta-item"><span class="meta-label">Ngôn ngữ:</span><span class="meta-value"
@@ -834,9 +833,9 @@
                     <div class="col" th:each="item : ${relatedProducts}">
                         <a th:href="@{'/product/' + ${item.id}}" class="text-decoration-none">
                             <div class="card related-card">
-                                <img th:src="${item.resolveImageSrc(item.imageUrl)}"
+                                <img th:src="${item.resolveImageSrc()}"
                                     class="related-img card-img-top" th:alt="${item.name}"
-                                    onerror="this.src='/uploads/default.jpg'">
+                                    onerror="this.onerror=null;this.src='/img/placeholder.svg'">
                                 <div class="card-body p-2">
                                     <h6 class="related-title" th:text="${item.name}"></h6>
                                     <div class="related-price"
@@ -848,7 +847,7 @@
                     </div>
                 </div>
                 <p th:if="${relatedProducts == null or relatedProducts.empty}" class="text-muted text-center py-3 mb-0">
-                    Chưa có sản phẩm liên quan trong cùng danh mục.
+                    Hiện chưa có sản phẩm khác để gợi ý.
                 </p>
             </div>
         </div>
@@ -964,6 +963,22 @@
     </div>
 
     <th:block layout:fragment="script">
+        <script th:inline="javascript">
+            /*<![CDATA[*/
+            document.addEventListener('DOMContentLoaded', function () {
+                var msg = /*[[${successMessage}]]*/ null;
+                if (msg && typeof Swal !== 'undefined') {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Đã gửi đánh giá',
+                        text: msg,
+                        confirmButtonText: 'Đóng',
+                        confirmButtonColor: '#C92127'
+                    });
+                }
+            });
+            /*]]>*/
+        </script>
         <script th:src="@{/js/product-detail.js}"></script>
         <script>
             function setRatingText(text) {
@@ -973,13 +988,8 @@
         <script th:inline="javascript">
             /*<![CDATA[*/
             const glbImages = /*[[${product.resolvedGalleryUrls}]]*/ [];
-            const glbResolved = (glbImages || []).map(u => {
-                if (!u) return '/img/placeholder.svg';
-                const s = ('' + u).trim();
-                if (!s) return '/img/placeholder.svg';
-                if (s.startsWith('http://') || s.startsWith('https://') || s.startsWith('/uploads/')) return s;
-                return '/uploads/' + s;
-            });
+            const glbResolved = (glbImages || []).map(u =>
+                (typeof resolveStorefrontImageSrc === 'function' ? resolveStorefrontImageSrc(u) : '/img/placeholder.svg'));
             let glbIndex = 0;
 
             function glbRenderThumbs() {

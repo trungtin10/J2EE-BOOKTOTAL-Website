@@ -19,10 +19,11 @@ body.admin-shell {
 .admin-topbar {
   background: var(--admin-topbar-bg);
   color: var(--admin-topbar-fg);
-  height: 56px;
+  min-height: 56px;
   display: flex;
   align-items: center;
-  padding: 0 18px;
+  padding: 8px 12px;
+  gap: 8px;
   position: sticky;
   top: 0;
   z-index: 1030;
@@ -114,6 +115,20 @@ body.admin-shell {
 .admin-content {
   flex: 1;
   padding: 18px 18px 28px;
+  min-width: 0;
+}
+
+.admin-offcanvas-sidebar {
+  width: min(300px, 92vw);
+  background: var(--admin-sidebar-bg);
+}
+
+.admin-offcanvas-sidebar .offcanvas-body {
+  background: var(--admin-sidebar-bg);
+}
+
+.admin-menu-toggle {
+  border: 1px solid rgba(255, 255, 255, 0.35) !important;
 }
 
 .admin-card {
@@ -154,12 +169,14 @@ body.admin-shell {
   font-size: 0.8rem;
 }
 
-@media (max-width: 992px) {
-  .admin-sidebar2 { width: 220px; }
-}
+@media (max-width: 991.98px) {
+  .admin-content {
+    padding: 12px 12px 24px;
+  }
 
-@media (max-width: 768px) {
-  .admin-layout { flex-direction: column; }
-  .admin-sidebar2 { width: 100%; position: static; }
+  .admin-page-header {
+    flex-direction: column;
+    align-items: flex-start !important;
+  }
 }
 

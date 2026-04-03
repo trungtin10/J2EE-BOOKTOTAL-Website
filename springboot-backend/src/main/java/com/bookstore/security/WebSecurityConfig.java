@@ -12,11 +12,9 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.savedrequest.HttpSessionRequestCache;
 import org.springframework.security.web.savedrequest.SavedRequest;
 
-import java.io.IOException;
 
 @Configuration
 @EnableWebSecurity
@@ -61,6 +59,8 @@ public class WebSecurityConfig {
         http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         http.authorizeHttpRequests(authz -> authz
                 .requestMatchers("/admin/**", "/api/admin/**").hasAuthority("ROLE_ADMIN")
+                // VNPAY gọi IPN server-to-server (không cookie đăng nhập); Return do trình duyệt redirect — kiểm tra bằng chữ ký.
+                .requestMatchers("/payment/vnpay/ipn", "/payment/vnpay/return").permitAll()
                 .requestMatchers("/checkout", "/order", "/orders", "/payment/**", "/order/**", "/profile/**", "/orders/**", "/notifications/**", "/api/user/**", "/api/checkout/**").authenticated()
                 .requestMatchers("/cart/**", "/api/**", "/forgot-password", "/reset-password", "/reset-password/**", "/login", "/register", "/").permitAll()
                 .anyRequest().permitAll())
@@ -113,21 +113,23 @@ public class WebSecurityConfig {
                             if (target == null) target = "/";
                             response.sendRedirect(target);
                         })
-                        // Nếu login từ popup modal, quay lại đúng trang và mở lại modal để hiển thị lỗi.
+                        // Sai mật khẩu: quay lại trang đang mở (returnUrl) kèm ?error=true để popup đăng nhập hiện cảnh báo.
                         .failureHandler((request, response, exception) -> {
                             String returnUrl = request.getParameter("returnUrl");
-                            String target = (returnUrl != null && returnUrl.startsWith("/") && !returnUrl.startsWith("//"))
-                                    ? returnUrl
-                                    : "/login";
-
-                            // tránh bơm loginError vô hạn khi đang ở trang /login
-                            if (target.startsWith("/login")) {
-                                response.sendRedirect("/login?error=true");
-                                return;
+                            String loc;
+                            if (returnUrl != null && returnUrl.startsWith("/") && !returnUrl.startsWith("//")) {
+                                int q = returnUrl.indexOf('?');
+                                String pathOnly = q >= 0 ? returnUrl.substring(0, q) : returnUrl;
+                                if (!"/login".equals(pathOnly)) {
+                                    String sep = q >= 0 ? "&" : "?";
+                                    loc = returnUrl + sep + "error=true";
+                                } else {
+                                    loc = q >= 0 ? "/login?error=true&" + returnUrl.substring(q + 1) : "/login?error=true";
+                                }
+                            } else {
+                                loc = "/login?error=true";
                             }
-
-                            String sep = target.contains("?") ? "&" : "?";
-                            response.sendRedirect(target + sep + "loginError=1");
+                            response.sendRedirect(loc);
                         })
                         .permitAll())
                 .oauth2Login(oauth -> oauth
@@ -135,7 +137,8 @@ public class WebSecurityConfig {
                         .successHandler(oAuth2LoginSuccessHandler))
                 .logout(logout -> logout
                         .logoutUrl("/logout")
-                        .logoutSuccessUrl("/")
+                        // Query để client xóa localStorage giỏ hàng (tránh đăng xuất rồi đăng nhập lại vẫn thấy giỏ cũ)
+                        .logoutSuccessUrl("/?btLogout=1")
                         .deleteCookies("jwt")
                         .permitAll())
                 .csrf(csrf -> csrf.disable())

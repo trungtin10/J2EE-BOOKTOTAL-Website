@@ -3,7 +3,6 @@ package com.bookstore.controller;
 import com.bookstore.model.CartItem;
 import com.bookstore.model.Product;
 import com.bookstore.security.CustomUserDetails;
-import com.bookstore.service.NotificationService;
 import com.bookstore.service.ProductService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,9 +25,6 @@ public class CartController {
 
     @Autowired
     private ProductService productService;
-
-    @Autowired
-    private NotificationService notificationService;
 
     @GetMapping
     public String viewCart(HttpSession session, Model model) {
@@ -99,16 +95,6 @@ public class CartController {
                 cart.add(new CartItem(product.getId(), product.getName(), product.getPrice(), reqQty, product.getImageUrl()));
             }
             session.setAttribute("cart", cart);
-
-            // Tạo thông báo hệ thống
-            if (userDetails != null) {
-                notificationService.createNotification(
-                    userDetails.getUser().getId(),
-                    "Giỏ hàng",
-                    "Sản phẩm '" + product.getName() + "' đã được thêm vào giỏ hàng.",
-                    "success"
-                );
-            }
 
             int totalQty = cart.stream().mapToInt(CartItem::getQuantity).sum();
             return ResponseEntity.ok().body(Map.of("success", true, "message", "Đã thêm vào giỏ hàng", "totalQty", totalQty));

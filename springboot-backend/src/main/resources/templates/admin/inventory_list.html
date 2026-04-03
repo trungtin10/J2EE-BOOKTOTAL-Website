@@ -37,6 +37,9 @@
             .inv-sub { font-size: 0.82rem; color: #7b8794; margin-top: 2px; }
             .inv-actions { display:flex; justify-content:flex-end; gap:10px; align-items:center; }
             .inv-actions .stack { display:flex; flex-direction:column; gap:8px; }
+            .inv-actions .stack .btn .btn-label { display:none; }
+            .inv-actions .stack:hover .btn .btn-label,
+            .inv-actions .stack .btn:focus-visible .btn-label { display:inline-block; }
         </style>
     </th:block>
 </head>
@@ -176,11 +179,13 @@
                                                 <div class="stack">
                                                     <button class="btn btn-primary btn-sm btn-import"
                                                             th:data-id="${product.id}" th:data-name="${product.name}">
-                                                        <i class="fas fa-circle-arrow-down me-1"></i> Nhập
+                                                        <i class="fas fa-circle-arrow-down"></i>
+                                                        <span class="btn-label ms-1">Nhập</span>
                                                     </button>
                                                     <button class="btn btn-outline-danger btn-sm btn-export"
                                                             th:data-id="${product.id}" th:data-name="${product.name}">
-                                                        <i class="fas fa-circle-arrow-up me-1"></i> Xuất
+                                                        <i class="fas fa-circle-arrow-up"></i>
+                                                        <span class="btn-label ms-1">Xuất</span>
                                                     </button>
                                                 </div>
                                             </div>

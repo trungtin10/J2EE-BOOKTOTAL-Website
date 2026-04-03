@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<th:block th:fragment="adminSidebarInner">
+    <a th:href="@{/admin}" class="admin-brand2">
+        <div>
+            <div>BOOKTOTAL ADMIN</div>
+            <span class="sub">SYSTEM MANAGER</span>
+        </div>
+    </a>
+    <div class="admin-menu-title">Menu</div>
+    <ul class="admin-nav2">
+        <li><a th:href="@{/admin}" th:classappend="${activePage == 'dashboard' ? ' active' : ''}"><span class="ico"><i class="fas fa-tachometer-alt"></i></span> Tổng quan hệ thống</a></li>
+        <li><a th:href="@{/admin/orders}" th:classappend="${activePage == 'orders' ? ' active' : ''}"><span class="ico"><i class="fas fa-shopping-cart"></i></span> Đơn hàng</a></li>
+        <li><a th:href="@{/admin/products}" th:classappend="${activePage == 'products' ? ' active' : ''}"><span class="ico"><i class="fas fa-book"></i></span> Sản phẩm</a></li>
+        <li><a th:href="@{/admin/categories}" th:classappend="${activePage == 'categories' ? ' active' : ''}"><span class="ico"><i class="fas fa-list"></i></span> Danh mục</a></li>
+        <li><a th:href="@{/admin/inventory}" th:classappend="${activePage == 'inventory' ? ' active' : ''}"><span class="ico"><i class="fas fa-warehouse"></i></span> Kho hàng</a></li>
+        <li><a th:href="@{/admin/user}" th:classappend="${activePage == 'users' ? ' active' : ''}"><span class="ico"><i class="fas fa-users"></i></span> Người dùng</a></li>
+        <li><a th:href="@{/admin/coupons}" th:classappend="${activePage == 'coupons' ? ' active' : ''}"><span class="ico"><i class="fas fa-ticket-alt"></i></span> Mã giảm giá</a></li>
+        <li><a th:href="@{/admin/reviews}" th:classappend="${activePage == 'reviews' ? ' active' : ''}"><span class="ico"><i class="fas fa-star"></i></span> Đánh giá</a></li>
+        <li><a th:href="@{/admin/stats}" th:classappend="${activePage == 'stats' ? ' active' : ''}"><span class="ico"><i class="fas fa-chart-line"></i></span> Thống kê</a></li>
+    </ul>
+</th:block>
+</body>
+</html>

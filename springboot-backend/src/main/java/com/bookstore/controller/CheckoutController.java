@@ -6,7 +6,6 @@ import com.bookstore.model.OrderDetail;
 import com.bookstore.model.Product;
 import com.bookstore.model.User;
 import com.bookstore.security.CustomUserDetails;
-import com.bookstore.service.NotificationService;
 import com.bookstore.service.OrderService;
 import com.bookstore.service.ProductService;
 import jakarta.servlet.http.HttpSession;
@@ -32,7 +31,6 @@ public class CheckoutController {
 
     @Autowired private OrderService orderService;
     @Autowired private ProductService productService;
-    @Autowired private NotificationService notificationService;
     @Autowired private com.bookstore.service.ShippingService shippingService;
 
     // ────────────────────────────────────────────────
@@ -42,6 +40,7 @@ public class CheckoutController {
     public String checkoutForm(
             @RequestParam(name = "selectedItems", required = false) List<Long> selectedItems,
             @RequestParam(name = "discount", defaultValue = "0") double discount,
+            @RequestParam(name = "couponCode", required = false) String couponCode,
             HttpSession session,
             Model model,
             @AuthenticationPrincipal CustomUserDetails userDetails) {
@@ -67,6 +66,7 @@ public class CheckoutController {
 
         session.setAttribute("checkoutItems",   items);
         session.setAttribute("discountAmount",  discount);
+        session.setAttribute("couponCode",      couponCode);
         session.setAttribute("totalAmount",     total);
         session.setAttribute("shippingFee",     shipping);
 
@@ -74,6 +74,7 @@ public class CheckoutController {
         model.addAttribute("totalAmount",    total);
         model.addAttribute("shippingFee",    shipping);
         model.addAttribute("productDiscount", discount);
+        model.addAttribute("couponCode", couponCode);
         model.addAttribute("finalTotal",     total + shipping - discount);
         model.addAttribute("user",           userDetails.getUser());
         return "checkout";
@@ -130,6 +131,7 @@ public class CheckoutController {
             @RequestParam(name = "district", required = false, defaultValue = "") String districtCode,
             @RequestParam(name = "ward", required = false, defaultValue = "") String wardCode,
             @RequestParam(name = "address")      String shippingAddress,
+            @RequestParam(name = "couponCode", required = false) String couponCode,
             @RequestParam(name = "paymentMethod") String paymentMethod,
             @RequestParam(name = "note", required = false, defaultValue = "") String note,
             HttpSession session,
@@ -160,7 +162,7 @@ public class CheckoutController {
         }
 
         Order order = buildOrder(user, fullName, phone, shippingAddress.trim(), note, paymentMethod,
-                                 total, shipping, discount, finalTotal);
+                                 couponCode, total, shipping, discount, finalTotal);
 
         List<OrderDetail> details = buildDetails(items);
         Order saved = orderService.createOrder(order, details);
@@ -188,12 +190,7 @@ public class CheckoutController {
                    + "&amount=" + finalTotal + "&method=" + paymentMethod;
         }
 
-        // COD: notify and redirect to success page
-        notificationService.createNotification(user.getId(),
-            "Đặt hàng thành công!",
-            "Đơn hàng #" + orderId + " của bạn đã được ghi nhận. Chúng tôi sẽ sớm liên hệ xác nhận.",
-            "success");
-
+        // Thông báo đặt hàng do OrderService.createOrder tạo (một dòng chuẩn).
         return "redirect:/order/success/" + orderId;
     }
 
@@ -238,6 +235,7 @@ public class CheckoutController {
 
     private Order buildOrder(User user, String name, String phone, String address,
                               String note, String payMethod,
+                              String couponCode,
                               double total, double shipping, double discount, double finalTotal) {
         Order o = new Order();
         o.setUser(user);
@@ -246,6 +244,9 @@ public class CheckoutController {
         o.setShippingAddress(address);
         o.setOrderNote(note);
         o.setPaymentMethod(payMethod);
+        if (couponCode != null && !couponCode.isBlank()) {
+            o.setCouponCode(couponCode.trim());
+        }
         o.setTotalMoney(total);
         o.setShippingFee(shipping);
         o.setDiscountAmount(discount);

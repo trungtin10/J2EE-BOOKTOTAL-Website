@@ -91,14 +91,17 @@
 
                                     <div class="row mb-3">
                                         <div class="col-md-6">
-                                            <label class="form-label">Tổng lượt dùng tối đa</label>
-                                            <input type="number" th:field="*{usageLimit}" class="form-control" placeholder="Để trống nếu không giới hạn">
+                                            <label class="form-label">Tổng lượt dùng mã (số lần áp dụng)</label>
+                                            <input type="number" th:field="*{usageLimit}" class="form-control" placeholder="Để trống = không giới hạn tổng lượt">
+                                            <div class="form-text">Tổng số lần mã có thể được dùng trên toàn hệ thống (số &quot;lượng phát hành&quot; / lượt quẹt mã).</div>
                                         </div>
                                         <div class="col-md-6">
                                             <label class="form-label">Giới hạn mỗi khách hàng</label>
                                             <input type="number" th:field="*{userUsageLimit}" class="form-control" min="1" required>
+                                            <div class="form-text">Mỗi tài khoản được áp dụng tối đa bao nhiêu lần.</div>
                                         </div>
                                     </div>
+                                    <input type="hidden" th:field="*{minItemQuantity}">
 
                                     <div class="mb-3">
                                         <div class="form-check form-switch">
