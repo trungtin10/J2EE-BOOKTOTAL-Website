@@ -185,13 +185,14 @@ public class CheckoutController {
         Long orderId = saved.getId();
 
         // Redirect to payment gateway for online payments
-        if ("MOMO".equals(paymentMethod) || "VNPAY".equals(paymentMethod)) {
+        if ("ONEPAY".equals(paymentMethod) || "MOMO".equals(paymentMethod) || "VNPAY".equals(paymentMethod)) {
             return "redirect:/payment/gateway?orderId=" + orderId
                    + "&amount=" + finalTotal + "&method=" + paymentMethod;
         }
 
         // Thông báo đặt hàng do OrderService.createOrder tạo (một dòng chuẩn).
-        return "redirect:/order/success/" + orderId;
+        // Clear cart localStorage trên client sau khi đặt hàng thành công (COD).
+        return "redirect:/order/success/" + orderId + "?btCartClear=1";
     }
 
     // ────────────────────────────────────────────────

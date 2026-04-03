@@ -158,10 +158,34 @@ public class AdminOrderController {
 
     // Endpoint trả về Trang chi tiết đơn hàng
     @GetMapping("/view/{id}")
-    @Transactional(readOnly = true)
+    @Transactional(readOnly = false)
     public String viewOrderDetail(@PathVariable(name = "id") Long id, Model model) {
         Order order = orderRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy đơn hàng: " + id));
+
+        // Đồng bộ với logic ở /detail/{id}: đảm bảo mã vận đơn + dự kiến giao không bị '---'
+        String st = order.getStatus();
+        boolean shippingPhase = st != null && (
+                "DELIVERING".equalsIgnoreCase(st) ||
+                "SHIPPED".equalsIgnoreCase(st) ||
+                "SHIPPING".equalsIgnoreCase(st) ||
+                "COMPLETED".equalsIgnoreCase(st)
+        );
+        if (shippingPhase) {
+            if (order.getTrackingCode() == null || order.getTrackingCode().isEmpty()) {
+                long randomNum = (long) (Math.random() * 90000000L + 10000000L);
+                order.setTrackingCode("GHN-" + randomNum);
+            }
+            if (order.getExpectedDeliveryDate() == null) {
+                if ("COMPLETED".equalsIgnoreCase(st)) {
+                    order.setExpectedDeliveryDate(java.time.LocalDateTime.now());
+                } else {
+                    order.setExpectedDeliveryDate(java.time.LocalDateTime.now().plusDays(3));
+                }
+            }
+            orderRepository.save(order);
+        }
+
         model.addAttribute("order", order);
         model.addAttribute("activePage", "orders");
         return "admin/order_detail";

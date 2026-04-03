@@ -21,7 +21,9 @@
                 aria-label="Mở menu">
                 <i class="fas fa-bars"></i>
             </button>
-            <div class="admin-topbar-title text-truncate" layout:fragment="pageTitle">Hệ thống quản trị</div>
+            <div class="admin-topbar-title text-truncate text-uppercase" style="text-transform: uppercase;">
+                <th:block layout:fragment="pageTitle">Hệ thống quản trị</th:block>
+            </div>
         </div>
         <div class="admin-topbar-right flex-shrink-0">
             <span class="admin-chip d-none d-sm-inline" sec:authentication="name">Admin</span>

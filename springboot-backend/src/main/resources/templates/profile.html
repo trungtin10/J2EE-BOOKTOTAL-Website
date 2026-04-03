@@ -49,6 +49,51 @@
                 font-size: 0.9rem;
             }
 
+            /* Đồng bộ textbox + input-group (mắt) để không bị so le */
+            .profile-card .form-control,
+            .profile-card .input-group-text {
+                border-radius: 10px;
+                border-color: #e5e7eb;
+                box-shadow: none;
+            }
+
+            .profile-card .form-control {
+                min-height: 44px;
+                padding: 0.65rem 0.9rem;
+            }
+
+            .profile-card textarea.form-control {
+                min-height: calc(44px * 2);
+                resize: vertical;
+            }
+
+            .profile-card .form-control:focus {
+                border-color: #cbd5e1;
+                box-shadow: 0 0 0 3px rgba(17, 24, 39, 0.08);
+            }
+
+            .profile-card .input-group > .form-control {
+                border-top-right-radius: 0;
+                border-bottom-right-radius: 0;
+            }
+
+            .profile-card .input-group-text.toggle-password {
+                background: #fff;
+                min-width: 44px;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                border-left: 0;
+                border-top-left-radius: 0;
+                border-bottom-left-radius: 0;
+                color: #6b7280;
+            }
+
+            .profile-card .input-group-text.toggle-password:hover {
+                color: #111827;
+                background: #f9fafb;
+            }
+
             .btn-primary-custom {
                 background: linear-gradient(45deg, #ffc107, #ffb300);
                 border-color: #ffb300;

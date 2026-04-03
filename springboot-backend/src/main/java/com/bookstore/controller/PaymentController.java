@@ -4,6 +4,7 @@ import com.bookstore.model.Order;
 import com.bookstore.security.CustomUserDetails;
 import com.bookstore.service.MomoPaymentService;
 import com.bookstore.service.OrderService;
+import com.bookstore.service.OnepayPaymentService;
 import com.bookstore.service.VnpayPaymentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -33,6 +34,9 @@ public class PaymentController {
     private MomoPaymentService momoPaymentService;
 
     @Autowired
+    private OnepayPaymentService onepayPaymentService;
+
+    @Autowired
     private VnpayPaymentService vnpayPaymentService;
 
     /**
@@ -47,24 +51,31 @@ public class PaymentController {
             HttpServletRequest request,
             @AuthenticationPrincipal CustomUserDetails userDetails) {
 
-        if (userDetails == null) return "redirect:/login";
+        if (userDetails == null) {
+            // Giữ nguyên link thanh toán để sau khi login quay lại đúng luồng.
+            String qs = request.getQueryString();
+            String returnUrl = request.getRequestURI() + (qs != null ? ("?" + qs) : "");
+            String enc = java.net.URLEncoder.encode(returnUrl, java.nio.charset.StandardCharsets.UTF_8);
+            return "redirect:/login?returnUrl=" + enc;
+        }
 
         model.addAttribute("orderId", orderId);
         model.addAttribute("amount", amount);
         model.addAttribute("method", method);
 
-        // For MoMo: create a real payment and redirect to payUrl
-        if ("MOMO".equalsIgnoreCase(method)) {
+        // For OnePAY (user yêu cầu thay MoMo bằng OnePAY):
+        // - Nếu method=MOMO (link test cũ), mình vẫn map sang OnePAY.
+        if ("ONEPAY".equalsIgnoreCase(method) || "MOMO".equalsIgnoreCase(method)) {
             try {
-                long amt = Math.max(0, Math.round(amount));
                 String baseUrl = resolveBaseUrl(request);
-                MomoPaymentService.MomoCreateResponse momo = momoPaymentService.createPayment(orderId, amt, "pay with MoMo", baseUrl);
-                if (StringUtils.hasText(momo.payUrl())) {
-                    return "redirect:" + momo.payUrl();
+                String orderInfo = "Thanh toan don hang #" + orderId;
+                String url = onepayPaymentService.createPaymentRedirectUrl(orderId, amount, orderInfo, baseUrl);
+                if (StringUtils.hasText(url)) {
+                    return "redirect:" + url;
                 }
-                model.addAttribute("momoError", momo.message() != null ? momo.message() : "Không tạo được giao dịch MoMo");
+                model.addAttribute("onepayError", "Không tạo được giao dịch OnePAY");
             } catch (Exception e) {
-                model.addAttribute("momoError", e.getMessage());
+                model.addAttribute("onepayError", e.getMessage());
             }
         }
 
@@ -130,7 +141,7 @@ public class PaymentController {
                 o.setPaymentStatus("PAID");
                 orderService.save(o);
                 orderService.sendPaymentSuccessNotificationIfFirstTime(o, previousPaymentStatus);
-                return "redirect:/order/success/" + orderId;
+                return "redirect:/order/success/" + orderId + "?btCartClear=1";
             } else {
                 o.setPaymentStatus("FAILED");
                 // không auto-cancel đơn để khách có thể thử lại / admin xử lý
@@ -182,6 +193,59 @@ public class PaymentController {
     }
 
     /**
+     * OnePAY return URL (user browser redirect).
+     *
+     * Success condition (thường gặp): vpc_TxnResponseCode == "0"
+     * Verify secure hash bằng vpc_SecureHash (best-effort).
+     */
+    @GetMapping("/onepay/return")
+    public String onepayReturn(@RequestParam Map<String, String> params,
+                                @AuthenticationPrincipal CustomUserDetails userDetails) {
+        // Chỉ phục vụ luồng browser return. (Nếu mất trình duyệt, trạng thái sẽ không tự cập nhật.)
+        String orderIdStr = OnepayPaymentService.extractOrderIdFromReturn(params);
+        Long orderId;
+        try {
+            orderId = orderIdStr != null ? Long.parseLong(orderIdStr) : null;
+        } catch (Exception e) {
+            orderId = null;
+        }
+
+        if (orderId == null) {
+            return "redirect:/cart?paymentFailed=true";
+        }
+
+        boolean sigOk = onepayPaymentService.verifySecureHash(params);
+        String responseCode = params.getOrDefault("vpc_TxnResponseCode", "");
+        boolean ok = "0".equals(responseCode);
+        // Best-effort: nếu có vpc_SecureHash thì mới ràng buộc chữ ký.
+        if (StringUtils.hasText(params.get("vpc_SecureHash"))) {
+            ok = ok && sigOk;
+        }
+        final boolean finalOk = ok;
+
+        Optional<Order> orderOpt = orderService.getOrderById(orderId);
+        orderOpt.ifPresent(o -> {
+            String previousPaymentStatus = o.getPaymentStatus();
+
+            o.setPaymentMethod("ONEPAY");
+            o.setPaymentGatewayTransactionNo(params.get("vpc_TxnId"));
+            String txnRef = params.get("vpc_TxnRef");
+            if (!StringUtils.hasText(txnRef)) txnRef = params.get("vpc_MerchTxnRef");
+            o.setPaymentTxnRef(txnRef);
+            o.setPaymentBankCode(params.get("vpc_BankCode"));
+            o.setPaymentPaidAt(java.time.LocalDateTime.now()
+                    .format(java.time.format.DateTimeFormatter.ofPattern("yyyyMMddHHmmss")));
+
+            o.setPaymentStatus(finalOk ? "PAID" : "FAILED");
+            orderService.save(o);
+            if (finalOk) orderService.sendPaymentSuccessNotificationIfFirstTime(o, previousPaymentStatus);
+        });
+
+        if (finalOk) return "redirect:/order/success/" + orderId + "?btCartClear=1";
+        return "redirect:/cart?paymentFailed=true";
+    }
+
+    /**
      * VNPAY return URL (user browser redirect).
      * Example: /payment/vnpay/return?vnp_Amount=...&vnp_ResponseCode=00&vnp_TransactionStatus=00&vnp_SecureHash=...
      */
@@ -215,7 +279,7 @@ public class PaymentController {
             });
 
             if (userDetails != null && ok) {
-                return "redirect:/order/success/" + orderId;
+                return "redirect:/order/success/" + orderId + "?btCartClear=1";
             }
         }
 
@@ -331,7 +395,7 @@ public class PaymentController {
                 orderService.save(o);
                 orderService.sendPaymentSuccessNotificationIfFirstTime(o, previousPaymentStatus);
             });
-            return "redirect:/order/success/" + orderId;
+            return "redirect:/order/success/" + orderId + "?btCartClear=1";
 
         } else {
             Optional<Order> orderOpt = orderService.getOrderById(orderId);

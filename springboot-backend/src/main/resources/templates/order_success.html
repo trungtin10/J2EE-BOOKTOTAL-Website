@@ -243,6 +243,25 @@
             </div>
         </div>
     </div>
+
+    <th:block layout:fragment="script">
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                try {
+                    // Cart is persisted in localStorage for header badge.
+                    localStorage.removeItem('booktotal_cart_v1');
+                    var badge = document.getElementById('cartBadge');
+                    if (badge) {
+                        badge.textContent = '0';
+                        badge.style.display = 'none';
+                    }
+                    if (typeof refreshCartDropdownHeader === 'function') {
+                        refreshCartDropdownHeader();
+                    }
+                } catch (e) { /* ignore */ }
+            });
+        </script>
+    </th:block>
 </body>
 
 </html>

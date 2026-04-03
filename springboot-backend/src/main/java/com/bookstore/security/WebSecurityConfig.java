@@ -61,6 +61,7 @@ public class WebSecurityConfig {
                 .requestMatchers("/admin/**", "/api/admin/**").hasAuthority("ROLE_ADMIN")
                 // VNPAY gọi IPN server-to-server (không cookie đăng nhập); Return do trình duyệt redirect — kiểm tra bằng chữ ký.
                 .requestMatchers("/payment/vnpay/ipn", "/payment/vnpay/return").permitAll()
+                .requestMatchers("/payment/onepay/return").permitAll()
                 .requestMatchers("/checkout", "/order", "/orders", "/payment/**", "/order/**", "/profile/**", "/orders/**", "/notifications/**", "/api/user/**", "/api/checkout/**").authenticated()
                 .requestMatchers("/cart/**", "/api/**", "/forgot-password", "/reset-password", "/reset-password/**", "/login", "/register", "/").permitAll()
                 .anyRequest().permitAll())

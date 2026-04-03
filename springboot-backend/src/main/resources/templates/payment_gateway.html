@@ -31,6 +31,22 @@
             margin-bottom: 20px;
         }
 
+        .onepay-logo {
+            width: 64px;
+            height: 64px;
+            background: #C92127;
+            border-radius: 14px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 18px;
+            box-shadow: 0 8px 22px rgba(201, 33, 39, 0.22);
+            font-weight: 900;
+            letter-spacing: 0.02em;
+            color: #fff;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
         .qr-code {
             width: 250px;
             height: 250px;
@@ -77,12 +93,11 @@
 
 <body>
     <div class="payment-card">
-        <div th:if="${method == 'MOMO'}">
-            <img src="https://developers.momo.vn/v3/assets/images/square-8c08a00f550e40a2efafea4a005b1232.png"
-                class="logo" alt="MoMo" style="border-radius: 8px;">
-            <h4>Thanh toán qua Ví MoMo</h4>
+        <div th:if="${method == 'ONEPAY' || method == 'MOMO'}">
+                <div class="onepay-logo" aria-hidden="true">OP</div>
+            <h4>Thanh toán qua OnePAY</h4>
         </div>
-        <div th:unless="${method == 'MOMO'}">
+        <div th:if="${method == 'VNPAY'}">
             <img src="https://vinadesign.vn/uploads/images/2023/05/vnpay-logo-vinadesign-25-12-57-55.jpg" class="logo"
                 alt="VNPAY">
             <h4>Thanh toán qua VNPAY</h4>
@@ -91,17 +106,17 @@
         <p>Đơn hàng: <b th:text="'#' + ${orderId}"></b></p>
         <div class="amount" th:text="${#numbers.formatDecimal(amount, 0, 'COMMA', 0, 'POINT')} + ' đ'"></div>
 
+        <div th:if="${onepayError != null}" class="alert alert-danger small text-start mt-3" th:text="${onepayError}"></div>
         <div th:if="${momoError != null}" class="alert alert-danger small text-start mt-3" th:text="${momoError}"></div>
         <div th:if="${vnpayError != null}" class="alert alert-danger small text-start mt-3" th:text="${vnpayError}"></div>
 
         <!-- Sử dụng ảnh qrck.jpg cho VNPAY, API QR cho MOMO -->
         <img th:if="${method == 'VNPAY'}" th:src="@{/images/qrck.jpg}" class="qr-code" alt="VNPAY QR">
-        <img th:unless="${method == 'VNPAY'}"
+        <img th:if="${method == 'MOMO'}"
             th:src="@{'https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=PAYMENT_MOMO_' + ${orderId} + '_' + ${amount}}"
             class="qr-code" alt="MOMO QR">
 
-        <p class="small text-muted">Vui lòng mở ứng dụng <span th:text="${method}"></span> và quét mã QR để thanh toán.
-        </p>
+        <p th:if="${method == 'MOMO'}" class="small text-muted">Vui lòng mở ứng dụng <span th:text="${method}"></span> và quét mã QR để thanh toán.</p>
         <div class="timer">Giao dịch hết hạn sau: <span id="countdown">10:00</span></div>
 
         <form id="confirmForm" th:action="@{/payment/confirm}" method="POST">

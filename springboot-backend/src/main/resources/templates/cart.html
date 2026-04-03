@@ -745,6 +745,25 @@
             }
 
             document.addEventListener("DOMContentLoaded", function () {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    if (params.get('paymentFailed') === 'true') {
+                        if (typeof Swal !== 'undefined') {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Thanh toán không thành công',
+                                text: 'Giao dịch đã bị hủy hoặc thất bại. Vui lòng thử lại.',
+                                confirmButtonText: 'Đồng ý'
+                            });
+                        }
+                        params.delete('paymentFailed');
+                        var qs = params.toString();
+                        var clean = window.location.pathname + (qs ? '?' + qs : '') + window.location.hash;
+                        if (window.history && window.history.replaceState) {
+                            window.history.replaceState({}, '', clean);
+                        }
+                    }
+                } catch (e) { /* ignore */ }
                 if (document.getElementById('btnCheckout')) {
                     updateTotal();
                 }

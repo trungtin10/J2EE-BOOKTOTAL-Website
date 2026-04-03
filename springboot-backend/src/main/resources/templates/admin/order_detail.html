@@ -187,6 +187,22 @@
                     </div>
                 </div>
 
+                <!-- Vận chuyển -->
+                <div class="card mb-4 shadow-sm">
+                    <div class="card-body">
+                        <h5 class="info-card-title"><i class="fas fa-truck text-primary me-2"></i>Vận chuyển</h5>
+                        <div class="mb-2">
+                            <div class="order-info-label">Mã vận đơn:</div>
+                            <div class="fw-bold d-inline" th:text="${order.trackingCode != null and !order.trackingCode.isBlank() ? order.trackingCode : '—'}"></div>
+                        </div>
+                        <div class="mb-0">
+                            <div class="order-info-label">Dự kiến giao:</div>
+                            <div class="fw-bold d-inline"
+                                 th:text="${order.expectedDeliveryDate != null ? #temporals.format(order.expectedDeliveryDate, 'dd/MM/yyyy') : '—'}"></div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Ghi chú đơn hàng (Tách riêng) -->
                 <div class="card mb-4 shadow-sm">
                     <div class="card-body">
@@ -227,8 +243,10 @@
                             <span class="fw-bold" th:text="${order.paymentBankCode != null ? order.paymentBankCode : '—'}"></span>
                         </div>
                         <div th:if="${order.paymentMethod != null and order.paymentMethod.equalsIgnoreCase('VNPAY')}" class="mb-3">
-                            <div class="order-info-label">Thời gian:</div>
-                            <span class="fw-bold" th:text="${order.paymentPaidAt != null ? order.paymentPaidAt : '—'}"></span>
+                            <div class="order-info-label">Thời gian thanh toán:</div>
+                            <span class="fw-bold"
+                                  th:with="p=${order.paymentPaidAt}"
+                                  th:text="${p == null ? '—' : (#strings.length(p) == 14 ? (#strings.substring(p,6,8) + '/' + #strings.substring(p,4,6) + '/' + #strings.substring(p,0,4) + ' ' + #strings.substring(p,8,10) + ':' + #strings.substring(p,10,12) + ':' + #strings.substring(p,12,14)) : p)}"></span>
                         </div>
 
                         <form th:action="@{'/admin/orders/update-payment/' + ${order.id}}" method="POST" class="no-print">
