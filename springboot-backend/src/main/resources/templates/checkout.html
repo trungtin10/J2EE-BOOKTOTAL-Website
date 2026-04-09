@@ -172,7 +172,7 @@
                                     <label class="form-label">Số điện thoại</label>
                                     <input type="tel" class="form-control" name="phone"
                                         th:value="${session.user != null ? session.user.phone : ''}" required
-                                        placeholder="">
+                                        placeholder="" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
                                 </div>
                                 <div class="col-12">
                                     <label class="form-label">Email</label>

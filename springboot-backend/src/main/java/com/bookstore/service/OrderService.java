@@ -46,8 +46,9 @@ public class OrderService {
     }
 
     public List<Order> searchOrders(String keyword, String status, String paymentStatus) {
-        if ("all".equals(status)) status = null;
-        if ("all".equals(paymentStatus)) paymentStatus = null;
+        if (keyword != null && keyword.trim().isEmpty()) keyword = null;
+        if (status != null && (status.trim().isEmpty() || "all".equals(status))) status = null;
+        if (paymentStatus != null && (paymentStatus.trim().isEmpty() || "all".equals(paymentStatus))) paymentStatus = null;
         return orderRepository.searchOrders(keyword, status, paymentStatus);
     }
 

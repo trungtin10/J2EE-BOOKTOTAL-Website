@@ -26,7 +26,7 @@ import java.util.List;
 @Service
 public class ExcelExportService {
 
-    private static final String[] COLUMNS = {"Mã đơn", "Khách hàng", "Ngày đặt", "Tổng tiền"};
+    private static final String[] COLUMNS = {"Mã đơn", "Khách hàng", "Số điện thoại", "Địa chỉ", "Sản phẩm", "Ngày đặt", "Trạng thái", "Thanh toán", "Tổng tiền"};
 
     public ByteArrayInputStream exportOrdersToExcel(List<Order> orders) throws IOException {
         try (Workbook workbook = new XSSFWorkbook(); ByteArrayOutputStream out = new ByteArrayOutputStream()) {
@@ -56,12 +56,44 @@ public class ExcelExportService {
             int rowIdx = 1;
             for (Order order : orders) {
                 Row row = sheet.createRow(rowIdx++);
+                int colIdx = 0;
 
-                row.createCell(0).setCellValue("#" + order.getId());
+                // Mã đơn
+                row.createCell(colIdx++).setCellValue("#" + order.getId());
 
-                row.createCell(1).setCellValue(resolveCustomerLabel(order));
+                // Khách hàng
+                row.createCell(colIdx++).setCellValue(resolveCustomerLabel(order));
 
-                Cell dateCell = row.createCell(2);
+                // Số điện thoại
+                String phone = order.getShippingPhone();
+                if (phone == null && order.getUser() != null) phone = order.getUser().getPhone();
+                row.createCell(colIdx++).setCellValue(phone != null ? phone : "—");
+
+                // Địa chỉ
+                String address = order.getShippingAddress();
+                row.createCell(colIdx++).setCellValue(address != null ? address : "—");
+
+                // Chi tiết sản phẩm
+                StringBuilder productsStr = new StringBuilder();
+                if (order.getOrderDetails() != null) {
+                    for (com.bookstore.model.OrderDetail detail : order.getOrderDetails()) {
+                        if (productsStr.length() > 0) productsStr.append(";\n"); // Use newline for better readability
+                        String pName = (detail.getProduct() != null && detail.getProduct().getName() != null) 
+                                       ? detail.getProduct().getName() : "Sản phẩm không xác định";
+                        productsStr.append("- ").append(pName).append(" (x").append(detail.getQuantity()).append(")");
+                    }
+                }
+                
+                Cell productCell = row.createCell(colIdx++);
+                productCell.setCellValue(productsStr.length() > 0 ? productsStr.toString() : "—");
+                
+                // Set wrap text for multi-line products
+                CellStyle wrapStyle = workbook.createCellStyle();
+                wrapStyle.setWrapText(true);
+                productCell.setCellStyle(wrapStyle);
+
+                // Ngày đặt
+                Cell dateCell = row.createCell(colIdx++);
                 LocalDateTime orderDate = order.getOrderDate();
                 if (orderDate != null) {
                     Date excelDate = Date.from(orderDate.atZone(zone).toInstant());
@@ -71,7 +103,16 @@ public class ExcelExportService {
                     dateCell.setBlank();
                 }
 
-                Cell moneyCell = row.createCell(3);
+                // Trạng thái
+                row.createCell(colIdx++).setCellValue(order.getStatusVietnamese() != null ? order.getStatusVietnamese() : (order.getStatus() != null ? order.getStatus() : "—"));
+
+                // Thanh toán
+                String paymentStr = (order.getPaymentMethod() != null ? order.getPaymentMethod() : "N/A") + " - " +
+                                    ("PAID".equals(order.getPaymentStatus()) ? "Đã thanh toán" : "Chưa thanh toán");
+                row.createCell(colIdx++).setCellValue(paymentStr);
+
+                // Tổng tiền
+                Cell moneyCell = row.createCell(colIdx++);
                 double total = order.getFinalTotal() != null ? order.getFinalTotal() : 0.0;
                 moneyCell.setCellValue(total);
                 moneyCell.setCellStyle(moneyStyle);
@@ -80,7 +121,12 @@ public class ExcelExportService {
             for (int i = 0; i < COLUMNS.length; i++) {
                 sheet.autoSizeColumn(i);
                 int w = sheet.getColumnWidth(i);
-                sheet.setColumnWidth(i, Math.min(w + 1024, 55 * 256));
+                // Adjust width limits: make product column wider if needed
+                if (i == 4) { // Sản phẩm
+                    sheet.setColumnWidth(i, Math.min(w + 1024, 100 * 256));
+                } else {
+                    sheet.setColumnWidth(i, Math.min(w + 1024, 55 * 256));
+                }
             }
 
             workbook.write(out);

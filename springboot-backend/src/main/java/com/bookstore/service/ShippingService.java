@@ -13,7 +13,6 @@ public class ShippingService {
     @Autowired
     private ProvinceRepository provinceRepository;
 
-    private static final double RATE_PER_KM = 200.0;
     private static final double FREE_SHIPPING_THRESHOLD = 1000000.0;
 
     public double calculateShippingFee(String provinceCode, double subtotal) {
@@ -23,31 +22,29 @@ public class ShippingService {
 
         Optional<Province> provinceOpt = provinceRepository.findById(provinceCode);
         if (provinceOpt.isEmpty()) {
-            return 30000.0; // Default fee
+            return 30000.0; // Default fee if province not found (North/Default)
         }
 
         Province province = provinceOpt.get();
-        double baseFee = 20000.0; // Default South
-        
         String region = province.getRegion();
-        if (region != null) {
-            switch (region) {
-                case "Bắc":
-                    baseFee = 40000.0;
-                    break;
-                case "Trung":
-                    baseFee = 30000.0;
-                    break;
-                case "Nam":
-                default:
-                    baseFee = 20000.0;
-                    break;
-            }
+        
+        // Fee calculation based on region:
+        // Bắc: 30,000 VND
+        // Trung: 25,000 VND
+        // Nam: 20,000 VND
+        if (region == null) {
+            return 30000.0;
         }
 
-        double distance = province.getDistanceKm() != null ? province.getDistanceKm() : 0.0;
-        double distanceFee = distance * RATE_PER_KM;
+        String lowerRegion = region.toLowerCase();
+        if (lowerRegion.contains("bắc")) {
+            return 30000.0;
+        } else if (lowerRegion.contains("trung")) {
+            return 25000.0;
+        } else if (lowerRegion.contains("nam")) {
+            return 20000.0;
+        }
 
-        return baseFee + distanceFee;
+        return 30000.0; // Default North/Inter-region fee
     }
 }
