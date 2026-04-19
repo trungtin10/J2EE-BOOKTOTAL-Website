@@ -6,12 +6,6 @@
   <component name="ChangeListManager">
     <list default="true" id="f387cbf1-c135-43ac-8267-2ee2d05ed26a" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/springboot-backend/src/main/java/com/bookstore/service/ExcelExportService.java" beforeDir="false" afterPath="$PROJECT_DIR$/springboot-backend/src/main/java/com/bookstore/service/ExcelExportService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/springboot-backend/src/main/java/com/bookstore/service/OrderService.java" beforeDir="false" afterPath="$PROJECT_DIR$/springboot-backend/src/main/java/com/bookstore/service/OrderService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/springboot-backend/src/main/java/com/bookstore/service/ShippingService.java" beforeDir="false" afterPath="$PROJECT_DIR$/springboot-backend/src/main/java/com/bookstore/service/ShippingService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/springboot-backend/src/main/resources/templates/checkout.html" beforeDir="false" afterPath="$PROJECT_DIR$/springboot-backend/src/main/resources/templates/checkout.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/springboot-backend/src/main/resources/templates/checkout/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/springboot-backend/src/main/resources/templates/checkout/index.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/springboot-backend/src/main/resources/templates/profile.html" beforeDir="false" afterPath="$PROJECT_DIR$/springboot-backend/src/main/resources/templates/profile.html" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
